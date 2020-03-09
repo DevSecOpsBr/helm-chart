@@ -4,7 +4,7 @@
 
 prometheus:
   enabled: true
-  name: "prometheus-operator"
+  name: "prometheus"
   release: prometheus
   enableScraping: true
   serviceMonitor: true
@@ -27,9 +27,9 @@ tolerations:
   master: true
 
 deployment:
-  replicas: 2
-  maxSurge: 2
-  maxUnavailable: 1
+  replicas: 3
+  maxSurge: 3
+  maxUnavailable: 2
   imagePullPolicy: IfNotPresent
   nodeSelector: {}
   podAnnotations: {}
