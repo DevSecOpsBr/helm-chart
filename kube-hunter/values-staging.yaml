@@ -11,10 +11,7 @@ cronjob:
   successfulJobsHistoryLimit: "1"
 
 customArguments:
-  - --list 
-  - --log debug 
   - --statistics 
-  - --mapping
   - --cidr 10.236.1.0/16
 
 pod:

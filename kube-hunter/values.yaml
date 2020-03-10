@@ -4,15 +4,15 @@
 
 cronjob:
   # At 01:00 every day
-  schedule: "*/5 * * * *"
+  schedule: "*/50 * * * *"
   annotations: {}
   concurrencyPolicy: "Forbid"
   failedJobsHistoryLimit: "1"
   successfulJobsHistoryLimit: "1"
 
-customArguments:
-  - --list
-  - --statistics
+customArguments: []
+  # - --list
+  # - --statistics
 
 pod:
   annotations: {}
