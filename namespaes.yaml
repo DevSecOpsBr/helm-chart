@@ -1,0 +1,42 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: miscellaneous
+  annotations:
+    iam.amazonaws.com/permitted: ".*"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  annotations:
+    iam.amazonaws.com/permitted: ".*"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nginx-controller
+  annotations:
+    iam.amazonaws.com/permitted: ".*"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager
+  annotations:
+    iam.amazonaws.com/permitted: ".*"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: security
+  annotations:
+    iam.amazonaws.com/permitted: ".*"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: chaos
+  annotations:
+    iam.amazonaws.com/permitted: ".*"
