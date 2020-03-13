@@ -4,7 +4,7 @@
 
 prometheus:
   enabled: true
-  name: "prometheus-operator"
+  name: "prometheus"
   release: prometheus
   enableScraping: true
   serviceMonitor: true
