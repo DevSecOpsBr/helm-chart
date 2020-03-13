@@ -52,6 +52,7 @@ agent:
     port: 9620
     syncInterval: 5s
     servicemonitor:
+      namespace: monitoring
       enabled: true
       path: /metrics
       interval: 10s
@@ -208,6 +209,7 @@ server:
     port: 9620
     syncInterval: 5s
     servicemonitor:
+      namespace: monitoring
       enabled: true
       path: /metrics
       interval: 10s
