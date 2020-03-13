@@ -213,6 +213,8 @@ apprepository:
       url: https://svc-catalog-charts.storage.googleapis.com
     - name: bitnami
       url: https://charts.bitnami.com/bitnami
+    - name:  liveintent
+      url: https://liveintent.jfrog.io/liveintent/helm-bln
   # Additional repositories
   # - name: chartmuseum
   #   url: https://chartmuseum.default:8080
