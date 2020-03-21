@@ -10,9 +10,7 @@ cronjob:
   failedJobsHistoryLimit: "1"
   successfulJobsHistoryLimit: "1"
 
-customArguments:
-  - --statistics 
-  - --cidr 10.236.1.0/16
+customArguments: []
 
 pod:
   annotations: {}

@@ -11,8 +11,6 @@ cronjob:
   successfulJobsHistoryLimit: "1"
 
 customArguments: []
-  # - --list
-  # - --statistics
 
 pod:
   annotations: {}
