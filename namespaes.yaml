@@ -40,3 +40,10 @@ metadata:
   name: chaos
   annotations:
     iam.amazonaws.com/permitted: ".*"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+  annotations:
+    iam.amazonaws.com/permitted: ".*"
