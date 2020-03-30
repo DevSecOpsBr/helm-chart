@@ -92,7 +92,7 @@ service:
 # If you don’t want to expose your Keel service, you can use https://webhookrelay.com/
 # which can deliver webhooks to your internal Keel service through Keel sidecar container.
 webhookRelay:
-  enabled: true
+  enabled: false
   bucket: ""
   # webhookrelay.com credentials
   # Set the key and secret values here to create the keel-webhookrelay secret with this
@@ -159,7 +159,7 @@ tolerations: {}
 googleApplicationCredentials: ""
 
 # Enable DEBUG logging
-debug: false
+debug: true
 
 # This is used by the static manifest generator in order to create a static
 # namespace manifest for the namespace that keel is being installed
@@ -177,9 +177,9 @@ aws:
   region: null
 
 podDisruptionBudget:
-  enabled: false
+  enabled: true
   maxUnavailable: 1
-  minAvailable: null
+  minAvailable: 1
 
 # Google Cloud Certificates
 gcloud:
