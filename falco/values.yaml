@@ -3,7 +3,10 @@
 image:
   registry: docker.io
   repository: falcosecurity/falco
-  tag: 0.20.0
+  # the latest image still with issues!
+  # In order to use falco, keep using the 
+  # version below.
+  tag: 0.18.0
   pullPolicy: IfNotPresent
 
 docker:
@@ -18,12 +21,12 @@ resources:
   # Although resources needed are subjective on the actual workload we provide
   # a sane defaults ones. If you have more questions or concerns, please refer
   # to #falco slack channel for more info about it
-  requests:
-    cpu: 100m
-    memory: 512Mi
-  limits:
-    cpu: 200m
-    memory: 1024Mi
+  requests: {}
+  #   cpu: 100m
+  #   memory: 512Mi
+  # limits:
+  #   cpu: 200m
+  #   memory: 1024Mi
 
 extraArgs: []
 nodeSelector: {}
@@ -41,7 +44,7 @@ serviceAccount:
   # Create and use serviceAccount resources
   create: true
   # Use this value as serviceAccountName
-  name:
+  name: falco
 
 fakeEventGenerator:
   enabled: false
@@ -72,7 +75,7 @@ priorityClassName:
 
 ebpf:
   # Enable eBPF support for Falco
-  enabled: false
+  enabled: true
 
   settings:
     # Needed to enable eBPF JIT at runtime for performance reasons.
@@ -84,7 +87,7 @@ ebpf:
 
 auditLog:
   # true here activates the K8s Audit Log feature for Falco
-  enabled: false
+  enabled: true
 
   dynamicBackend:
     # true here configures an AuditSink who will receive the K8s audit logs
@@ -235,7 +238,7 @@ falco:
   # By modifying the threadiness configuration you can fine-tune the number of threads (and context) it will use.
   grpc:
     enabled: false
-    bindAddress: "0.0.0.0:5060"
+    listenPort: 5060
     threadiness: 8
     privateKey: "/etc/falco/certs/server.key"
     certChain: "/etc/falco/certs/server.crt"
