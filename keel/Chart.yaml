@@ -1,0 +1,14 @@
+apiVersion: v1
+appVersion: 0.9.5
+deprecated: true
+description: DEPRECATED Open source, tool for automating Kubernetes deployment updates.
+  Keel is stateless, robust and lightweight.
+home: https://keel.sh
+keywords:
+- kubernetes deployment
+- helm release
+- continuous deployment
+name: keel
+sources:
+- https://github.com/keel-hq/keel
+version: 0.6.1
