@@ -1,8 +1,4 @@
-# Keel - automated Kubernetes deployments for the rest of us - DEPRECATED
-
- **This chart is deprecated! You can find the new chart in:**
- - **Source:** https://github.com/keel-hq/keel/tree/master/chart/keel
- - **Charts repository:** https://charts.keel.sh
+# Keel - automated Kubernetes deployments for the rest of us
 
 * Website [https://keel.sh](https://keel.sh)
 * User Guide [https://keel.sh/user-guide/](https://keel.sh/user-guide/)
@@ -26,22 +22,12 @@ Keel provides several key features:
 * __Notifications__ - out of the box Keel has Slack and standard webhook notifications, more info [here](https://keel.sh/user-guide/#notifications)
 
 
-**Note**: For now Keel gets installed into `kube-system` _namespace_ by default as where Helm's `Tiller` is installed.
+## Installing
 
-## Installing the Chart with Kubernetes provider support
-
-Docker image _polling_ and _Kubernetes_ provider are set by default, then Kubernetes _deployments_ can be upgraded when new Docker image is available:
+Docker image _polling_, _Kubernetes provider_ and _Helm provider_ support are set by default, then Kubernetes _deployments_ can be upgraded when new Docker image is available:
 
 ```console
-helm upgrade --install keel stable/keel"
-```
-
-## Installing the Chart with Helm provider support
-
-Docker image _polling_ is set by default, but we need to enable _Helm provider_ support, then Helm _releases_ can be upgraded when new Docker image is available:
-
-```console
-helm upgrade --install keel stable/keel --set helmProvider.enabled="true"
+$ helm upgrade --install keel --namespace keel keel/keel
 ```
 
 ### Setting up Helm release to be automatically updated by Keel
@@ -64,8 +50,8 @@ keel:
 
 The same can be applied with `--set` flag without using `values.yaml` file:
 
-```
-helm upgrade --install whd webhookdemo --reuse-values \
+```console
+$ helm upgrade --install whd webhookdemo --namespace keel --reuse-values \
   --set keel.policy="all",keel.trigger="poll",keel.pollSchedule="@every 3m" \
   --set keel.images[0].repository="image.repository" \
   --set keel.images[0].tag="image.tag"
@@ -82,7 +68,7 @@ idea how to set automatic updates.
 To uninstall/delete the `keel` deployment:
 
 ```console
-$ helm delete keel
+$ helm delete --purge keel
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
@@ -91,33 +77,71 @@ The command removes all the Kubernetes components associated with the chart and 
 
 The following table lists has the main configurable parameters (polling, triggers, notifications, service) of the _Keel_ chart and they apply to both Kubernetes and Helm providers:
 
-| Parameter                         | Description                            | Default                                                   |
-| --------------------------------- | -------------------------------------- | --------------------------------------------------------- |
-| `polling.enabled`                 | Docker registries polling              | `true`                                                    |
-| `helmProvider.enabled`            | Enable/disable Helm provider           | `false`                                                   |
-| `gcr.enabled`                     | Enable/disable GCR Registry            | `false`                                                   |
-| `gcr.projectID`                   | GCP Project ID GCR belongs to          |                                                           |
-| `gcr.pubsub.enabled`              | Enable/disable GCP Pub/Sub trigger     | `false`                                                   |
-| `webhook.enabled`                 | Enable/disable Webhook Notification    | `false`                                                   |
-| `webhook.endpoint`                | Remote webhook endpoint                |                                                           |
-| `slack.enabled`                   | Enable/disable Slack Notification      | `false`                                                   |
-| `slack.token`                     | Slack token                            |                                                           |
-| `slack.channel`                   | Slack channel                          |                                                           |
-| `slack.approvalChannel`           | Slack approval channel                 |                                                           |
-| `slack.botName`                   | Slack Bot name                         |                                                           |
-| `service.enable`                  | Enable/disable Keel service            | `false`                                                   |
-| `service.type`                    | Keel service type                      | `LoadBalancer`                                            |
-| `service.externalPort`            | Keel service port                      | `9300`                                                    |
-| `webhookRelay.enabled`            | Enable/disable WebhookRelay integration| `false`                                                   |
-| `webhookRelay.key`                | WebhookRelay key                       |                                                           |
-| `webhookRelay.secret`             | WebhookRelay secret                    |                                                           |
-| `webhookRelay.bucket`             | WebhookRelay bucket                    |                                                           |
+| Parameter                                   | Description                            | Default                                                   |
+| ------------------------------------------- | -------------------------------------- | --------------------------------------------------------- |
+| `polling.enabled`                           | Docker registries polling              | `true`                                                    |
+| `helmProvider.enabled`                      | Enable/disable Helm provider           | `true`                                                    |
+| `gcr.enabled`                               | Enable/disable GCR Registry            | `false`                                                   |
+| `gcr.projectId`                             | GCP Project ID GCR belongs to          |                                                           |
+| `gcr.pubsub.enabled`                        | Enable/disable GCP Pub/Sub trigger     | `false`                                                   |
+| `ecr.enabled`                               | Enable/disable AWS ECR Registry        | `false`                                                   |
+| `ecr.roleArn`                               | Service Account IAM Role ARN for EKS   |                                                           |
+| `ecr.accessKeyId`                           | AWS_ACCESS_KEY_ID for ECR Registry     |                                                           |
+| `ecr.secretAccessKey`                       | AWS_SECRET_ACCESS_KEY for ECR Registry |                                                           |
+| `ecr.region`                                | AWS_REGION for ECR Registry            |                                                           |
+| `insecureRegistry`                          | Enable/disable insecure registries     | `false`                                                   |
+| `webhook.enabled`                           | Enable/disable Webhook Notification    | `false`                                                   |
+| `webhook.endpoint`                          | Remote webhook endpoint                |                                                           |
+| `slack.enabled`                             | Enable/disable Slack Notification      | `false`                                                   |
+| `slack.botName`                             | Name of the Slack bot                  |                                                           |
+| `slack.token`                               | Slack token                            |                                                           |
+| `slack.channel`                             | Slack channel                          |                                                           |
+| `slack.approvalsChannel`                    | Slack channel for approvals            |                                                           |
+| `service.enabled`                           | Enable/disable Keel service            | `false`                                                   |
+| `service.type`                              | Keel service type                      | `LoadBalancer`                                            |
+| `service.externalIP`                        | Keel static IP                         |                                                           |
+| `service.externalPort`                      | Keel service port                      | `9300`                                                    |
+| `service.clusterIP`                         | Keel service clusterIP                 |                                                           |
+| `webhookRelay.enabled`                      | Enable/disable WebhookRelay integration| `false`                                                   |
+| `webhookRelay.key`                          | WebhookRelay key                       |                                                           |
+| `webhookRelay.secret`                       | WebhookRelay secret                    |                                                           |
+| `webhookRelay.bucket`                       | WebhookRelay bucket                    |                                                           |
+| `rbac.enabled`                              | Enable/disable RBAC installation       | `true`                                                    |
+| `hipchat.enabled`                           | Enable/disable Hipchat integration     | `false`                                                   |
+| `hipchat.token`                             | Hipchat token                          |                                                           |
+| `hipchat.channel`                           | Hipchat channel                        |                                                           |
+| `hipchat.approvalsChannel`                  | Hipchat channel for approvals          |                                                           |
+| `hipchat.botName`                           | Name of the Hipchat bot                |                                                           |
+| `hipchat.userName`                          | Hipchat username in Jabber format      |                                                           |
+| `hipchat.password`                          | Hipchat password for approvals user    |                                                           |
+| `mattermost.enabled`                        | Enable/disable Mattermost integration  | `false`                                                   |
+| `mattermost.endpoint`                       | Mattermost API endpoint                |                                                           |
+| `googleApplicationCredentials`              | GCP Service account key configurable   |                                                           |
+| `hipchat.password`                          | Hipchat password for approvals user    |                                                           |
+| `gcloud.managedCertificates.enabled`        | Enable/Disable managed ssl on Gcloud   | `false`                                                   |
+| `gcloud.managedCertificates.domains`        | List of managed certificate domains    | `[]`                                                      |
+| `ingress.enabled`                           | Enables Ingress                        | `false`                                                   |
+| `ingress.annotations`                       | Ingress annotations                    | `{}`                                                      |
+| `ingress.labels`                            | Ingress labels                         | `{}`                                                      |
+| `ingress.hosts`                             | Ingress accepted hosts                 | `[]`                                                      |
+| `ingress.tls`                               | Ingress TLS configuration              | `[]`                                                      |
+| `basicauth.enabled`                         | Enable/disable Basic Auth on approvals | `false`                                                   |
+| `basicauth.user`                            | Basic Auth username                    |                                                           |
+| `basicauth.password`                        | Basic Auth password                    |                                                           |
+| `dockerRegistry.enabled`                    | Docker registry secret enabled.        | `false`                                                   |
+| `dockerRegistry.name`                       | Docker registry secret name            |                                                           |
+| `dockerRegistry.key`                        | Docker registry secret key             |                                                           |
+| `secret.name`                               | Secret name                            |                                                           |
+| `secret.create`                             | Create secret                          | `true`                                                    |
+| `persistence.enabled`                       | Enable/disable audit log persistence   | `true`                                                    |
+| `persistence.storageClass`                  | Storage Class for the Persistent Volume| `true`                                                    |
+| `persistence.size`                          | Persistent Volume size                 | `true`                                                    |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 Alternatively, a YAML file that specifies the values for the above parameters can be provided while installing the chart. For example,
 
 ```console
-$ helm install --name keel -f values.yaml stable/keel
+$ helm install --name keel --namespace keel -f values.yaml keel/keel
 ```
 > **Tip**: You can use the default [values.yaml](values.yaml)
