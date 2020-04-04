@@ -313,7 +313,7 @@ serviceAccount:
 metrics:
   # Metrics can not be disabled yet: https://github.com/minio/minio/issues/7493
   serviceMonitor:
-    enabled: true
+    enabled: false
     additionalLabels: {}
     namespace: monitoring
     interval: 30s
