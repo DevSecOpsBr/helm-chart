@@ -47,3 +47,10 @@ metadata:
   name: observability
   annotations:
     iam.amazonaws.com/permitted: ".*"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: velero
+  annotations:
+    iam.amazonaws.com/permitted: ".*"
