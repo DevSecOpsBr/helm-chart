@@ -14,7 +14,8 @@ image:
 # If using kube2iam or kiam, use the following annotation with your AWS_ACCOUNT_ID
 # and VELERO_ROLE_NAME filled in:
 #  iam.amazonaws.com/role: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<VELERO_ROLE_NAME>
-podAnnotations: {}
+podAnnotations:
+  iam.amazonaws.com/role: arn:aws:iam::425934172946:role/velero-k8s-role
 
 # Resource requests/limits to specify for the Velero deployment. Optional.
 resources: {}
@@ -60,7 +61,9 @@ metrics:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      prometheus: true
+      app: velero
+      prometheus: prometheus
+      release: prometheus
 
 # Install CRDs as a templates. Enabled by default.
 installCRDs: true
@@ -83,15 +86,15 @@ configuration:
   backupStorageLocation:
     # Cloud provider where backups should be stored. Usually should
     # match `configuration.provider`. Required.
-    name:
+    name: 
     # Bucket to store backups in. Required.
-    bucket:
+    bucket: li-k8s-velero-backup
     # Prefix within bucket under which to store backups. Optional.
-    prefix:
+    prefix: production
     # Additional provider-specific configuration. See link above
     # for details of required/optional fields for your provider.
     config:
-     region: minio
+     region: us-east-1
     #  s3ForcePathStyle:
     #  s3Url:
     #  kmsKeyId:
@@ -112,8 +115,8 @@ configuration:
     name:
     # Additional provider-specific configuration. See link above
     # for details of required/optional fields for your provider.
-    config: {}
-  #    region:
+    config:
+     region: us-east-1
   #    apitimeout:
   #    resourceGroup:
   #    The ID of the subscription where volume snapshots should be stored, if different from the cluster’s subscription. If specified, also requires `configuration.volumeSnapshotLocation.config.resourceGroup`to be set. (Azure only)
@@ -163,7 +166,7 @@ rbac:
 serviceAccount:
   server:
     create: true
-    name:
+    name: velero
     annotations:
 
 # Info about the secret to be used by the Velero deployment, which
@@ -173,7 +176,7 @@ credentials:
   # Whether a secret should be used as the source of IAM account
   # credentials. Set to false if, for example, using kube2iam or
   # kiam to provide IAM credentials for the Velero pod.
-  useSecret: true
+  useSecret: false
   # Name of a pre-existing secret (if any) in the Velero namespace
   # that should be used to get IAM account credentials. Optional.
   existingSecret:
@@ -188,7 +191,7 @@ backupsEnabled: true
 snapshotsEnabled: true
 
 # Whether to deploy the restic daemonset.
-deployRestic: false
+deployRestic: true
 
 restic:
   podVolumePath: /var/lib/kubelet/pods
