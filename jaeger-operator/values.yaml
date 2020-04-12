@@ -12,8 +12,12 @@ crd:
 
 jaeger:
   # Specifies whether Jaeger instance should be created
-  create: false
-  spec: {}
+  create: true
+  spec:
+    strategy: allInOne
+    ingress:
+      hosts:
+        - jaeger-ui.minikube
 
 rbac:
   # Specifies whether RBAC resources should be created
@@ -28,10 +32,10 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: jaeger-operator
 
-resources: {}
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
+resources:
+  limits:
+   cpu: 100m
+   memory: 128Mi
   # requests:
   #  cpu: 100m
   #  memory: 128Mi
