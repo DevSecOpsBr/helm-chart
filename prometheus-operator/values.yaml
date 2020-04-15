@@ -396,9 +396,65 @@ alertmanager:
 grafana:
   enabled: true
 
+  # Use the section below to install plugins
+  plugins:
+    - grafana-piechart-panel
+    - michaeldmoore-annunciator-panel
+    - grafana-kubernetes-app
+    - grafana-worldmap-panel
+    - jdbranham-diagram-panel
+    - devopsprodigy-kubegraf-app
+    - camptocamp-prometheus-alertmanager-datasource
+
   ## Deploy default dashboards.
   ##
   defaultDashboardsEnabled: true
+
+  # Deploy 3rd-party dashboards
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'myprovider'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/myprovider
+      - name: 'traefik-ingress'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/traefik-ingress
+      - name: 'kubernetes-costs'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes-costs
+  dashboards:
+    myprovider:
+      nginx-ingress-controller:
+        datasource: Prometheus
+        gnetId: 9614
+        revision: 1
+    traefik-ingress:
+      traefik-ingress-controller:
+        datasource: Prometheus
+        gnetId: 11462
+        revision: 1
+    kubernetes-costs:
+      kubernetes-costs-and-metrics:
+        datasource: Prometheus
+        gnetId: 8670
+        revision: 1
 
   adminPassword: prom-operator
 
