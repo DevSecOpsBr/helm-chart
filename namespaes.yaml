@@ -16,7 +16,7 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: nginx-controller
+  name: ingress-controller
   annotations:
     iam.amazonaws.com/permitted: ".*"
 ---
