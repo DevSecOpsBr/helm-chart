@@ -187,7 +187,7 @@ podAnnotations: {
 ## Additional labels for the pod(s).
 ##
 podLabels: 
-  k8s-monitoring: "true"
+  monitoring: "prometheus"
 ## Pod priority class name
 ##
 priorityClassName: ""
@@ -305,9 +305,9 @@ metrics:
   enabled: true
   ## Metrics exporter pod Annotation and Labels
   ##
-  # podAnnotations:
-    # prometheus.io/scrape: "true"
-    # prometheus.io/port: "7979"
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "7979"
 
   ## Prometheus Operator ServiceMonitor configuration
   ##
@@ -331,4 +331,4 @@ metrics:
     ## ref: https://github.com/bitnami/charts/tree/master/bitnami/prometheus-operator#prometheus-configuration
     ##
     selector:
-      k8s-monitoring: "true"
+      monitoring: "prometheus"
