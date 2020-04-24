@@ -470,6 +470,7 @@ grafana:
         gnetId: 8754
         revision: 1
 
+
   adminPassword: prom-operator
 
   ingress:
@@ -1603,7 +1604,8 @@ prometheus:
     ## Example which selects ServiceMonitors with label "prometheus" set to "somelabel"
     serviceMonitorSelector:
       matchLabels:
-        monitoring: prometheus 
+        # monitoring: "prometheus"
+        heritage: Helm
 
     ## Namespaces to be selected for ServiceMonitor discovery.
     ## See https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#namespaceselector for usage
@@ -1623,7 +1625,8 @@ prometheus:
     ## Example which selects PodMonitors with label "prometheus" set to "somelabel"
     podMonitorSelector:
       matchLabels:
-        monitoring: prometheus
+        # monitoring: "prometheus"
+        heritage: Helm
 
     ## Namespaces to be selected for PodMonitor discovery.
     ## See https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#namespaceselector for usage

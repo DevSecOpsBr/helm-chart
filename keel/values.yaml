@@ -190,7 +190,8 @@ gcloud:
 
 ingress:
   enabled: true
-  labels: {}
+  labels:
+    monitoring: "prometheus"
   annotations:
     kubernetes.io/ingress.class: nginx
   #  kubernetes.io/tls-acme: "true"
