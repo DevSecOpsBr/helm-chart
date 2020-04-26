@@ -6,6 +6,10 @@
 ##
 nameOverride: ""
 
+## Provide a k8s version to auto dashboard import script example: kubeTargetVersionOverride: 1.16.6
+##
+kubeTargetVersionOverride: ""
+
 ## Provide a name to substitute for the full names of resources
 ##
 fullnameOverride: ""
@@ -91,7 +95,7 @@ alertmanager:
   ##
   serviceAccount:
     create: true
-    name: "prometheus-alertmanager"
+    name: ""
 
   ## Configure pod disruption budgets for Alertmanager
   ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
@@ -185,6 +189,41 @@ alertmanager:
   secret:
     annotations: {}
 
+  ## Configuration for creating an Ingress that will map to each Alertmanager replica service
+  ## alertmanager.servicePerReplica must be enabled
+  ##
+  ingressPerReplica:
+    enabled: false
+    annotations: {}
+    labels: {}
+
+    ## Final form of the hostname for each per replica ingress is
+    ## {{ ingressPerReplica.hostPrefix }}-{{ $replicaNumber }}.{{ ingressPerReplica.hostDomain }}
+    ##
+    ## Prefix for the per replica ingress that will have `-$replicaNumber`
+    ## appended to the end
+    hostPrefix: ""
+    ## Domain that will be used for the per replica ingress
+    hostDomain: ""
+
+    ## Paths to use for ingress rules
+    ##
+    paths: []
+    # - /
+
+    ## Secret name containing the TLS certificate for alertmanager per replica ingress
+    ## Secret must be manually created in the namespace
+    tlsSecretName: ""
+
+    ## Separated secret for each per replica Ingress. Can be used together with cert-manager
+    ##
+    tlsSecretPerReplica:
+      enabled: false
+      ## Final form of the secret for each per replica ingress is
+      ## {{ tlsSecretPerReplica.prefix }}-{{ $replicaNumber }}
+      ##
+      prefix: "alertmanager"
+
   ## Configuration for Alertmanager service
   ##
   service:
@@ -195,6 +234,9 @@ alertmanager:
     ## Port for Alertmanager Service to listen on
     ##
     port: 9093
+    ## To be used with a proxy extraContainer port
+    ##
+    targetPort: 9093
     ## Port to expose on each node
     ## Only used if service.type is 'NodePort'
     ##
@@ -204,6 +246,31 @@ alertmanager:
     ##
     externalIPs: []
     loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    ## Service type
+    ##
+    type: ClusterIP
+
+  ## Configuration for creating a separate Service for each statefulset Alertmanager replica
+  ##
+  servicePerReplica:
+    enabled: false
+    annotations: {}
+
+    ## Port for Alertmanager Service per replica to listen on
+    ##
+    port: 9093
+
+    ## To be used with a proxy extraContainer port
+    targetPort: 9093
+
+    ## Port to expose on each node
+    ## Only used if servicePerReplica.type is 'NodePort'
+    ##
+    nodePort: 30904
+
+    ## Loadbalancer source IP ranges
+    ## Only used if servicePerReplica.type is "loadbalancer"
     loadBalancerSourceRanges: []
     ## Service type
     ##
@@ -470,7 +537,6 @@ grafana:
         gnetId: 8754
         revision: 1
 
-
   adminPassword: prom-operator
 
   ingress:
@@ -486,11 +552,14 @@ grafana:
 
     ## Labels to be added to the Ingress
     ##
-    labels: {}
+    labels:
+      ellesmera.local/monitoring: "true"
 
     ## Hostnames.
     ## Must be provided if Ingress is enable.
     ##
+    # hosts:
+    #   - grafana.domain.com
     hosts:
       - grafana.minikube
 
@@ -561,10 +630,10 @@ grafana:
 
     ## 	metric relabel configs to apply to samples before ingestion.
     ##
-    metricRelabelings:
-    - action: keep
-      regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
-      sourceLabels: [__name__]
+    metricRelabelings: []
+    # - action: keep
+    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
+    #   sourceLabels: [__name__]
 
     # 	relabel configs to apply to samples before ingestion.
     ##
@@ -628,6 +697,10 @@ kubelet:
     ## https://github.com/coreos/prometheus-operator/issues/926
     ##
     https: true
+
+    ## Enable scraping /metrics/cadvisor from kubelet's service
+    ##
+    cAdvisor: true
 
     ## Metric relabellings to apply to samples before ingestion
     ##
@@ -1250,7 +1323,7 @@ prometheusOperator:
   ##
   image:
     repository: quay.io/coreos/prometheus-operator
-    tag: v0.36.0
+    tag: v0.37.0
     pullPolicy: IfNotPresent
 
   ## Configmap-reload image to use for reloading configmaps
@@ -1263,7 +1336,7 @@ prometheusOperator:
   ##
   prometheusConfigReloaderImage:
     repository: quay.io/coreos/prometheus-config-reloader
-    tag: v0.36.0
+    tag: v0.37.0
 
   ## Set the prometheus config reloader side-car CPU limit
   ##
@@ -1295,13 +1368,14 @@ prometheus:
   ##
   serviceAccount:
     create: true
-    name: ""
+    name: "prometheus-operator-sa"
 
   ## Configuration for Prometheus service
   ##
   service:
     annotations: {}
-    labels: {}
+    labels:
+      ellesmera.local/monitoring: "true"
     clusterIP: ""
 
     ## Port for Prometheus Service to listen on
@@ -1368,13 +1442,15 @@ prometheus:
 
   ingress:
     enabled: true
-    annotations:
-      kubernetes.io/ingress.class: nginx
-    labels: {}
+    annotations: {}
+    labels:
+      ellesmera.local/monitoring: "true"
 
     ## Hostnames.
     ## Must be provided if Ingress is enabled.
     ##
+    # hosts:
+    #   - prometheus.domain.com
     hosts:
       - prometheus.minikube
 
@@ -1416,6 +1492,15 @@ prometheus:
     ## Secret name containing the TLS certificate for Prometheus per replica ingress
     ## Secret must be manually created in the namespace
     tlsSecretName: ""
+
+    ## Separated secret for each per replica Ingress. Can be used together with cert-manager
+    ##
+    tlsSecretPerReplica:
+      enabled: false
+      ## Final form of the secret for each per replica ingress is
+      ## {{ tlsSecretPerReplica.prefix }}-{{ $replicaNumber }}
+      ##
+      prefix: "prometheus"
 
   ## Configure additional options for default pod security policy for Prometheus
   ## ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
@@ -1600,12 +1685,11 @@ prometheus:
     ## ServiceMonitors to be selected for target discovery.
     ## If {}, select all ServiceMonitors
     ##
-    serviceMonitorSelector:
+    serviceMonitorSelector: {}
     ## Example which selects ServiceMonitors with label "prometheus" set to "somelabel"
-    serviceMonitorSelector:
-      matchLabels:
-        # monitoring: "prometheus"
-        heritage: Helm
+    # serviceMonitorSelector:
+    #   matchLabels:
+    #     prometheus: somelabel
 
     ## Namespaces to be selected for ServiceMonitor discovery.
     ## See https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#namespaceselector for usage
@@ -1621,12 +1705,11 @@ prometheus:
     ## PodMonitors to be selected for target discovery.
     ## If {}, select all PodMonitors
     ##
-    podMonitorSelector:
+    podMonitorSelector: {}
     ## Example which selects PodMonitors with label "prometheus" set to "somelabel"
-    podMonitorSelector:
-      matchLabels:
-        # monitoring: "prometheus"
-        heritage: Helm
+    # podMonitorSelector:
+    #   matchLabels:
+    #     prometheus: somelabel
 
     ## Namespaces to be selected for PodMonitor discovery.
     ## See https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#namespaceselector for usage
@@ -1827,6 +1910,10 @@ prometheus:
     ## Containers allows injecting additional containers. This is meant to allow adding an authentication proxy to a Prometheus pod.
     ##  if using proxy extraContainer  update targetPort with proxy container port
     containers: []
+
+    ## InitContainers allows injecting additional initContainers. This is meant to allow doing some changes
+    ## (permissions, dir tree) on mounted volumes before starting prometheus
+    initContainers: []
 
     ## Enable additional scrape configs that are managed externally to this chart. Note that the prometheus
     ## will fail to provision if the correct secret does not exist.
