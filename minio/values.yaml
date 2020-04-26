@@ -318,6 +318,7 @@ metrics:
     enabled: true
     additionalLabels:
       monitoring: prometheus
+      release: prometheus
     namespace: monitoring
     interval: 30s
     scrapeTimeout: 10s
