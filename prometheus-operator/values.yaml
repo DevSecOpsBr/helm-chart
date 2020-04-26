@@ -537,6 +537,9 @@ grafana:
         gnetId: 8754
         revision: 1
 
+  serverDashboardConfigmaps:
+    - third-party-dashboards
+
   adminPassword: prom-operator
 
   ingress:
