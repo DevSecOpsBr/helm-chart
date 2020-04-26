@@ -243,7 +243,7 @@ controller:
       # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:425934172946:certificate/53f82095-71c2-4a04-9dac-9d80e8c6c2c6
 
     labels:
-      monitoring: "prometheus"
+      monitoring: prometheus
     ## Deprecated, instead simply do not provide a clusterIP value
     omitClusterIP: false
     # clusterIP: ""
@@ -252,7 +252,7 @@ controller:
     ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
     ##
     externalIPs:
-      - 192.168.99.117
+      - 192.168.99.121
 
     loadBalancerIP: ""
     loadBalancerSourceRanges: []
@@ -388,7 +388,8 @@ controller:
     serviceMonitor:
       enabled: true
       additionalLabels:
-        monitoring: "prometheus"
+        monitoring: prometheus
+        release: prometheus
       namespace: "monitoring"
       # Default: scrape .Release.Namespace only
       # To scrape all, use the following:
@@ -400,7 +401,8 @@ controller:
     prometheusRule:
       enabled: true
       additionalLabels:
-        k8s-monitoring: "true"
+        monitoring: prometheus
+        release: prometheus
       namespace: "monitoring"
       rules: 
         # # These are just examples rules, please adapt them to your needs
