@@ -1,0 +1,23 @@
+apiVersion: v2
+appVersion: 4.7.6
+description: Adminer is a full-featured database management tool written in PHP. Conversely
+  to phpMyAdmin, it consist of a single file ready to deploy to the target server.
+  Adminer is available for MySQL, MariaDB, PostgreSQL, SQLite, MS SQL, Oracle, Firebird,
+  SimpleDB, Elasticsearch and MongoDB
+home: https://www.adminer.org
+icon: https://raw.githubusercontent.com/Kong/docker-official-docs/master/adminer/logo.png
+keywords:
+- adminer
+- postgres
+- mysql
+- sqlite
+- elasticsearch
+- mongodb
+- database
+- sql
+maintainers:
+- email: alexandre.nuttinck@cetic.be
+  name: alexnuttinck
+  url: https://github.com/alexnuttinck
+name: adminer
+version: 0.1.3
