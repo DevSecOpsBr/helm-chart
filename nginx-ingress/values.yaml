@@ -252,7 +252,7 @@ controller:
     ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
     ##
     externalIPs:
-      - 192.168.99.121
+      - 192.168.99.125
 
     loadBalancerIP: ""
     loadBalancerSourceRanges: []
@@ -389,7 +389,6 @@ controller:
       enabled: true
       additionalLabels:
         monitoring: prometheus
-        release: prometheus
       namespace: "monitoring"
       # Default: scrape .Release.Namespace only
       # To scrape all, use the following:
