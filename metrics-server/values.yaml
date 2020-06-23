@@ -93,7 +93,7 @@ securityContext:
 service:
   annotations: {}
   labels:
-    monitoring: "prometheus"
+    system.monitoring: "prometheus"
   #  Add these labels to have metrics-server show up in `kubectl cluster-info`
   #  kubernetes.io/cluster-service: "true"
   #  kubernetes.io/name: "Metrics-server"

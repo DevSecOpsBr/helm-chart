@@ -94,7 +94,8 @@ deploymentAnnotations: {}
 
 podAnnotations: {}
 
-podLabels: {}
+podLabels:
+  system.monitoring: prometheus
 # Optional DNS settings, useful if you have a public and private DNS zone for
 # the same domain on Route 53. What follows is an example of ensuring
 # cert-manager can access an ingress or DNS TXT records at all times.
@@ -124,8 +125,7 @@ prometheus:
     interval: 60s
     scrapeTimeout: 30s
     labels:
-      release: prometheus
-      monitoring: prometheus
+      system.monitoring: prometheus
 
 # Use these variables to configure the HTTP_PROXY environment variables
 # http_proxy: "http://proxy:8080"

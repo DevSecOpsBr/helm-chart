@@ -17,7 +17,13 @@ controller:
     https: 443
 
   # Will add custom configuration options to Nginx https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/
-  config: {}
+  config:
+    enable-opentracing: "true"
+    jaeger-service-name: nginx-ingress
+    jaeger-sampler-param: "1.0"
+    jaeger-sampler-type: const
+    jaeger-collector-host: jaeger-jaeger-operator-jaeger-agent.observability
+    jaeger-collector-port: "6831"
 
   # Will add custom headers before sending traffic to backends according to https://github.com/kubernetes/ingress-nginx/tree/master/docs/examples/customization/custom-headers
   proxySetHeaders: 
@@ -243,7 +249,7 @@ controller:
       # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:425934172946:certificate/53f82095-71c2-4a04-9dac-9d80e8c6c2c6
 
     labels:
-      monitoring: prometheus
+      release: prometheus
     ## Deprecated, instead simply do not provide a clusterIP value
     omitClusterIP: false
     # clusterIP: ""
@@ -252,7 +258,7 @@ controller:
     ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
     ##
     externalIPs:
-      - 192.168.99.125
+      - 192.168.99.127
 
     loadBalancerIP: ""
     loadBalancerSourceRanges: []
@@ -388,7 +394,7 @@ controller:
     serviceMonitor:
       enabled: true
       additionalLabels:
-        monitoring: prometheus
+        release: prometheus
       namespace: "monitoring"
       # Default: scrape .Release.Namespace only
       # To scrape all, use the following:
@@ -400,7 +406,6 @@ controller:
     prometheusRule:
       enabled: true
       additionalLabels:
-        monitoring: prometheus
         release: prometheus
       namespace: "monitoring"
       rules: 

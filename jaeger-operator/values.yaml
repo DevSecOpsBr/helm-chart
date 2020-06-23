@@ -15,9 +15,15 @@ jaeger:
   create: true
   spec:
     strategy: allInOne
+    labels:
+      system.monitoring: prometheus
     ingress:
+      annotations:
+        kubernetes.io/ingress.class: nginx
       hosts:
         - jaeger-ui.minikube
+      paths:
+        - /
 
 rbac:
   # Specifies whether RBAC resources should be created

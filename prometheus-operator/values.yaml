@@ -551,12 +551,16 @@ grafana:
     ##
     annotations:
       kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/enable-opentracing: "true"
+      jaeger-service-name: grafana-operator
+      jaeger-sampler-param: "1.0"
+      jaeger-sampler-type: const
       # kubernetes.io/tls-acme: "true"
 
     ## Labels to be added to the Ingress
     ##
     labels:
-      ellesmera.local/monitoring: "true"
+      monitoring: "prometheus"
 
     ## Hostnames.
     ## Must be provided if Ingress is enable.
@@ -567,7 +571,7 @@ grafana:
       - grafana.minikube
 
     ## Path for grafana ingress
-    path: /
+    paths: []
 
     ## TLS configuration for grafana Ingress
     ## Secret must be manually created in the namespace
@@ -1445,9 +1449,13 @@ prometheus:
 
   ingress:
     enabled: true
-    annotations: {}
+    annotations:
+      nginx.ingress.kubernetes.io/enable-opentracing: "true"
+      jaeger-service-name: prometheus-operator
+      jaeger-sampler-param: "1.0"
+      jaeger-sampler-type: const
     labels:
-      ellesmera.local/monitoring: "true"
+      monitoring: "prometheus"
 
     ## Hostnames.
     ## Must be provided if Ingress is enabled.
@@ -1934,15 +1942,16 @@ prometheus:
     ##
     portName: "web"
 
-  additionalServiceMonitors: []
+  additionalServiceMonitors:
   ## Name of the ServiceMonitor to create
   ##
-  # - name: ""
+  - name: "prometheus-prometheus-oper-mon-apps"
 
     ## Additional labels to set used for the ServiceMonitorSelector. Together with standard labels from
     ## the chart
     ##
-    # additionalLabels: {}
+    additionalLabels:
+      system.monitoring: prometheus
 
     ## Service label for use in assembling a job name of the form <label value>-<port>
     ## If no label is specified, the service name is used.
@@ -1955,25 +1964,28 @@ prometheus:
 
     ## Label selector for services to which this ServiceMonitor applies
     ##
-    # selector: {}
-
+    selector:
+      matchLabels:
+        system.monitoring: "prometheus"
+  
     ## Namespaces from which services are selected
     ##
-    # namespaceSelector:
+    namespaceSelector:
       ## Match any namespace
       ##
       # any: false
 
       ## Explicit list of namespace names to select
       ##
-      # matchNames: []
+      matchNames:
+      - monitoring
 
     ## Endpoints of the selected service to be monitored
     ##
-    # endpoints: []
+    endpoints:
       ## Name of the endpoint's service port
       ## Mutually exclusive with targetPort
-      # - port: ""
+      - port: "web"
 
       ## Name or number of the endpoint's target port
       ## Mutually exclusive with port
@@ -1985,11 +1997,11 @@ prometheus:
 
       ## Interval at which metrics should be scraped
       ##
-      #   interval: 30s
+      # interval: 30s
 
       ## HTTP path to scrape for metrics
       ##
-      #   path: /metrics
+        path: /metrics
 
       ## HTTP scheme to use for scraping
       ##

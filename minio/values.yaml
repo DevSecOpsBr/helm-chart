@@ -151,6 +151,7 @@ ingress:
 
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/enable-opentracing: "true"
     # kubernetes.io/tls-acme: "true"
     # kubernetes.io/ingress.allow-http: "false"
     # kubernetes.io/ingress.global-static-ip-name: ""
@@ -185,7 +186,7 @@ podAnnotations: {}
 
 # Additional pod labels
 podLabels:
-  monitoring: prometheus
+  system.monitoring: prometheus
 
 ## Liveness and Readiness probe values.
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
@@ -317,8 +318,7 @@ metrics:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      monitoring: prometheus
-      release: prometheus
+      system.monitor: prometheus
     namespace: monitoring
     interval: 30s
     scrapeTimeout: 10s

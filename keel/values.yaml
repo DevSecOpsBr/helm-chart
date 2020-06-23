@@ -166,7 +166,8 @@ debug: false
 # within. It should **not** be used if you are using Helm for deployment.
 createNamespaceResource: false
 
-podAnnotations: {}
+podAnnotations:
+  sidecar.jaegertracing.io/inject: "true"
 
 serviceAnnotations: {}
 # Useful for making the load balancer internal
@@ -191,10 +192,13 @@ gcloud:
 ingress:
   enabled: true
   labels:
-    monitoring: prometheus
-    release: prometheus
+    system.monitoring: prometheus
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/enable-opentracing: "true"
+    jaeger-service-name: keel
+    jaeger-sampler-param: "1.0"
+    jaeger-sampler-type: const
   #  kubernetes.io/tls-acme: "true"
   hosts:
    - host: keel.minikube

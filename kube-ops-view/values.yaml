@@ -8,7 +8,7 @@ service:
   annotations: {}
   labels:
     environment: minikube
-    service: monitoring
+    system.monitoring: "prometheus"
   type: ClusterIP
   externalPort: 80
   internalPort: 8080
@@ -21,10 +21,16 @@ resources:
     memory: 64Mi
 ingress:
   enabled: true
+  labels:
+    system.monitoring: "prometheus"
   path: /
   hostname: kubeopsview.minikube
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/enable-opentracing: "true"
+    jaeger-service-name: kubeopsview-operator
+    jaeger-sampler-param: "1.0"
+    jaeger-sampler-type: const
   tls: []
   ## Secrets must be manually created in the namespace
   #   - secretName: kube-ops-view.local-tls
@@ -38,7 +44,8 @@ rbac:
 
 ## Additional pod labels
 ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-podLabels: {}
+podLabels:
+  system.monitoring: prometheus
 affinity: {}
 tolerations: []
 
