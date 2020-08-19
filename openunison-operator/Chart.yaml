@@ -1,0 +1,13 @@
+apiVersion: v2
+appVersion: 1.0.18
+description: A chart for deploying the OpenUnison operator
+home: https://github.com/TremoloSecurity/openunison-k8s-operator
+icon: https://nexus.tremolo.io/repository/images/shield.png
+maintainers:
+- name: mlbiam
+name: openunison-operator
+sources:
+- https://github.com/TremoloSecurity/openunison-k8s-operator
+- https://github.com/OpenUnison/helm-charts
+type: application
+version: 1.0.1
