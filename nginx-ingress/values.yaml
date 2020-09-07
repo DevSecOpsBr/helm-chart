@@ -24,6 +24,22 @@ controller:
     jaeger-sampler-type: const
     jaeger-collector-host: jaeger-jaeger-operator-jaeger-agent.observability
     jaeger-collector-port: "6831"
+    whitelist-source-range: "37.49.155.96/29,192.30.252.0/22,185.199.108.0/22,93.178.186.86,140.82.112.0/20,144.121.85.0/22,52.202.241.209/32,54.209.30.28/32"
+    server-snippet:
+      location / {
+        allow "37.49.155.96/29";
+        allow "192.30.252.0/22";
+        allow "185.199.108.0/22";
+        allow "93.178.186.86";
+        allow "140.82.112.0/20";
+        allow "144.121.85.0/22";
+        allow "52.4.250.190/32";
+        allow "52.86.168.100/32";
+        allow "35.173.3.194/32";
+        allow "18.206.20.190/32";
+        allow "34.205.239.30/32";
+        deny all;
+      }
 
   # Will add custom headers before sending traffic to backends according to https://github.com/kubernetes/ingress-nginx/tree/master/docs/examples/customization/custom-headers
   proxySetHeaders: 
