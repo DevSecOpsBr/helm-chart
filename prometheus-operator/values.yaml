@@ -486,7 +486,7 @@ grafana:
         orgId: 1
         folder: ''
         type: file
-        disableDeletion: false
+        disableDeletion: true
         editable: true
         options:
           path: /var/lib/grafana/dashboards/nginx-ingress
@@ -514,6 +514,22 @@ grafana:
         editable: true
         options:
           path: /var/lib/grafana/dashboards/metrics-server
+      - name: 'kubernetes-cluster'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes-cluster
+      - name: 'Memory-Overview'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/memory-overview
 
   dashboards:
     nginx-ingress:
@@ -535,6 +551,16 @@ grafana:
       metrics-server:
         datasource: Prometheus
         gnetId: 8754
+        revision: 1
+    kubernetes-cluster:
+      kubernetes-cluster:
+        datasource: Prometheus
+        gnetId: 7249
+        revision: 1
+    memory-overview:
+      memory-overview:
+        datasource: Prometheus
+        gnetId: 10266
         revision: 1
 
   serverDashboardConfigmaps:
