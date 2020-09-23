@@ -178,9 +178,9 @@ aws:
   region: null
 
 podDisruptionBudget:
-  enabled: false
-  maxUnavailable: 1
-  minAvailable: null
+  enabled: true
+  maxUnavailable: 2
+  minAvailable: 1
 
 # Google Cloud Certificates
 gcloud:
@@ -192,7 +192,7 @@ gcloud:
 ingress:
   enabled: true
   labels:
-    system.monitoring: prometheus
+    prometheus: prometheus
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/enable-opentracing: "true"
