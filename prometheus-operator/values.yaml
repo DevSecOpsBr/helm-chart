@@ -95,7 +95,7 @@ alertmanager:
   ##
   serviceAccount:
     create: true
-    name: ""
+    name: "alertmanager"
 
   ## Configure pod disruption budgets for Alertmanager
   ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
@@ -472,6 +472,7 @@ grafana:
     - jdbranham-diagram-panel
     - devopsprodigy-kubegraf-app
     - camptocamp-prometheus-alertmanager-datasource
+    - btplc-status-dot-panel
 
   ## Deploy default dashboards.
   ##
@@ -522,7 +523,7 @@ grafana:
         editable: true
         options:
           path: /var/lib/grafana/dashboards/kubernetes-cluster
-      - name: 'Memory-Overview'
+      - name: 'memory-overview'
         orgId: 1
         folder: ''
         type: file
@@ -530,6 +531,30 @@ grafana:
         editable: true
         options:
           path: /var/lib/grafana/dashboards/memory-overview
+      - name: 'cpu-overview'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/cpu-overview
+      - name: 'general-cluster-overview'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/general-cluster-overview
+      - name: 'kubernetes-cluster-overview'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes-cluster-overview
 
   dashboards:
     nginx-ingress:
@@ -561,6 +586,21 @@ grafana:
       memory-overview:
         datasource: Prometheus
         gnetId: 10266
+        revision: 1
+    cpu-overview:
+      cpu-overview:
+        datasource: Prometheus
+        gnetId: 10265
+        revision: 1
+    general-cluster-overview:
+      general-cluster-overview:
+        datasource: Prometheus
+        gnetId: 10092
+        revision: 1
+    kubernetes-cluster-overview:
+      kubernetes-cluster-overview:
+        datasource: Prometheus
+        gnetId: 11802
         revision: 1
 
   serverDashboardConfigmaps:
@@ -1862,7 +1902,7 @@ prometheus:
     ## The scrape configuraiton example below will find master nodes, provided they have the name .*mst.*, relabel the
     ## port to 2379 and allow etcd scraping provided it is running on all Kubernetes master nodes
     ##
-    additionalScrapeConfigs: []
+    additionalScrapeConfigs:
     # - job_name: kube-etcd
     #   kubernetes_sd_configs:
     #     - role: node
@@ -1890,6 +1930,35 @@ prometheus:
     #   metric_relabel_configs:
     #   - regex: (kubernetes_io_hostname|failure_domain_beta_kubernetes_io_region|beta_kubernetes_io_os|beta_kubernetes_io_arch|beta_kubernetes_io_instance_type|failure_domain_beta_kubernetes_io_zone)
     #     action: labeldrop
+    - job_name: 'node' 
+      ec2_sd_configs:
+        # region: us-west-2 port: 9100
+        # region: us-east-2 port: 9100
+        region: 
+          us-east-1 port: 9100 
+        relabel_configs:
+        - source_labels: [__meta_ec2_instance_id] 
+          target_label: instance
+        - source_labels: [__meta_ec2_instance_type] 
+          target_label: instanceType
+        - source_labels: [__meta_ec2_owner_id] 
+          target_label: ownerId
+        - source_labels: [__meta_ec2_primary_subnet_id] 
+          target_label: subnet
+        - source_labels: [__meta_ec2_public_dns_name] 
+          target_label: dnsname
+        - source_labels: [__meta_ec2_private_ip] 
+          target_label: privateip
+        - source_labels: [__meta_ec2_public_ip] 
+          target_label: publicip
+        - source_labels: [__meta_ec2_vpc_id] 
+          target_label: vpcid
+        - source_labels: [__meta_ec2_tag_JobID] 
+          target_label: jobId
+        - source_labels: [__meta_ec2_tag_Name] 
+          target_label: jobName
+        - source_labels: [__meta_ec2_tag_ResourceType] 
+          target_label: resourceType
 
     ## additionalPrometheusSecretsAnnotations allows to add annotations to the kubernetes secret. This can be useful
     ## when deploying via spinnaker to disable versioning on the secret, strategy.spinnaker.io/versioned: 'false'
