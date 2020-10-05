@@ -1,0 +1,14 @@
+apiVersion: v2
+appVersion: 1.0.20
+description: Use OpnID Connect to authenticate to your cluster with kubectl and dashboard
+  using OpenUnison Orchestra.
+home: https://github.com/OpenUnison/openunison-k8s-login-oidc
+icon: https://nexus.tremolo.io/repository/images/shield.png
+maintainers:
+- name: mlbiam
+name: openunison-k8s-login-oidc
+sources:
+- https://github.com/OpenUnison/openunison-k8s-login-oidc
+- https://github.com/OpenUnison/helm-charts
+type: application
+version: 1.0.2

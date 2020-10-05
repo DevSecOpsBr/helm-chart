@@ -54,3 +54,17 @@ metadata:
   name: velero
   annotations:
     iam.amazonaws.com/permitted: ".*"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openunison
+  annotations:
+    iam.amazonaws.com/permitted: ".*"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubernetes-dashboard
+  annotations:
+    iam.amazonaws.com/permitted: ".*"

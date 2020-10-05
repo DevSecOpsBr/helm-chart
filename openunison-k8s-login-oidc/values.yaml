@@ -1,3 +1,6 @@
+# client id: 736619635829-8ds49r2mguqm1br1ulg9794q00v0hijj.apps.googleusercontent.com
+# secret: wKVYzZOVjPEuDa1LPjA3YQuS
+
 network:
   openunison_host: "k8sou.apps.domain.int"
   dashboard_host: "k8sdb.apps.domain.int"
@@ -8,14 +11,14 @@ network:
 cert_template:
   ou: "Kubernetes"
   o: "LiveIntent GmbH"
-  l: "Dev Cluster"
+  l: "Berlin"
   st: "Berlin"
-  c: "Berlin"
+  c: "Germany"
 
 image: "docker.io/tremolosecurity/openunison-k8s-login-oidc:latest"
 myvd_config_path: "WEB-INF/myvd.conf"
 k8s_cluster_name: kubernetes
-enable_impersonation: false
+enable_impersonation: true
 
 dashboard:
   namespace: "kubernetes-dashboard"
@@ -34,11 +37,11 @@ monitoring:
 
 oidc:
   client_id: 736619635829-8ds49r2mguqm1br1ulg9794q00v0hijj.apps.googleusercontent.com
-  auth_url: https://accounts.google.com
-  token_url: https://www.myoidc.com/token
+  auth_url: https://openunison-dev-k8s.bln.liveintent.com/auth
+  token_url: https://openunison-dev-k8s.bln.liveintent.com/token
   user_in_idtoken: false
-  userinfo_url: https://www.myoidc.com/token/userinfo
-  domain: ""
+  userinfo_url: https://openunison-dev-k8s.bln.liveintent.com/token/userinfo
+  domain: "liveintent.com"
   scopes: openid email profile groups
   claims:
     sub: sub
@@ -47,4 +50,3 @@ oidc:
     family_name: family_name
     display_name: name
     groups: groups
-       
