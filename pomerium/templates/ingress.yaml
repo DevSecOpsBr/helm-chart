@@ -1,0 +1,61 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: {{ include "ingress.apiVersion" . }}
+kind: Ingress
+metadata:
+  name: {{ include "pomerium.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "pomerium.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "pomerium.chart" . }}
+{{- with .Values.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  tls:
+    - secretName: {{ default .Values.ingress.secretName .Values.ingress.secret.name}}
+      hosts:
+{{      include "pomerium.ingress.tls.hosts" . | indent 8 }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ . | quote }}
+      http:
+        paths:
+          - backend:
+              serviceName: {{ template "pomerium.proxy.fullname" $ }}
+              servicePort: {{ template "pomerium.httpTrafficPort.name" $ }}
+    {{- end }}
+    {{- if not (or .Values.ingress.hosts .Values.forwardAuth.enabled) }}
+    {{- range .Values.config.policy }}
+    - host: {{ .from | trimPrefix "https://" | trimPrefix "http://" | quote }}
+      http:
+        paths:
+          - backend:
+              serviceName: {{ template "pomerium.proxy.fullname" $ }}
+              servicePort: {{ template "pomerium.httpTrafficPort.name" $ }}
+    {{- end }}
+    {{- end }}
+    {{- if and (.Values.forwardAuth.enabled) (not .Values.forwardAuth.internal)}}
+    - host: {{ template "pomerium.forwardAuth.name" . }}
+      http:
+        paths:
+          - backend:
+              serviceName: {{ template "pomerium.proxy.fullname" . }}
+              servicePort: {{ template "pomerium.httpTrafficPort.name" . }}
+    {{- end }}
+    {{- if not .Values.service.authorize.headless }}
+    - host:  {{ printf "authorize.%s" .Values.config.rootDomain }}
+      http:
+        paths:
+          - backend:
+              serviceName: {{ template "pomerium.authorize.fullname" . }}
+              servicePort: {{ template "pomerium.httpTrafficPort.name" . }}
+    {{- end }}
+    - host: {{ printf "authenticate.%s" .Values.config.rootDomain }}
+      http:
+        paths:
+          - backend:
+              serviceName: {{ template "pomerium.authenticate.fullname" . }}
+              servicePort: {{ template "pomerium.httpTrafficPort.name" . }}
+{{- end }}

@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "pomerium.proxy.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ template "pomerium.proxy.name" . }}
+    helm.sh/chart: {{ template "pomerium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: proxy
+{{- if .Values.service.labels }}
+{{ toYaml .Values.service.labels | indent 4 }}
+{{- end }}
+{{- if or .Values.proxy.service.annotations .Values.service.annotations }}
+  annotations:
+  {{- if .Values.proxy.service.annotations }}
+    {{- range $key, $value := .Values.proxy.service.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- else if .Values.service.annotations }}
+    {{- range $key, $value := .Values.service.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ template "pomerium.service.externalPort" . }}
+      targetPort: {{ template "pomerium.httpTrafficPort.name" . }}
+      protocol: TCP
+      name: {{ template "pomerium.httpTrafficPort.name" . }}
+{{- if and .Values.proxy.service.nodePort ( eq .Values.service.type "NodePort" ) }}
+      nodePort: {{ .Values.proxy.service.nodePort }}
+{{- end }}
+    - name: metrics
+      port: {{ .Values.metrics.port }}
+      protocol: TCP
+      targetPort: metrics
+  selector:
+    app.kubernetes.io/name: {{ template "pomerium.proxy.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
