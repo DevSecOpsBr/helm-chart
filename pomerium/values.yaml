@@ -7,22 +7,22 @@ fullnameOverride: ""
 # settings that are shared by all services
 config:
   # routes under this wildcard domain are handled by pomerium
-  rootDomain: corp.beyondperimeter.com
+  rootDomain: minikube
   existingSecret: ""
   existingCASecret: ""
   ca:
     cert: ""
     key: ""
-  sharedSecret: ""
-  cookieSecret: ""
+  sharedSecret: "IbhRAphISj2GYrqjWxjkKph0R87oMNY8FNrUCsLcJfI="
+  cookieSecret: "TO1KmLbD7dLPa71WkRxpYudVPPZ2827+Bv9mhP3UEoE="
   generateTLS: true
   generateTLSAnnotations: {}
-  forceGenerateTLS: false
+  forceGenerateTLS: true
   generateSigningKey: true
-  forceGenerateSigningKey: false
+  forceGenerateSigningKey: true
   extraOpts: {}
   existingPolicy: ""
-  insecure: false
+  insecure: true
   administrators: ""
   policy: []
   existingSigningKeySecret: ""
@@ -36,12 +36,12 @@ authenticate:
   cacheServiceUrl: ""
   # see https://www.pomerium.io/docs/identity-providers.html
   idp:
-    provider: google
-    clientID: "REPLACE_ME"
-    clientSecret: "REPLACE_ME"
-    url: ""
+    provider: github
+    clientID: "7a1a81635340d4b41cb7"
+    clientSecret: "57e97976cacb8709db66e64027442973e0669864"
+    url: "https://prometheus.minikube"
     scopes: ""
-    serviceAccount: ""
+    serviceAccount: "21b7607f28953c6cb019e7f4121d94a6b684e920"
   tls:
     cert: ""
     key: ""
@@ -167,7 +167,7 @@ apiProxy:
   name: "kubernetes"
 
 operator:
-  enabled: false
+  enabled: true
   fullnameOverride: ""
   nameOverride: ""
   replicaCount: 1
@@ -216,7 +216,8 @@ ingress:
   tls:
     hosts: []
   enabled: true
-  hosts: []
+  hosts:
+    - pomerium.minikube
   annotations:
     {}
     # === nginx tweaks
@@ -270,7 +271,7 @@ image:
   pullPolicy: "IfNotPresent"
 
 metrics:
-  enabled: false
+  enabled: true
   port: 9090
 
 tracing:
@@ -282,7 +283,7 @@ tracing:
     agent_endpoint: ""
 
 serviceMonitor:
-  enabled: false
+  enabled: true
   namespace: ""
   labels:
     release: prometheus
