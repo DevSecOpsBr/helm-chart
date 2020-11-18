@@ -291,7 +291,7 @@ service:
     # - 172.16.0.0/16
   externalIPs:
     # - 1.2.3.4
-    - 192.168.64.17
+    - 192.168.64.27
 
 ## Create HorizontalPodAutoscaler object.
 ##
