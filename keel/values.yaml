@@ -93,10 +93,11 @@ service:
 # which can deliver webhooks to your internal Keel service through Keel sidecar container.
 webhookRelay:
   enabled: true 
-  bucket: "minikube"
+  bucket: "keel"
   # webhookrelay.com credentials
   # Set the key and secret values here to create the keel-webhookrelay secret with this
   # chart -or- leave key and secret blank and create the keel-webhookrelay secret separately.
+  #  relay login -k da514928-6aa9-4be1-897d-3b91c1a43b5d -s n48lKfF1CN6F relay forward -b forwarding-config-L01kWd 
   key: "da514928-6aa9-4be1-897d-3b91c1a43b5d"
   secret: "n48lKfF1CN6F"
   # webhookrelay docker image
