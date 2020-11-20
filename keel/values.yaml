@@ -48,8 +48,8 @@ ecr:
 # Webhook Notification
 # Remote webhook endpoint for notification delivery
 webhook:
-  enabled: false
-  endpoint: ""
+  enabled: true
+  endpoint: "https://0e4ivi7lelzocci1ujd2qm.hooks.webhookrelay.com"
 
 # Slack Notification
 # bot name (default keel) must exist!
@@ -92,13 +92,13 @@ service:
 # If you don’t want to expose your Keel service, you can use https://webhookrelay.com/
 # which can deliver webhooks to your internal Keel service through Keel sidecar container.
 webhookRelay:
-  enabled: false
+  enabled: true 
   bucket: "minikube"
   # webhookrelay.com credentials
   # Set the key and secret values here to create the keel-webhookrelay secret with this
   # chart -or- leave key and secret blank and create the keel-webhookrelay secret separately.
-  key: "93d72e32-a631-42da-890d-ede35bc7cf9d"
-  secret: "ZHNfdtPwevdr"
+  key: "da514928-6aa9-4be1-897d-3b91c1a43b5d"
+  secret: "n48lKfF1CN6F"
   # webhookrelay docker image
   image:
     repository: webhookrelay/webhookrelayd
