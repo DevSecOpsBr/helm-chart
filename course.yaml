@@ -1,0 +1,22 @@
+namespace: rodrigo
+context: ellesmera.local
+namespace_management:
+  default:
+    metadata:
+      annotations:
+        iam.amazonaws.com/permitted: ".*"
+repositories:
+  stable:
+    url: https://kubernetes-charts.storage.googleapis.com
+hooks:
+  pre_install:
+    - ls ./
+  post_install:
+    - kubectl get namespaces
+charts:
+  polaris-dashboard:
+    namespace: rodrigo
+    repository:
+      git: https://github.com/FairwindsOps/charts
+      path: stable
+    chart: polaris
