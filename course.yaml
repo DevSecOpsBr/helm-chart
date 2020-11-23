@@ -60,6 +60,7 @@ charts:
   nginx:
     repository: stable
     chart: nginx-ingress
+    version: "1.36.3"
     namespace: ingress-controller
     namespace_management:
       metadata:
@@ -84,7 +85,7 @@ charts:
         annotations:
           iam.amazonaws.com/permitted: .*
       settings:
-        overwrite: True
+        overwrite: false
     hooks:
       pre_install:
         - helm -n monitoring list
