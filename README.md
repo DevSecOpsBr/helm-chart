@@ -1,7 +1,8 @@
 # HELM
 
-This README shows how to check `deprecated`charts and also how install multiple charts at once
-using the following tools.
+This README shows how to check `deprecated` charts and how to install multiple charts at once based on `YAML` files.
+
+### Requirements:
 
 1. Pluto
 2. Reckoner
@@ -10,7 +11,7 @@ using the following tools.
 
 Pluto easily find deprecated Kubernetes API versions in their Infrastructure-as-Code repositories and Helm releases.
 
-For instance:
+## Examples
 
 ### In directory
 
