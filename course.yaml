@@ -39,6 +39,24 @@ charts:
     files: 
       - prometheus-operator/values.yaml
 
+  jaeger:
+    repository: stable
+    chart: jaeger-operator
+    namespace: observability
+    namespace_management:
+      metadata:
+        annotations:
+          iam.amazonaws.com/permitted: .*
+      settings:
+        overwrite: True
+    hooks:
+      pre_install:
+        - helm -n observability list
+      post_install:
+        - helm -n observability list
+    files: 
+      - jaeger-operator/values.yaml
+
   nginx:
     repository: stable
     chart: nginx-ingress
