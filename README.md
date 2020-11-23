@@ -1,40 +1,77 @@
+# HELM
+
+This README shows how to check `deprecated`charts and also how install multiple charts at once
+using the following tools.
+
+1. Pluto
+2. Reckoner
+
 # Pluto
 
 Pluto easily find deprecated Kubernetes API versions in their Infrastructure-as-Code repositories and Helm releases.
 
 For instance:
 
-In directory
+### In directory
 
 ```shell
-pluto detect-files -d <helm-folder>
+pluto detect-files -d cert-manager
 ```
 
-In cluster
+_Output:_
+```text
+NAME                                  KIND                       VERSION                        REPLACEMENT               REMOVED   DEPRECATED
+certificaterequests.cert-manager.io   CustomResourceDefinition   apiextensions.k8s.io/v1beta1   apiextensions.k8s.io/v1   false     true
+certificates.cert-manager.io          CustomResourceDefinition   apiextensions.k8s.io/v1beta1   apiextensions.k8s.io/v1   false     true
+challenges.acme.cert-manager.io       CustomResourceDefinition   apiextensions.k8s.io/v1beta1   apiextensions.k8s.io/v1   false     true
+clusterissuers.cert-manager.io        CustomResourceDefinition   apiextensions.k8s.io/v1beta1   apiextensions.k8s.io/v1   false     true
+issuers.cert-manager.io               CustomResourceDefinition   apiextensions.k8s.io/v1beta1   apiextensions.k8s.io/v1   false     true
+orders.acme.cert-manager.io           CustomResourceDefinition   apiextensions.k8s.io/v1beta1   apiextensions.k8s.io/v1   false     true
+```
+
+### In cluster
 
 ```shell
 pluto detect-helm -owide
 ```
 
-In cluster version
+_Output:_
+
+```text
+NAME                                               KIND                           VERSION                                REPLACEMENT                       REMOVED   DEPRECATED
+cert-manager/cert-manager-webhook                  MutatingWebhookConfiguration   admissionregistration.k8s.io/v1beta1   admissionregistration.k8s.io/v1   false     true
+keel/keel                                          Ingress                        extensions/v1beta1                     networking.k8s.io/v1beta1         false     true
+kubeopsview/kubeopsview-kube-ops-view              Ingress                        extensions/v1beta1                     networking.k8s.io/v1beta1         false     true
+prometheus/prometheus-prometheus-oper-prometheus   Ingress                        extensions/v1beta1                     networking.k8s.io/v1beta1         false     true
+prometheus/prometheus-prometheus-oper-admission    MutatingWebhookConfiguration   admissionregistration.k8s.io/v1beta1   admissionregistration.k8s.io/v1   false     true
+```
+
+### In cluster version
 
 ```shell
 pluto detect-helm -t k8s=v1.15.10
+```
+
+_Output:_
+
+```text
+NAME                                               KIND      VERSION              REPLACEMENT                 REMOVED   DEPRECATED
+keel/keel                                          Ingress   extensions/v1beta1   networking.k8s.io/v1beta1   false     true
+kubeopsview/kubeopsview-kube-ops-view              Ingress   extensions/v1beta1   networking.k8s.io/v1beta1   false     true
+prometheus/prometheus-prometheus-oper-prometheus   Ingress   extensions/v1beta1   networking.k8s.io/v1beta1   false     true
 ```
 
 # Reckoner
 
 Reckoner is a command line helper for Helm that uses a YAML syntax to install and manage multiple Helm charts in a single file and allows installation of charts from a git commit/branch/release.
 
-What it solves?
+### What it solves?
 
 * Kubernetes namespace creation
 * Multiple charts installation at once
 * Custom values YAML file per section
-  
-Examples:
 
-course.yaml file
+`course.yaml` file
 
 ```yaml
 namespace: default
@@ -152,7 +189,7 @@ In action:
 reckoner plot --dry-run -a course.yaml
 ```
 
-Output
+_Output:_
 
 ```text
 NAME            NAMESPACE               REVISION        UPDATED                                 STATUS          CHART                           APP VERSION
@@ -168,8 +205,19 @@ pomerium        security                3               2020-11-17 22:39:25.9856
 prometheus      monitoring              1               2020-11-17 20:05:48.026192 +0100 CET    deployed        prometheus-operator-8.12.12     0.37.0
 ```
 
+# Bottlenecks
+
+Reckoner points to a custom `values`YAML file to install charts. Even if reckoner is not available `helm` can be used to instead.
+
+For instance:
+
+```shell
+helm --kube-context <cluster-context> <plugin> upgrade --install <release-name> -n <namespace> -f <custom-values-file> --debug --wait  <helm repo>/<chart name> --dry-run* --version* --set AppVersion*
+```
+
 # Similar tools 
 
-* terragrunt
-* atlantis
-* 
+The tools below has a similar behaivour wrapping `terraform` to extend his capabilities and gaps.
+
+* [Terragrunt](http://https://terragrunt.gruntwork.io/)
+* [Run Atlantis](http://runatlantis.io)
