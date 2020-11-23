@@ -1,22 +1,88 @@
-namespace: rodrigo
+namespace: default
 context: ellesmera.local
-namespace_management:
-  default:
-    metadata:
-      annotations:
-        iam.amazonaws.com/permitted: ".*"
-repositories:
-  stable:
-    url: https://kubernetes-charts.storage.googleapis.com
-hooks:
-  pre_install:
-    - ls ./
-  post_install:
-    - kubectl get namespaces
+
 charts:
+  metrics-server:
+    repository: stable
+    chart: metrics-server
+    namespace: monitoring
+    namespace_management:
+      metadata:
+        annotations:
+          iam.amazonaws.com/permitted: .*
+      settings:
+        overwrite: True
+    hooks:
+      pre_install:
+        - helm -n monitoring list
+      post_install:
+        - helm -n monitoring list
+    files: 
+      - metrics-server/values.yaml
+
+  prometheus:
+    repository: stable
+    chart: prometheus-operator
+    version: 8.12.12
+    namespace: monitoring
+    namespace_management:
+      metadata:
+        annotations:
+          iam.amazonaws.com/permitted: .*
+      settings:
+        overwrite: True
+    hooks:
+      pre_install:
+        - helm -n monitoring list
+      post_install:
+        - helm -n monitoring list
+    files: 
+      - prometheus-operator/values.yaml
+
+  nginx:
+    repository: stable
+    chart: nginx-ingress
+    namespace: ingress-controller
+    namespace_management:
+      metadata:
+        annotations:
+          iam.amazonaws.com/permitted: .*
+      settings:
+        overwrite: True
+    hooks:
+      pre_install:
+        - helm -n ingress-controller list
+      post_install:
+        - helm -n ingress-controller list
+    files: 
+      - nginx-ingress/values.yaml
+
+  kubeopsview:
+    repository: stable
+    chart: kube-ops-view
+    namespace: monitoring
+    namespace_management:
+      metadata:
+        annotations:
+          iam.amazonaws.com/permitted: .*
+      settings:
+        overwrite: True
+    hooks:
+      pre_install:
+        - helm -n monitoring list
+      post_install:
+        - helm -n monitoring list
+    files: 
+      - kube-ops-view/values.yaml
+
   polaris-dashboard:
-    namespace: rodrigo
+    namespace: security
     repository:
       git: https://github.com/FairwindsOps/charts
       path: stable
     chart: polaris
+    hooks:
+      pre_install:
+        - helm -n security list
+      post_install:
+        - helm -n security list
