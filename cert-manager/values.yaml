@@ -125,7 +125,8 @@ prometheus:
     interval: 60s
     scrapeTimeout: 30s
     labels:
-      system.monitoring: prometheus
+      release: prometheus
+      self-monitor: "true"
 
 # Use these variables to configure the HTTP_PROXY environment variables
 # http_proxy: "http://proxy:8080"
