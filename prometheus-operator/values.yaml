@@ -160,7 +160,7 @@ alertmanager:
   #           {{ end }}
 
   ingress:
-    enabled: false
+    enabled: true
 
     annotations: {}
 
@@ -168,13 +168,13 @@ alertmanager:
 
     ## Hosts must be provided if Ingress is enabled.
     ##
-    hosts: []
-      # - alertmanager.domain.com
+    hosts:
+      - alertmanager.minikube
 
     ## Paths to use for ingress rules - one path should match the alertmanagerSpec.routePrefix
     ##
-    paths: []
-    # - /
+    paths:
+    - /
 
     ## TLS configuration for Alertmanager Ingress
     ## Secret must be manually created in the namespace
@@ -2011,13 +2011,14 @@ prometheus:
   additionalServiceMonitors:
   ## Name of the ServiceMonitor to create
   ##
-  - name: "prometheus-prometheus-oper-mon-apps"
+  - name: "prometheus-prometheus-oper--apps"
 
     ## Additional labels to set used for the ServiceMonitorSelector. Together with standard labels from
     ## the chart
     ##
     additionalLabels:
       system.monitoring: prometheus
+      ellesmera.local/monitoring: "true"
 
     ## Service label for use in assembling a job name of the form <label value>-<port>
     ## If no label is specified, the service name is used.
@@ -2033,6 +2034,7 @@ prometheus:
     selector:
       matchLabels:
         system.monitoring: "prometheus"
+        ellesmera.local/monitoring: "true"
   
     ## Namespaces from which services are selected
     ##
