@@ -6,6 +6,7 @@ metadata:
   maintainer: "devops team (devops@ellesmera.io)"
   description: "Desired State File."
   # key: ${VALUE}
+  minikube_ip: ${ELLESMERA_IP}
 
 # paths to the certificate for connecting to the cluster
 # You can skip this if you use Helmsman on a machine with kubectl already connected to your k8s cluster.
@@ -35,7 +36,7 @@ namespaces:
     protected: false
     annotations:
       iam.amazonaws.com/permitted: ".*"
-  ingress-controller:
+  ingress:
     protected: false
     annotations:
       iam.amazonaws.com/permitted: ".*"
@@ -66,6 +67,140 @@ helmRepos:
   # stable: "https://kubernetes-charts.storage.googleapis.com"
 
 apps:
+
+    metrics-server:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: true
+      chart: "metrics-server"
+      version: "2.9.0"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n monitoring list --all"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "metrics-server/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -100
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+    prometheus:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: true
+      chart: "prometheus-operator"
+      version: "8.12.12"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n monitoring list --all"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "prometheus-operator/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -90
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+    cert-manager:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "miscellaneous"
+      namespace: "cert-manager"
+      enabled: true
+      chart: "cert-manager"
+      version: "v0.13.0"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n cert-manager list --all"
+        # postInstall: "cert-manager/test-resources.yaml"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "cert-manager/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -80
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+    jaeger:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "miscellaneous"
+      namespace: "observability"
+      enabled: true
+      chart: "jaeger-operator"
+      version: "2.14.0"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n observability list --all"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "jaeger-operator/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -70
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+    nginx-deprecated:
+      description: "[DEPRECATED] - Nginx-Ingress Controller for K8S"
+      group: "ingress"
+      namespace: "ingress"
+      enabled: true
+      chart: "nginx-ingress"
+      version: "1.41.3"
+      valuesFiles: 
+        - "nginx-ingress/values.yaml"
+      wait: true
+      timeout: 600
+      maxHistory: 100
+      test: true
+      priority: -60
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        controller.service.externalIPs: "{${ELLESMERA_IP}}"
+
+    nginx:
+      description: "Nginx-Ingress Controller for K8S"
+      group: "ingress"
+      namespace: "ingress"
+      enabled: false
+      chart: "ingress-nginx"
+      version: "3.12.0"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n ingress-controller list --all"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "nginx-ingress/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -50
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        controller.service.externalIPs: "{${ELLESMERA_IP}}"
+
     argo:
       namespace: "miscellaneous" # maps to the namespace as defined in namespaces above
       enabled: true # change to false if you want to delete this app release empty: false:
@@ -74,8 +209,8 @@ apps:
       ### Optional values below
       valuesFile: "" # leaving it empty uses the default chart values
       test: false
-      protected: true
-      priority: -3
+      protected: false
+      priority: 0
       wait: true
       hooks:
         successCondition: "Complete"
@@ -95,29 +230,5 @@ apps:
         - "--devel"
         - "--debug"
         - "--atomic"
-
-    cert-manager:
-      description: "Manager SSL certficates creation, renew and update."
-      group: "security"
-      namespace: "cert-manager"
-      enabled: true
-      chart: "cert-manager"
-      version: "v0.13.0"
-      hooks:
-        successCondition: "Complete"
-        preInstall: "helm -n cert-manager list --all"
-        postInstall: "cert-manager/test-resources.yaml"
-        deleteOnSuccess: true
-      valuesFiles: 
-        - "cert-manager/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -1
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-
 
 # See https://github.com/Praqma/helmsman/blob/master/docs/desired_state_specification.md#apps for more apps options
