@@ -18,23 +18,23 @@ controller:
 
   # Will add custom configuration options to Nginx https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/
   config:
-    whitelist-source-range: |
-      37.49.155.96/29,
-      144.121.85.232/29,
-      93.178.186.86,
-      65.202.173.66/32,
-      185.199.108.0/22,
-      192.30.252.0/22,
-      140.82.112.0/20,
-      52.44.143.79,
-      52.55.118.224,
-      52.55.103.251,
-      54.209.30.28,
-      18.206.20.190,
-      52.86.168.100,
-      34.205.239.30,
-      35.173.3.194,
-      52.4.250.190
+    # whitelist-source-range: |
+    #   37.49.155.96/29,
+    #   144.121.85.232/29,
+    #   93.178.186.86,
+    #   65.202.173.66/32,
+    #   185.199.108.0/22,
+    #   192.30.252.0/22,
+    #   140.82.112.0/20,
+    #   52.44.143.79,
+    #   52.55.118.224,
+    #   52.55.103.251,
+    #   54.209.30.28,
+    #   18.206.20.190,
+    #   52.86.168.100,
+    #   34.205.239.30,
+    #   35.173.3.194,
+    #   52.4.250.190
 
   ## Annotations to be added to the controller config configuration configmap
   ##
@@ -78,7 +78,7 @@ controller:
 
   ## Name of the ingress class to route through this controller
   ##
-  ingressClass: nginx-ingress-restricted
+  ingressClass: nginx
 
   # labels to add to the pod container metadata
   podLabels: {}
