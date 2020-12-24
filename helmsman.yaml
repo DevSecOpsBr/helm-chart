@@ -6,7 +6,6 @@ metadata:
   maintainer: "devops team (devops@ellesmera.io)"
   description: "Desired State File."
   # key: ${VALUE}
-  minikube_ip: ${ELLESMERA_IP}
 
 # paths to the certificate for connecting to the cluster
 # You can skip this if you use Helmsman on a machine with kubectl already connected to your k8s cluster.
@@ -165,7 +164,7 @@ apps:
       chart: "nginx-ingress"
       version: "1.41.3"
       valuesFiles: 
-        - "nginx-ingress/values.yaml"
+        - "nginx-ingress-deprecated/values.yaml"
       wait: true
       timeout: 600
       maxHistory: 100
@@ -189,7 +188,7 @@ apps:
         preInstall: "helm -n ingress-controller list --all"
         deleteOnSuccess: true
       valuesFiles: 
-        - "nginx-ingress/values.yaml"
+        - "ingress-nginx/values.yaml"
       wait: true
       timeout: 300
       maxHistory: 100
@@ -202,13 +201,15 @@ apps:
         controller.service.externalIPs: "{${ELLESMERA_IP}}"
 
     argo:
-      namespace: "miscellaneous" # maps to the namespace as defined in namespaces above
-      enabled: true # change to false if you want to delete this app release empty: false:
-      chart: "argo/argo" # changing the chart name means delete and recreate this chart
-      version: "0.8.5" # chart version
-      ### Optional values below
-      valuesFile: "" # leaving it empty uses the default chart values
-      test: false
+      description: "ArgoCD - Declarative GitOps CD for Kubernetes"
+      group: "cicd"
+      namespace: "miscellaneous" 
+      enabled: true 
+      chart: "argo/argo-cd" 
+      version: "2.11.0" 
+      valuesFiles: 
+        - "argo-cd/values.yaml" 
+      test: true
       protected: false
       priority: 0
       wait: true
@@ -216,18 +217,9 @@ apps:
         successCondition: "Complete"
         successTimeout: "90s"
         deleteOnSuccess: true
-        # preInstall: "job.yaml"
-      #   preInstall: "https://github.com/jetstack/cert-manager/releases/download/v0.14.0/cert-manager.crds.yaml"
-      #   postInstall: "https://raw.githubusercontent.com/jetstack/cert-manager/release-0.14/deploy/manifests/00-crds.yaml"
-      #   postInstall: "job.yaml"
-      #   preUpgrade: "job.yaml"
-      #   postUpgrade: "job.yaml"
-      #   preDelete: "job.yaml"
-      #   postDelete: "job.yaml"
-      # set:
-        # "images.tag": $$TAG # $$ is escaped and $TAG is passed literally to images.tag (no env variable expansion)
+      set:
+        server.ingress.hosts: "{argocd.minikube}"
       helmFlags: 
-        - "--devel"
         - "--debug"
         - "--atomic"
 
