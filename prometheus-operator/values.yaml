@@ -531,14 +531,6 @@ grafana:
         editable: true
         options:
           path: /var/lib/grafana/dashboards/memory-overview
-      - name: 'cpu-overview'
-        orgId: 1
-        folder: 'K8S'
-        type: file
-        disableDeletion: true
-        editable: true
-        options:
-          path: /var/lib/grafana/dashboards/cpu-overview
       - name: 'general-cluster-overview'
         orgId: 1
         folder: 'K8S'
@@ -594,11 +586,6 @@ grafana:
       memory-overview:
         datasource: Prometheus
         gnetId: 10266
-        revision: 1
-    cpu-overview:
-      cpu-overview:
-        datasource: Prometheus
-        gnetId: 10265
         revision: 1
     general-cluster-overview:
       general-cluster-overview:
