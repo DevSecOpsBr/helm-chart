@@ -61,6 +61,7 @@ namespaces:
       iam.amazonaws.com/permitted: ".*"
 
 helmRepos:
+  stable: https://charts.helm.sh/stable
   argo: "https://argoproj.github.io/argo-helm"
   jfrog: "https://charts.jfrog.io"
   # stable: "https://kubernetes-charts.storage.googleapis.com"
