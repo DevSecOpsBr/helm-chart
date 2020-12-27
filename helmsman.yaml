@@ -61,7 +61,6 @@ namespaces:
       iam.amazonaws.com/permitted: ".*"
 
 helmRepos:
-  stable: https://charts.helm.sh/stable
   argo: "https://argoproj.github.io/argo-helm"
   jfrog: "https://charts.jfrog.io"
   # stable: "https://kubernetes-charts.storage.googleapis.com"
@@ -157,28 +156,8 @@ apps:
         - "--atomic"
         - "--debug"
 
-    nginx-deprecated:
-      description: "[DEPRECATED] - Nginx-Ingress Controller for K8S"
-      group: "ingress"
-      namespace: "ingress"
-      enabled: true
-      chart: "nginx-ingress"
-      version: "1.41.3"
-      valuesFiles: 
-        - "nginx-ingress-deprecated/values.yaml"
-      wait: true
-      timeout: 600
-      maxHistory: 100
-      test: true
-      priority: -60
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-      set:
-        controller.service.externalIPs: "{${ELLESMERA_IP}}"
-
     nginx:
-      description: "Nginx-Ingress Controller for K8S"
+      description: "Nginx Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
       enabled: false
@@ -186,7 +165,7 @@ apps:
       version: "3.12.0"
       hooks:
         successCondition: "Complete"
-        preInstall: "helm -n ingress-controller list --all"
+        preInstall: "helm -n ingress list --all"
         deleteOnSuccess: true
       valuesFiles: 
         - "ingress-nginx/values.yaml"
@@ -223,5 +202,6 @@ apps:
       helmFlags: 
         - "--debug"
         - "--atomic"
+
 
 # See https://github.com/Praqma/helmsman/blob/master/docs/desired_state_specification.md#apps for more apps options
