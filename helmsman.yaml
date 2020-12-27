@@ -160,11 +160,11 @@ apps:
       description: "[DEPRECATED] - Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
-      enabled: true
+      enabled: false
       chart: "nginx-ingress"
       version: "1.41.3"
       valuesFiles: 
-        - "nginx-ingress-deprecated/values.yaml"
+        - "nginx-ingress/values.yaml"
       wait: true
       timeout: 600
       maxHistory: 100
@@ -219,6 +219,27 @@ apps:
         deleteOnSuccess: true
       set:
         server.ingress.hosts: "{argocd.minikube}"
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+
+    kyverno:
+      description: "Kubernetes Native Policy Management"
+      group: "security"
+      namespace: "security" 
+      enabled: true 
+      chart: "kyverno" 
+      version: "1.2.1" 
+      valuesFiles: 
+        - "kyverno/values.yaml" 
+      test: true
+      protected: false
+      priority: 0
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
       helmFlags: 
         - "--debug"
         - "--atomic"
