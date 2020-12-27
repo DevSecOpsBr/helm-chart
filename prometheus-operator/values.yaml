@@ -1757,7 +1757,7 @@ prometheus:
     ## prometheus resource to be created with selectors based on values in the helm deployment,
     ## which will also match the servicemonitors created
     ##
-    serviceMonitorSelectorNilUsesHelmValues: true
+    serviceMonitorSelectorNilUsesHelmValues: false
 
     ## ServiceMonitors to be selected for target discovery.
     ## If {}, select all ServiceMonitors
@@ -1766,7 +1766,8 @@ prometheus:
     ## Example which selects ServiceMonitors with label "prometheus" set to "somelabel"
     # serviceMonitorSelector:
     #   matchLabels:
-    #     prometheus: somelabel
+    #     release: prometheus
+    #     system.monitoring: prometheus
 
     ## Namespaces to be selected for ServiceMonitor discovery.
     ## See https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#namespaceselector for usage
@@ -2017,6 +2018,7 @@ prometheus:
     ## the chart
     ##
     additionalLabels:
+      release: prometheus
       system.monitoring: prometheus
       ellesmera.local/monitoring: "true"
 
@@ -2033,6 +2035,7 @@ prometheus:
     ##
     selector:
       matchLabels:
+        release: prometheus
         system.monitoring: prometheus
         ellesmera.local/monitoring: "true"
   
@@ -2041,12 +2044,12 @@ prometheus:
     namespaceSelector:
       ## Match any namespace
       ##
-      # any: false
+      any: true
 
       ## Explicit list of namespace names to select
       ##
-      matchNames:
-        - monitoring
+      # matchNames:
+        # - monitoring
 
     ## Endpoints of the selected service to be monitored
     ##
