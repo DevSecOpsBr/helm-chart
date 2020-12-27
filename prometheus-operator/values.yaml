@@ -485,7 +485,7 @@ grafana:
       providers:
       - name: 'nginx-ingress'
         orgId: 1
-        folder: ''
+        folder: 'Ingress'
         type: file
         disableDeletion: true
         editable: true
@@ -493,7 +493,7 @@ grafana:
           path: /var/lib/grafana/dashboards/nginx-ingress
       - name: 'traefik-ingress'
         orgId: 1
-        folder: ''
+        folder: 'Ingress'
         type: file
         disableDeletion: false
         editable: true
@@ -501,7 +501,7 @@ grafana:
           path: /var/lib/grafana/dashboards/traefik-ingress
       - name: 'kubernetes-costs'
         orgId: 1
-        folder: ''
+        folder: 'Finance'
         type: file
         disableDeletion: true
         editable: true
@@ -509,7 +509,7 @@ grafana:
           path: /var/lib/grafana/dashboards/kubernetes-costs
       - name: 'metrics-server'
         orgId: 1
-        folder: ''
+        folder: 'K8S'
         type: file
         disableDeletion: false
         editable: true
@@ -517,7 +517,7 @@ grafana:
           path: /var/lib/grafana/dashboards/metrics-server
       - name: 'kubernetes-cluster'
         orgId: 1
-        folder: ''
+        folder: 'K8S'
         type: file
         disableDeletion: true
         editable: true
@@ -525,7 +525,7 @@ grafana:
           path: /var/lib/grafana/dashboards/kubernetes-cluster
       - name: 'memory-overview'
         orgId: 1
-        folder: ''
+        folder: 'K8S'
         type: file
         disableDeletion: true
         editable: true
@@ -533,7 +533,7 @@ grafana:
           path: /var/lib/grafana/dashboards/memory-overview
       - name: 'cpu-overview'
         orgId: 1
-        folder: ''
+        folder: 'K8S'
         type: file
         disableDeletion: true
         editable: true
@@ -541,7 +541,7 @@ grafana:
           path: /var/lib/grafana/dashboards/cpu-overview
       - name: 'general-cluster-overview'
         orgId: 1
-        folder: ''
+        folder: 'K8S'
         type: file
         disableDeletion: true
         editable: true
@@ -549,12 +549,20 @@ grafana:
           path: /var/lib/grafana/dashboards/general-cluster-overview
       - name: 'kubernetes-cluster-overview'
         orgId: 1
-        folder: ''
+        folder: 'K8S'
         type: file
         disableDeletion: true
         editable: true
         options:
           path: /var/lib/grafana/dashboards/kubernetes-cluster-overview
+      - name: 'kubernetes-cluster-prometheus'
+        orgId: 1
+        folder: 'K8S'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes-cluster-prometheus
 
   dashboards:
     nginx-ingress:
@@ -601,6 +609,11 @@ grafana:
       kubernetes-cluster-overview:
         datasource: Prometheus
         gnetId: 11802
+        revision: 1
+    kubernetes-cluster-prometheus:
+      kubernetes-cluster-prometheus:
+        datasource: Prometheus
+        gnetId: 6417
         revision: 1
 
   serverDashboardConfigmaps:
