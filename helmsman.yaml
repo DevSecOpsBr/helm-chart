@@ -211,7 +211,7 @@ apps:
       version: "2.9.1"
       hooks:
         successCondition: "Complete"
-        preInstall: "bash -x linkerd2/step.sh"
+        preInstall: "bash -x linkerd2/step.sh main"
         deleteOnSuccess: true
       valuesFiles: 
         - "linkerd2/values.yaml"
@@ -228,7 +228,7 @@ apps:
         identity.issuer.tls.crtPEM: linkerd2/certs/issuer.crt
         identity.issuer.tls.keyPEM: linkerd2/certs/issuer.key
       set:
-        identity.issuer.crtExpiry: "2021-12-26T19:35:23Z"
+        identity.issuer.crtExpiry: "2021-12-27T19:35:23Z"
 
     argo:
       description: "ArgoCD - Declarative GitOps CD for Kubernetes"

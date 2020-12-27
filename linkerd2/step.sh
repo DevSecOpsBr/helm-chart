@@ -13,8 +13,7 @@ function main() {
   $STEP certificate create identity.linkerd.$CLUSTER_DOMAIN ${DIRECTORY}/$CERTS/issuer.crt \
     ${DIRECTORY}/$CERTS/issuer.key --ca $DIRECTORY/$CERTS/ca.crt --ca-key $DIRECTORY/$CERTS/ca.key \
     --profile intermediate-ca --not-after 8760h --no-password --insecure
-    
-  helm
+
 }
 
 function helm() {
@@ -35,6 +34,7 @@ if [ ! -d "${DIRECTORY}/${CERTS}" ]; then
     mkdir -p $DIRECTORY/$CERTS
 else
   echo "$DIRECTORY/$CERTS exits!"
+  exit;
 fi
 
 $@
