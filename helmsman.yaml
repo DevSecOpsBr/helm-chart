@@ -1,0 +1,247 @@
+context: "ellesmera.local"     # defaults to "default" if not provided
+
+# metadata -- add as many key/value pairs as you want
+metadata:
+  # org: "ellesmera.io"
+  maintainer: "devops team (devops@ellesmera.io)"
+  description: "Desired State File."
+  # key: ${VALUE}
+
+# paths to the certificate for connecting to the cluster
+# You can skip this if you use Helmsman on a machine with kubectl already connected to your k8s cluster.
+# you have to use exact key names here : 'caCrt' for certificate and 'caKey' for the key and caClient for the client certificate
+# certificates:
+  #caClient: "gs://mybucket/client.crt" # GCS bucket path
+  #caCrt: "s3://mybucket/ca.crt" # S3 bucket path
+  #caKey: "../ca.key" # valid local file relative path
+
+settings:
+  kubeContext: "ellesmera.local" # will try connect to this context first, if it does not exist, it will be created using the details below
+  storageBackend: "secret"
+  #slackWebhook:  "$slack" # or your slack webhook url
+  #reverseDelete: false # reverse the priorities on delete
+  globalHooks:
+    successCondition: "Complete"
+    deleteOnSuccess: true
+  globalMaxHistory: 200
+
+# define your environments and their k8s namespaces
+namespaces:
+  cert-manager:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  chaos:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  ingress:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  miscellaneous:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  monitoring:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  observability:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  security:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  velero:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+
+helmRepos:
+  argo: "https://argoproj.github.io/argo-helm"
+  jfrog: "https://charts.jfrog.io"
+  # stable: "https://kubernetes-charts.storage.googleapis.com"
+
+apps:
+
+    metrics-server:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: true
+      chart: "metrics-server"
+      version: "2.9.0"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n monitoring list --all"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "metrics-server/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -100
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+    prometheus:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: true
+      chart: "prometheus-operator"
+      version: "8.12.12"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n monitoring list --all"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "prometheus-operator/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -90
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+    cert-manager:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "miscellaneous"
+      namespace: "cert-manager"
+      enabled: true
+      chart: "cert-manager"
+      version: "v0.13.0"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n cert-manager list --all"
+        # postInstall: "cert-manager/test-resources.yaml"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "cert-manager/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -80
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+    jaeger:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "miscellaneous"
+      namespace: "observability"
+      enabled: true
+      chart: "jaeger-operator"
+      version: "2.14.0"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n observability list --all"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "jaeger-operator/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -70
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+    nginx-deprecated:
+      description: "[DEPRECATED] - Nginx-Ingress Controller for K8S"
+      group: "ingress"
+      namespace: "ingress"
+      enabled: false
+      chart: "nginx-ingress"
+      version: "1.41.3"
+      valuesFiles: 
+        - "nginx-ingress/values.yaml"
+      wait: true
+      timeout: 600
+      maxHistory: 100
+      test: true
+      priority: -60
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        controller.service.externalIPs: "{${ELLESMERA_IP}}"
+
+    nginx:
+      description: "Nginx-Ingress Controller for K8S"
+      group: "ingress"
+      namespace: "ingress"
+      enabled: false
+      chart: "ingress-nginx"
+      version: "3.12.0"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n ingress-controller list --all"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "ingress-nginx/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -50
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        controller.service.externalIPs: "{${ELLESMERA_IP}}"
+
+    argo:
+      description: "ArgoCD - Declarative GitOps CD for Kubernetes"
+      group: "cicd"
+      namespace: "miscellaneous" 
+      enabled: true 
+      chart: "argo/argo-cd" 
+      version: "2.11.0" 
+      valuesFiles: 
+        - "argo-cd/values.yaml" 
+      test: true
+      protected: false
+      priority: 0
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      set:
+        server.ingress.hosts: "{argocd.minikube}"
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+
+    kyverno:
+      description: "Kubernetes Native Policy Management"
+      group: "security"
+      namespace: "security" 
+      enabled: true 
+      chart: "kyverno" 
+      version: "1.2.1" 
+      valuesFiles: 
+        - "kyverno/values.yaml" 
+      test: true
+      protected: false
+      priority: 0
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+
+# See https://github.com/Praqma/helmsman/blob/master/docs/desired_state_specification.md#apps for more apps options
