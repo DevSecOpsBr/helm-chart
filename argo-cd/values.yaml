@@ -143,7 +143,9 @@ controller:
         monitoring: prometheus
       namespace: monitoring
       additionalLabels:
-        monitoring: prometheus
+        release: prometheus
+        system.monitoring: prometheus
+        ellesmera.local/monitoring: "true"
     rules:
       enabled: false
       spec: []
@@ -459,10 +461,13 @@ server:
     serviceMonitor:
       enabled: true
       selector:
-        monitoring: prometheus
+        release: prometheus
+        system.monitoring: prometheus
+        ellesmera.local/monitoring: "true"
       namespace: monitoring
       additionalLabels:
-        monitoring: prometheus
+        system.monitoring: prometheus
+        ellesmera.local/monitoring: "true"
 
   serviceAccount:
     create: true
@@ -790,17 +795,20 @@ repoServer:
 
   ## Repo server metrics service configuration
   metrics:
-    enabled: false
+    enabled: true
     service:
       annotations: {}
       labels: {}
       servicePort: 8084
     serviceMonitor:
-      enabled: false
+      enabled: true
     #   selector:
     #     prometheus: kube-prometheus
-    #   namespace: monitoring
-    #   additionalLabels: {}
+      namespace: monitoring
+      additionalLabels:
+        release: prometheus
+        system.monitoring: prometheus
+        ellesmera.local/monitoring: "true"
 
   ## Repo server service account
   ## If create is set to true, make sure to uncomment the name and update the rbac section below

@@ -93,10 +93,11 @@ securityContext:
 service:
   annotations: {}
   labels:
-    system.monitoring: "prometheus"
-  #  Add these labels to have metrics-server show up in `kubectl cluster-info`
-  #  kubernetes.io/cluster-service: "true"
-  #  kubernetes.io/name: "Metrics-server"
+    release: prometheus
+    system.monitoring: prometheus
+    ellesmera.local/monitoring: "true"
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "Metrics-server"
   port: 443
   type: ClusterIP
 

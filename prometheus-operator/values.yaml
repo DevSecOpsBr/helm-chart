@@ -485,7 +485,7 @@ grafana:
       providers:
       - name: 'nginx-ingress'
         orgId: 1
-        folder: ''
+        folder: 'Ingress'
         type: file
         disableDeletion: true
         editable: true
@@ -493,7 +493,7 @@ grafana:
           path: /var/lib/grafana/dashboards/nginx-ingress
       - name: 'traefik-ingress'
         orgId: 1
-        folder: ''
+        folder: 'Ingress'
         type: file
         disableDeletion: false
         editable: true
@@ -501,7 +501,7 @@ grafana:
           path: /var/lib/grafana/dashboards/traefik-ingress
       - name: 'kubernetes-costs'
         orgId: 1
-        folder: ''
+        folder: 'Finance'
         type: file
         disableDeletion: true
         editable: true
@@ -509,7 +509,7 @@ grafana:
           path: /var/lib/grafana/dashboards/kubernetes-costs
       - name: 'metrics-server'
         orgId: 1
-        folder: ''
+        folder: 'K8S'
         type: file
         disableDeletion: false
         editable: true
@@ -517,7 +517,7 @@ grafana:
           path: /var/lib/grafana/dashboards/metrics-server
       - name: 'kubernetes-cluster'
         orgId: 1
-        folder: ''
+        folder: 'K8S'
         type: file
         disableDeletion: true
         editable: true
@@ -525,23 +525,15 @@ grafana:
           path: /var/lib/grafana/dashboards/kubernetes-cluster
       - name: 'memory-overview'
         orgId: 1
-        folder: ''
+        folder: 'K8S'
         type: file
         disableDeletion: true
         editable: true
         options:
           path: /var/lib/grafana/dashboards/memory-overview
-      - name: 'cpu-overview'
-        orgId: 1
-        folder: ''
-        type: file
-        disableDeletion: true
-        editable: true
-        options:
-          path: /var/lib/grafana/dashboards/cpu-overview
       - name: 'general-cluster-overview'
         orgId: 1
-        folder: ''
+        folder: 'K8S'
         type: file
         disableDeletion: true
         editable: true
@@ -549,12 +541,20 @@ grafana:
           path: /var/lib/grafana/dashboards/general-cluster-overview
       - name: 'kubernetes-cluster-overview'
         orgId: 1
-        folder: ''
+        folder: 'K8S'
         type: file
         disableDeletion: true
         editable: true
         options:
           path: /var/lib/grafana/dashboards/kubernetes-cluster-overview
+      - name: 'kubernetes-cluster-prometheus'
+        orgId: 1
+        folder: 'K8S'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes-cluster-prometheus
 
   dashboards:
     nginx-ingress:
@@ -587,11 +587,6 @@ grafana:
         datasource: Prometheus
         gnetId: 10266
         revision: 1
-    cpu-overview:
-      cpu-overview:
-        datasource: Prometheus
-        gnetId: 10265
-        revision: 1
     general-cluster-overview:
       general-cluster-overview:
         datasource: Prometheus
@@ -601,6 +596,11 @@ grafana:
       kubernetes-cluster-overview:
         datasource: Prometheus
         gnetId: 11802
+        revision: 1
+    kubernetes-cluster-prometheus:
+      kubernetes-cluster-prometheus:
+        datasource: Prometheus
+        gnetId: 6417
         revision: 1
 
   serverDashboardConfigmaps:
@@ -1757,7 +1757,7 @@ prometheus:
     ## prometheus resource to be created with selectors based on values in the helm deployment,
     ## which will also match the servicemonitors created
     ##
-    serviceMonitorSelectorNilUsesHelmValues: true
+    serviceMonitorSelectorNilUsesHelmValues: false
 
     ## ServiceMonitors to be selected for target discovery.
     ## If {}, select all ServiceMonitors
@@ -1766,7 +1766,8 @@ prometheus:
     ## Example which selects ServiceMonitors with label "prometheus" set to "somelabel"
     # serviceMonitorSelector:
     #   matchLabels:
-    #     prometheus: somelabel
+    #     release: prometheus
+    #     system.monitoring: prometheus
 
     ## Namespaces to be selected for ServiceMonitor discovery.
     ## See https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#namespaceselector for usage
@@ -2011,12 +2012,13 @@ prometheus:
   additionalServiceMonitors:
   ## Name of the ServiceMonitor to create
   ##
-  - name: "prometheus-prometheus-oper--apps"
+  - name: "prometheus-prometheus-oper-3rdparty"
 
     ## Additional labels to set used for the ServiceMonitorSelector. Together with standard labels from
     ## the chart
     ##
     additionalLabels:
+      release: prometheus
       system.monitoring: prometheus
       ellesmera.local/monitoring: "true"
 
@@ -2033,7 +2035,8 @@ prometheus:
     ##
     selector:
       matchLabels:
-        system.monitoring: "prometheus"
+        release: prometheus
+        system.monitoring: prometheus
         ellesmera.local/monitoring: "true"
   
     ## Namespaces from which services are selected
@@ -2041,12 +2044,12 @@ prometheus:
     namespaceSelector:
       ## Match any namespace
       ##
-      # any: false
+      any: true
 
       ## Explicit list of namespace names to select
       ##
-      matchNames:
-      - monitoring
+      # matchNames:
+        # - monitoring
 
     ## Endpoints of the selected service to be monitored
     ##
@@ -2073,7 +2076,7 @@ prometheus:
 
       ## HTTP scheme to use for scraping
       ##
-      #   scheme: http
+        scheme: http
 
       ## TLS configuration to use when scraping the endpoint
       ##

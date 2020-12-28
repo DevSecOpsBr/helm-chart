@@ -160,7 +160,7 @@ apps:
       description: "[DEPRECATED] - Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
-      enabled: false
+      enabled: true
       chart: "nginx-ingress"
       version: "1.41.3"
       valuesFiles: 
