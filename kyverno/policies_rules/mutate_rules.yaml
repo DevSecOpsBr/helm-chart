@@ -1,0 +1,17 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: set-namespace-kiam-annotations
+spec:
+  rules:
+  - name: "Set kiam annotations"
+    match:
+      resources:
+        kinds:
+        - Namespace
+    mutate:
+      message: "All namespaces must have `annotations` with value `iam.amazonaws.com/permitted: \".*\"`"
+      patchStrategicMerge:
+        metadata:
+          annotations:
+            iam.amazonaws.com/permitted: ".*"
