@@ -23,7 +23,7 @@ kind: ClusterPolicy
 metadata:
   name: who-created-this
 spec:
-  background: false
+  background: true
   rules:
   - name: who-created-this
     match:
