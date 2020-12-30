@@ -113,7 +113,6 @@ spec:
         - ingress
       resources:
         kinds:
-        - Namespace
         - Service
     validate:
       message: "Ops! You are not allowed to remove a `Namespace` with a `Services` of type `LoadBalancer`."
