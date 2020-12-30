@@ -1,0 +1,127 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-namespace-kiam-annotations
+spec:
+  validationFailureAction: enforce
+  rules:
+  - name: kiam-namespace-annotations
+    match:
+      resources:
+        kinds:
+        - Namespace
+    validate:
+      message: "You must have annotation `annotations` with value `iam.amazonaws.com/permitted: \".*\"` set on all new namespaces."
+      pattern:
+        metadata:
+          annotations:
+            iam.amazonaws.com/permitted: ".*"
+
+---
+
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: all-containers-need-requests-and-limits
+spec:
+  validationFailureAction: audit
+  rules:
+  - name: check-container-resources
+    match:
+      resources:
+        kinds:
+        - Pod
+    validate:
+      message: "All containers must have CPU and memory resource requests and limits defined."
+      pattern:
+        spec:
+          containers:
+          - name: "*"
+            resources:
+              limits:
+                memory: "?*"
+                cpu: "?*"
+              requests:
+                memory: "?*"
+                cpu: "?*m"
+
+---
+
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: release-prometheus-labels
+spec:
+  validationFailureAction: enforce
+  rules:
+  - name: release-prometheus-labels
+    match:
+      resources:
+        kinds:
+        - Deployment
+        selector:
+          matchLabels:
+            release: prometheus
+    exclude:
+      resources:
+        namespaces:
+          - kube-system
+          - kube-public
+          - kube-node-lease
+    validate:
+      message: "label `release: prometheus` is required"
+      pattern:
+        metadata:
+          labels:
+            release: "?*"
+
+---
+
+apiVersion : kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-helm-tiller
+spec:
+  validationFailureAction: enforce
+  rules:
+  - name: validate-helm-tiller
+    match:
+      resources:
+        kinds:
+        - Pod
+    validate:
+      message: "Ops! Helm Tiller is not allowed for security reasons."  
+      pattern:
+        spec:
+          containers:
+          - name: "*"
+            image: "!*tiller*"
+
+---
+
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: protect-loadbalancers-deletion
+spec:
+  validationFailureAction: enforce
+  background: false
+  rules:
+  - name: protected-service-loadbalancer
+    match:
+      namespaces:
+        - ingress
+      resources:
+        kinds:
+        - Service
+    validate:
+      message: "Ops! You are not allowed to remove `Services` of type `LoadBalancer`."
+      pattern:
+        spec:
+          type: "LoadBalancer"
+      deny:
+        conditions:
+        - key: "{{request.operation}}"
+          operator: In
+          value:
+          - DELETE
