@@ -122,6 +122,8 @@ spec:
           type: "LoadBalancer"
       deny:
         conditions:
+        # The request.operation object contains the type of action being performed. 
+        # Values are either CREATE, UPDATE, or DELETE.
         - key: "{{request.operation}}"
           operator: In
           value:
