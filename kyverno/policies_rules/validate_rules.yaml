@@ -109,16 +109,17 @@ spec:
   rules:
   - name: protected-service-loadbalancer
     match:
-      namespaces:
-        - ingress
       resources:
         kinds:
         - Service
+      namespaces:
+      - "ingress"
     validate:
-      message: "Ops! You are not allowed to remove a `Namespace` with a `Services` of type `LoadBalancer`."
+      message: "Ops! You are not allowed to remove `Services` of type `LoadBalancer`."
       pattern:
-        spec:
-          type: "LoadBalancer"
+        (namespace): ingress
+        (spec):
+          (type): LoadBalancer
       deny:
         conditions:
         # The request.operation object contains the type of action being performed. 
