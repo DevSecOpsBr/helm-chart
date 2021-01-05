@@ -1,11 +1,12 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: require-namespace-kiam-annotations
+  name: require-namespace-annotations
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: audit
+  background: true
   rules:
-  - name: kiam-namespace-annotations
+  - name: require-namespace-annotations
     match:
       resources:
         kinds:
@@ -26,7 +27,7 @@ metadata:
 spec:
   validationFailureAction: audit
   rules:
-  - name: check-container-resources
+  - name: all-containers-need-requests-and-limits
     match:
       resources:
         kinds:
@@ -50,11 +51,11 @@ spec:
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: release-prometheus-labels
+  name: add-label-release-prometheus
 spec:
   validationFailureAction: enforce
   rules:
-  - name: release-prometheus-labels
+  - name: add-label-release-prometheus
     match:
       resources:
         kinds:
@@ -84,7 +85,7 @@ metadata:
 spec:
   validationFailureAction: enforce
   rules:
-  - name: validate-helm-tiller
+  - name: disallow-helm-tiller
     match:
       resources:
         kinds:
@@ -102,24 +103,62 @@ spec:
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: protect-loadbalancers-deletion
+  name: protect-namespace-deletion
 spec:
   validationFailureAction: enforce
   background: false
   rules:
-  - name: protected-service-loadbalancer
+  - name: protected-namespace-deletion
+    match:
+      resources:
+        kinds:
+        - Namespace
+    ## Update the matchLabels below with your Service label for deletion 
+    # exclude:
+    #   resources:
+    #     namespaces:
+    #     - traefik
+    #     - ingress
+    validate:
+      message: "Ops! You are not allowed to remove `Namespace`."
+      deny:
+        conditions:
+        # The request.operation object contains the type of action being performed. 
+        # Values are either CREATE, UPDATE, or DELETE.
+        - key: "{{request.operation}}"
+          operator: In
+          value:
+          - DELETE
+---
+
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: protect-loadbalancer-deletion
+spec:
+  validationFailureAction: enforce
+  background: false 
+  rules:
+  - name: protect-loadbalancer-deletion
     match:
       resources:
         kinds:
         - Service
-      namespaces:
-      - "ingress"
+    ## Update the matchLabels below with your Service label for deletion 
+    # exclude:
+    #   resources:
+    #     selector:
+    #       matchLabels:
+    #         app: traefik-ingress
+    #         app: nginx-ingress
     validate:
       message: "Ops! You are not allowed to remove `Services` of type `LoadBalancer`."
       pattern:
-        (namespace): ingress
-        (spec):
-          (type): LoadBalancer
+        metadata:
+          =(labels):
+            =(service-type): ingress-controller
+        =(spec):
+          =(type): LoadBalancer
       deny:
         conditions:
         # The request.operation object contains the type of action being performed. 
