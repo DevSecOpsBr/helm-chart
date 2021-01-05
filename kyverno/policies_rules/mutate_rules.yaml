@@ -1,10 +1,10 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: set-namespace-kiam-annotations
+  name: add-namespace-annotations
 spec:
   rules:
-  - name: "Set kiam annotations"
+  - name: add-namespace-annotations
     match:
       resources:
         kinds:
@@ -21,6 +21,30 @@ spec:
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
+  name: add-label-service-type-ingress-controller
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+  - name: add-label-servic-etype-ingress-controller
+    match:
+      resources:
+        kinds:
+        - Service
+    mutate:
+      message: "Added label service-type: \"ingress-controller\"."
+      patchStrategicMerge:
+        (spec):
+          (type): LoadBalancer
+        metadata:
+          labels:
+            service-type: ingress-controller
+
+---
+
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
   name: who-created-this
 spec:
   background: true
@@ -30,6 +54,8 @@ spec:
       resources:
         kinds:
         - Namespace
+        - Deployment
+        - Service
         - Pod
     mutate:
       patchStrategicMerge:
