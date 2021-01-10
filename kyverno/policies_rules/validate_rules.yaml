@@ -6,7 +6,7 @@ spec:
   validationFailureAction: audit
   background: true
   rules:
-  - name: require-namespace-annotations
+  - name: "Missed kiam annotation"
     match:
       resources:
         kinds:
@@ -27,7 +27,7 @@ metadata:
 spec:
   validationFailureAction: audit
   rules:
-  - name: all-containers-need-requests-and-limits
+  - name: "Container Resources"
     match:
       resources:
         kinds:
@@ -55,7 +55,7 @@ metadata:
 spec:
   validationFailureAction: enforce
   rules:
-  - name: add-label-release-prometheus
+  - name: "Label release: prometheus"
     match:
       resources:
         kinds:
@@ -85,7 +85,7 @@ metadata:
 spec:
   validationFailureAction: enforce
   rules:
-  - name: disallow-helm-tiller
+  - name: "Helm tiller disallow"
     match:
       resources:
         kinds:
@@ -108,7 +108,7 @@ spec:
   validationFailureAction: enforce
   background: false
   rules:
-  - name: protected-namespace-deletion
+  - name: "Namespace Protection"
     match:
       resources:
         kinds:
@@ -139,7 +139,7 @@ spec:
   validationFailureAction: enforce
   background: false 
   rules:
-  - name: protect-loadbalancer-deletion
+  - name: "Sevice Loadbalancer Protection"
     match:
       resources:
         kinds:
@@ -155,10 +155,10 @@ spec:
       message: "Ops! You are not allowed to remove `Services` of type `LoadBalancer`."
       pattern:
         metadata:
-          =(labels):
-            =(service-type): ingress-controller
-        =(spec):
-          =(type): LoadBalancer
+          (labels):
+            (service-type): ingress-controller
+        (spec):
+          (type): LoadBalancer
       deny:
         conditions:
         # The request.operation object contains the type of action being performed. 

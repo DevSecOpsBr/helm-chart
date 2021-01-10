@@ -4,7 +4,7 @@ metadata:
   name: add-namespace-annotations
 spec:
   rules:
-  - name: add-namespace-annotations
+  - name: "Added kiam annotation"
     match:
       resources:
         kinds:
@@ -26,7 +26,7 @@ spec:
   validationFailureAction: enforce
   background: true
   rules:
-  - name: add-label-servic-etype-ingress-controller
+  - name: "Label Created"
     match:
       resources:
         kinds:
@@ -49,7 +49,7 @@ metadata:
 spec:
   background: true
   rules:
-  - name: who-created-this
+  - name: "Created by:"
     match:
       resources:
         kinds:
