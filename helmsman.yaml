@@ -39,6 +39,10 @@ namespaces:
     protected: false
     annotations:
       iam.amazonaws.com/permitted: ".*"
+  linkerd:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
   miscellaneous:
     protected: false
     annotations:
@@ -197,8 +201,34 @@ apps:
       helmFlags:
         - "--atomic"
         - "--debug"
+
+    linkerd2:
+      description: "Linkerd service mesh for K8S"
+      group: "ingress"
+      namespace: "linkerd"
+      enabled: true
+      chart: "linkerd2"
+      version: "2.9.1"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "bash -x linkerd2/step.sh main"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "linkerd2/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -40
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      setFile:
+        global.identityTrustAnchorsPEM: linkerd2/certs/ca.crt
+        identity.issuer.tls.crtPEM: linkerd2/certs/issuer.crt
+        identity.issuer.tls.keyPEM: linkerd2/certs/issuer.key
       set:
-        controller.service.externalIPs: "{${ELLESMERA_IP}}"
+        identity.issuer.crtExpiry: "2021-12-27T19:35:23Z"
 
     argo:
       description: "ArgoCD - Declarative GitOps CD for Kubernetes"
