@@ -206,7 +206,7 @@ apps:
       description: "Linkerd service mesh for K8S"
       group: "ingress"
       namespace: "linkerd"
-      enabled: true
+      enabled: false
       chart: "linkerd2"
       version: "2.9.1"
       hooks:
