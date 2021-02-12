@@ -18,7 +18,7 @@ metadata:
 settings:
   kubeContext: "ellesmera.local" # will try connect to this context first, if it does not exist, it will be created using the details below
   storageBackend: "secret"
-  #slackWebhook:  "$slack" # or your slack webhook url
+  slackWebhook:  "https://hooks.slack.com/services/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" # or your slack webhook url
   #reverseDelete: false # reverse the priorities on delete
   globalHooks:
     successCondition: "Complete"
@@ -275,19 +275,19 @@ apps:
       description: "Kubernetes Ingress Controller and API Gateway."
       group: "api-gateways"
       namespace: "ingress"
-      enabled: false
+      enabled: true 
       chart: "ambassador"
       version: "6.5.18"
       hooks:
         deleteOnSuccess: true
         successCondition: "Complete"
       valuesFiles: 
-        - "amabassador/values.yaml"
+        - "ambassador/values.yaml"
       wait: true
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -40
+      priority: -30
       helmFlags:
         - "--atomic"
         - "--debug"
