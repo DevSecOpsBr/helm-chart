@@ -67,9 +67,53 @@ namespaces:
 helmRepos:
   argo: "https://argoproj.github.io/argo-helm"
   jfrog: "https://charts.jfrog.io"
-  # stable: "https://kubernetes-charts.storage.googleapis.com"
+  kong: https://charts.konghq.com
 
 apps:
+
+    argo:
+      description: "ArgoCD - Declarative GitOps CD for Kubernetes"
+      group: "cicd"
+      namespace: "miscellaneous" 
+      enabled: true 
+      chart: "argo/argo-cd" 
+      version: "2.11.0" 
+      valuesFiles: 
+        - "argo-cd/values.yaml" 
+      test: true
+      protected: false
+      priority: -120
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      set:
+        server.ingress.hosts: "{argocd.minikube}"
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+
+    kyverno:
+      description: "Kubernetes Native Policy Management"
+      group: "security"
+      namespace: "security" 
+      enabled: true 
+      chart: "kyverno" 
+      version: "1.2.1" 
+      valuesFiles: 
+        - "kyverno/values.yaml" 
+      test: true
+      protected: false
+      priority: -110
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
 
     metrics-server:
       description: "Manager SSL certficates creation, renew and update."
@@ -227,9 +271,32 @@ apps:
       set:
         envoy.service.externalIPs: "{${ELLESMERA_IP}}"
 
+    ambassador:
+      description: "Kubernetes Ingress Controller and API Gateway."
+      group: "api-gateways"
+      namespace: "ingress"
+      enabled: false
+      chart: "ambassador"
+      version: "6.5.18"
+      hooks:
+        deleteOnSuccess: true
+        successCondition: "Complete"
+      valuesFiles: 
+        - "amabassador/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -40
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        envoy.service.externalIPs: "{${ELLESMERA_IP}}"
+
     linkerd2:
       description: "Linkerd service mesh for K8S"
-      group: "ingress"
+      group: "meshes"
       namespace: "linkerd"
       enabled: false
       chart: "linkerd2"
@@ -254,49 +321,3 @@ apps:
         identity.issuer.tls.keyPEM: linkerd2/certs/issuer.key
       set:
         identity.issuer.crtExpiry: "2021-12-27T19:35:23Z"
-
-    argo:
-      description: "ArgoCD - Declarative GitOps CD for Kubernetes"
-      group: "cicd"
-      namespace: "miscellaneous" 
-      enabled: true 
-      chart: "argo/argo-cd" 
-      version: "2.11.0" 
-      valuesFiles: 
-        - "argo-cd/values.yaml" 
-      test: true
-      protected: false
-      priority: 0
-      wait: true
-      hooks:
-        successCondition: "Complete"
-        successTimeout: "90s"
-        deleteOnSuccess: true
-      set:
-        server.ingress.hosts: "{argocd.minikube}"
-      helmFlags: 
-        - "--debug"
-        - "--atomic"
-
-    kyverno:
-      description: "Kubernetes Native Policy Management"
-      group: "security"
-      namespace: "security" 
-      enabled: true 
-      chart: "kyverno" 
-      version: "1.2.1" 
-      valuesFiles: 
-        - "kyverno/values.yaml" 
-      test: true
-      protected: false
-      priority: 0
-      wait: true
-      hooks:
-        successCondition: "Complete"
-        successTimeout: "90s"
-        deleteOnSuccess: true
-      helmFlags: 
-        - "--debug"
-        - "--atomic"
-
-# See https://github.com/Praqma/helmsman/blob/master/docs/desired_state_specification.md#apps for more apps options
