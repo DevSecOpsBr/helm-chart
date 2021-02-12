@@ -1,0 +1,160 @@
+adminService:
+  annotations: {}
+  create: true
+  port: 8877
+  type: ClusterIP
+affinity: {}
+ambassadorConfig: ""
+authService:
+  create: true
+  optional_configurations: null
+autoscaling:
+  enabled: false
+  maxReplicas: 5
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 60
+        type: Utilization
+    type: Resource
+  - resource:
+      name: memory
+      target:
+        averageUtilization: 60
+        type: Utilization
+    type: Resource
+  minReplicas: 2
+crds:
+  create: true
+  enabled: true
+  keep: true
+createDevPortalMappings: true
+daemonSet: false
+deploymentAnnotations: {}
+deploymentLabels: {}
+deploymentStrategy:
+  type: RollingUpdate
+dnsPolicy: ClusterFirst
+enableAES: true
+env: {}
+envRaw: {}
+fullnameOverride: ""
+hostNetwork: false
+image:
+  pullPolicy: IfNotPresent
+  repository: docker.io/datawire/aes
+  tag: 1.11.1
+imagePullSecrets: []
+initContainers: []
+licenseKey:
+  annotations: {}
+  createSecret: true
+  secretName: null
+  value: null
+livenessProbe:
+  failureThreshold: 3
+  initialDelaySeconds: 30
+  periodSeconds: 3
+metrics:
+  serviceMonitor:
+    enabled: false
+nameOverride: ""
+namespaceOverride: ""
+nodeSelector: {}
+podAnnotations: {}
+podDisruptionBudget: {}
+podLabels: {}
+priorityClassName: ""
+prometheusExporter:
+  enabled: false
+  pullPolicy: IfNotPresent
+  repository: prom/statsd-exporter
+  resources: {}
+  tag: v0.8.1
+rateLimit:
+  create: true
+rbac:
+  create: true
+  nameOverride: null
+  podSecurityPolicies: []
+readinessProbe:
+  failureThreshold: 3
+  initialDelaySeconds: 30
+  periodSeconds: 3
+redis:
+  affinity: {}
+  annotations:
+    deployment: {}
+    service: {}
+  create: true
+  image:
+    pullPolicy: IfNotPresent
+    repository: redis
+    tag: 5.0.1
+  nodeSelector: {}
+  resources: {}
+  tolerations: {}
+redisURL: null
+registry:
+  create: false
+replicaCount: 3
+resources:
+  limits:
+    cpu: 1000m
+    memory: 600Mi
+  requests:
+    cpu: 200m
+    memory: 300Mi
+restartPolicy: null
+scope:
+  singleNamespace: false
+security:
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+  podSecurityContext:
+    runAsUser: 8888
+  podSecurityPolicy: {}
+service:
+  annotations: {}
+  externalIPs: []
+  externalTrafficPolicy: null
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  - name: https
+    port: 443
+    targetPort: 8443
+  sessionAffinity: null
+  sessionAffinityConfig: null
+  type: LoadBalancer
+serviceAccount:
+  create: true
+  name: null
+servicePreview:
+  enabled: false
+  trafficAgent:
+    image:
+      repository: null
+      tag: null
+    injector:
+      crtPEM: ""
+      enabled: true
+      keyPEM: ""
+    port: 9900
+    serviceAccountName: traffic-agent
+    singleNamespace: true
+  trafficManager:
+    image:
+      repository: null
+      tag: null
+    serviceAccountName: traffic-manager
+sidecarContainers: []
+terminationGracePeriodSeconds: null
+test:
+  enabled: true
+  image: busybox
+tolerations: []
+volumeMounts: []
+volumes: []
