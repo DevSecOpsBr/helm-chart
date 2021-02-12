@@ -164,7 +164,7 @@ apps:
       description: "[DEPRECATED] - Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
-      enabled: true
+      enabled: false
       chart: "nginx-ingress"
       version: "1.41.3"
       valuesFiles: 
@@ -201,6 +201,31 @@ apps:
       helmFlags:
         - "--atomic"
         - "--debug"
+      set:
+        controller.service.externalIPs: "{${ELLESMERA_IP}}"
+
+    contour:
+      description: "High performance ingress controller for Kubernetes"
+      group: "ingress"
+      namespace: "ingress"
+      enabled: true
+      chart: "contour"
+      version: "4.1.2"
+      hooks:
+        deleteOnSuccess: true
+        successCondition: "Complete"
+      valuesFiles: 
+        - "contour/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -40
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        envoy.service.externalIPs: "{${ELLESMERA_IP}}"
 
     linkerd2:
       description: "Linkerd service mesh for K8S"
