@@ -330,3 +330,27 @@ apps:
         identity.issuer.tls.keyPEM: linkerd2/certs/issuer.key
       set:
         identity.issuer.crtExpiry: "2021-12-27T19:35:23Z"
+
+    loki:
+      description: "Loki: like Prometheus, but for logs."
+      group: "observability"
+      namespace: "monitoring"
+      enabled: true
+      chart: "loki"
+      version: "2.3.0"
+      hooks:
+        successCondition: "Complete"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "loki/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -30
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        ingress.annotations.kubernetes\.io/ingress\.class: "contour"
+        ingress.hosts\.host[0]: "loki.minikube"
