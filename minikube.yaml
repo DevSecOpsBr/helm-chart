@@ -99,6 +99,7 @@ apps:
         deleteOnSuccess: true
       set:
         server.ingress.hosts: "{argocd.minikube}"
+        server.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
       helmFlags: 
         - "--debug"
         - "--atomic"
