@@ -66,20 +66,57 @@ namespaces:
 
 helmRepos:
   stable: https://charts.helm.sh/stable
+  # argocd - continous deployment
   argo: "https://argoproj.github.io/argo-helm"
+  # jfrog tools
   jfrog: "https://charts.jfrog.io"
+  # kong api-gateway
   kong: https://charts.konghq.com
+  # kong - kuma mesh
+  kong-mesh: https://kong.github.io/kong-mesh-charts
+  # grafana tools e.g: loki and etc...
   grafana: https://grafana.github.io/helm-charts
+  # nginx ingress controller
   ingress-nginx: https://kubernetes.github.io/ingress-nginx
+  # kube-prometheus-stack
   prometheus-community: https://prometheus-community.github.io/helm-charts
+  # helm automation delivery
   keel: https://charts.keel.sh
+  # cert-manager
   jetstack: https://charts.jetstack.io
+  # bunch of charts
   bitnami: https://charts.bitnami.com/bitnami
+  # ambassador ingress & api-gateway
   datawire: https://www.getambassador.io
+  # kubernetes event driven application
   kedacore: https://kedacore.github.io/charts
+  # develop, deploy and manage cloud-native applications without requiring any Kubernetes expertise
   shipa-charts: https://shipa-charts.storage.googleapis.com
+  # Concourse is an open-source continuous thing-doer.
+  concourse: https://concourse-charts.storage.googleapis.com/
 
 apps:
+
+    kyverno:
+      description: "Kubernetes Native Policy Management"
+      group: "security"
+      namespace: "security" 
+      enabled: true 
+      chart: "kyverno" 
+      version: "1.2.1" 
+      valuesFiles: 
+        - "kyverno/values.yaml" 
+      test: true
+      protected: true
+      priority: -120
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
 
     argo:
       description: "ArgoCD - Declarative GitOps CD for Kubernetes"
@@ -92,7 +129,7 @@ apps:
         - "argo-cd/values.yaml" 
       test: true
       protected: false
-      priority: -120
+      priority: -110
       wait: true
       hooks:
         successCondition: "Complete"
@@ -101,27 +138,6 @@ apps:
       set:
         server.ingress.hosts: "{argocd.minikube}"
         server.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
-      helmFlags: 
-        - "--debug"
-        - "--atomic"
-
-    kyverno:
-      description: "Kubernetes Native Policy Management"
-      group: "security"
-      namespace: "security" 
-      enabled: true 
-      chart: "kyverno" 
-      version: "1.2.1" 
-      valuesFiles: 
-        - "kyverno/values.yaml" 
-      test: true
-      protected: false
-      priority: -110
-      wait: true
-      hooks:
-        successCondition: "Complete"
-        successTimeout: "90s"
-        deleteOnSuccess: true
       helmFlags: 
         - "--debug"
         - "--atomic"
@@ -214,26 +230,6 @@ apps:
       helmFlags:
         - "--atomic"
         - "--debug"
-
-    nginx-deprecated:
-      description: "[DEPRECATED] - Nginx-Ingress Controller for K8S"
-      group: "ingress"
-      namespace: "ingress"
-      enabled: false
-      chart: "nginx-ingress"
-      version: "1.41.3"
-      valuesFiles: 
-        - "nginx-ingress/values.yaml"
-      wait: true
-      timeout: 600
-      maxHistory: 100
-      test: true
-      priority: -60
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-      set:
-        controller.service.externalIPs: "{${ELLESMERA_IP}}"
 
     nginx:
       description: "Nginx-Ingress Controller for K8S"
@@ -335,7 +331,7 @@ apps:
 
     loki:
       description: "Loki: like Prometheus, but for logs."
-      group: "observability"
+      group: "logging"
       namespace: "monitoring"
       enabled: true
       chart: "loki"
