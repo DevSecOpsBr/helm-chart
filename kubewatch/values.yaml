@@ -10,10 +10,10 @@
 slack:
   enabled: true
   # Slack channel to notify
-  channel: "XXXX"
+  channel: "kubernetes-watch"
   # Slack bots token. Create using: https://my.slack.com/services/new/bot
   # and invite the bot to your channel using: /join @botname
-  token: "XXXX"
+  token: "UY9Nq0ICZ8HZdJ1JkaeeF63J"
 
 hipchat:
   enabled: false
@@ -38,10 +38,10 @@ namespaceToWatch: ""
 # Resources to watch
 resourcesToWatch:
   deployment: true
-  replicationcontroller: false
-  replicaset: false
-  daemonset: false
-  services: false
+  replicationcontroller: true
+  replicaset: true
+  daemonset: true
+  services: true
   pod: true
   job: false
   persistentvolume: false
@@ -76,7 +76,7 @@ serviceAccount:
   create: true
   # The name of the ServiceAccount to use.
   # If not set and create is true, a name is generated using the fullname template
-  name:
+  name: kubernetes-watch
 
 resources: {}
   # limits:
