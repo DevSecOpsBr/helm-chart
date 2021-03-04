@@ -190,7 +190,7 @@ apps:
       description: "Manager SSL certficates creation, renew and update."
       group: "miscellaneous"
       namespace: "cert-manager"
-      enabled: true
+      enabled: false
       chart: "cert-manager"
       version: "v0.13.0"
       hooks:
@@ -213,7 +213,7 @@ apps:
       description: "Manager SSL certficates creation, renew and update."
       group: "miscellaneous"
       namespace: "observability"
-      enabled: true
+      enabled: false
       chart: "jaeger-operator"
       version: "2.14.0"
       hooks:
@@ -282,7 +282,7 @@ apps:
       description: "Kubernetes Ingress Controller and API Gateway."
       group: "api-gateways"
       namespace: "ingress"
-      enabled: true 
+      enabled: false
       chart: "ambassador"
       version: "6.5.18"
       hooks:
@@ -333,7 +333,7 @@ apps:
       description: "Loki: like Prometheus, but for logs."
       group: "logging"
       namespace: "monitoring"
-      enabled: true
+      enabled: false
       chart: "loki"
       version: "2.3.0"
       hooks:
