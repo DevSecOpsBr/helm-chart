@@ -142,6 +142,27 @@ apps:
         - "--debug"
         - "--atomic"
 
+    argo-notifications:
+      description: "ArgoCD - Notifications for Kubernetes"
+      group: "cicd"
+      namespace: "miscellaneous" 
+      enabled: true 
+      chart: "argo/argocd-notifications" 
+      version: "1.0.14" 
+      valuesFiles: 
+        - "argocd-notifications/values.yaml" 
+      test: true
+      protected: false
+      priority: -109
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+
     metrics-server:
       description: "Manager SSL certficates creation, renew and update."
       group: "monitoring"
