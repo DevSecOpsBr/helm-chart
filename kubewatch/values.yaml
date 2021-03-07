@@ -59,7 +59,7 @@ slack:
   channel: "kubernetes-watch"
   # Slack bots token. Create using: https://my.slack.com/services/new/bot
   # and invite the bot to your channel using: /join @botname
-  token: "xoxb-1743285690293-1824336226054-wMixYFYxcFkFvqaJ5Z1oqXoH"
+  token: "xoxb-1743285690293-1824358090038-T0ZOnfzCwrwdGzUauzk4aiGH"
 
 hipchat:
   enabled: false
