@@ -78,8 +78,8 @@ ingress:
     - polaris.minikube
   
   annotations:
-    kubernetes.io/ingress.class: "contour"
-    monitoring: prometheus # prometheus ServiceMonitor discovery tag
+    kubernetes.io/ingress.class: contour
+    monitoring: prometheus
   
   tls:
 
