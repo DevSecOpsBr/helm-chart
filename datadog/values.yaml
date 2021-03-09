@@ -18,7 +18,7 @@ datadog:
   ## Set this to your Datadog API key before the Agent runs.
   ## ref: https://app.datadoghq.com/account/settings#agent/kubernetes
   #
-  apiKey: <DD_API_KEY>
+  apiKey: 83ed088300dc2100301258bf1fe127c8
 
   ## @param apiKeyExistingSecret - string - optional
   ## Use existing Secret which stores API key instead of creating a new one.
@@ -88,7 +88,7 @@ datadog:
   ## Autodiscovery via Kube Service annotations is automatically enabled
   #
   clusterChecks:
-    enabled: false
+    enabled: true
 
   ## @param nodeLabelsAsTags - list of key:value strings - optional
   ## Provide a mapping of Kubernetes Node Labels to Datadog Tags.
@@ -103,9 +103,9 @@ datadog:
   ## Provide a mapping of Kubernetes Labels to Datadog Tags.
   #
   podLabelsAsTags:
-    liveintent.com/environment: env
-  #   app: kube_app
-  #   release: helm_release
+    ellesmera.local/cluster: minikube
+    app: kube_app
+    # release: helm_release
   #   <KUBERNETES_LABEL>: <DATADOG_TAG_KEY>
 
   ## @param podAnnotationsAsTags - list of key:value strings - optional
