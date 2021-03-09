@@ -94,6 +94,8 @@ helmRepos:
   shipa-charts: https://shipa-charts.storage.googleapis.com
   # Concourse is an open-source continuous thing-doer.
   concourse: https://concourse-charts.storage.googleapis.com/
+  # Datadog logging, monitoring and apm system
+  datadog: https://helm.datadoghq.com
 
 apps:
     # Security block
@@ -239,7 +241,7 @@ apps:
       namespace: "monitoring"
       enabled: true
       chart: "datadog"
-      version: "2.0.1"
+      version: "2.10.1"
       hooks:
         successCondition: "Complete"
         deleteOnSuccess: true
