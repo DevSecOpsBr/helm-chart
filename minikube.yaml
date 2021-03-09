@@ -96,7 +96,7 @@ helmRepos:
   concourse: https://concourse-charts.storage.googleapis.com/
 
 apps:
-
+    # Security block
     kyverno:
       description: "Kubernetes Native Policy Management"
       group: "security"
@@ -118,6 +118,30 @@ apps:
         - "--debug"
         - "--atomic"
 
+    cert-manager:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "miscellaneous"
+      namespace: "cert-manager"
+      enabled: false
+      chart: "cert-manager"
+      version: "v0.13.0"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n cert-manager list --all"
+        # postInstall: "cert-manager/test-resources.yaml"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "cert-manager/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -119
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+    # Deployment & CI/CD Block
     argo:
       description: "ArgoCD - Declarative GitOps CD for Kubernetes"
       group: "cicd"
@@ -163,6 +187,7 @@ apps:
         - "--debug"
         - "--atomic"
 
+    # Monitoring Block
     metrics-server:
       description: "Manager SSL certficates creation, renew and update."
       group: "monitoring"
@@ -186,7 +211,7 @@ apps:
         - "--debug"
 
     prometheus:
-      description: "Manager SSL certficates creation, renew and update."
+      description: "Prometheus clusters atop Kubernetes"
       group: "monitoring"
       namespace: "monitoring"
       enabled: true
@@ -202,25 +227,70 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
+      priority: -99
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+    # Logging Block
+    datadog:
+      description: "Datadog: like Prometheus, but for logs."
+      group: "logging"
+      namespace: "monitoring"
+      enabled: true
+      chart: "datadog"
+      version: "2.0.1"
+      hooks:
+        successCondition: "Complete"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "datadog/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
       priority: -90
       helmFlags:
         - "--atomic"
         - "--debug"
 
-    cert-manager:
-      description: "Manager SSL certficates creation, renew and update."
-      group: "miscellaneous"
-      namespace: "cert-manager"
+    loki:
+      description: "Loki: like Prometheus, but for logs."
+      group: "logging"
+      namespace: "monitoring"
       enabled: false
-      chart: "cert-manager"
-      version: "v0.13.0"
+      chart: "loki"
+      version: "2.3.0"
       hooks:
         successCondition: "Complete"
-        preInstall: "helm -n cert-manager list --all"
-        # postInstall: "cert-manager/test-resources.yaml"
         deleteOnSuccess: true
       valuesFiles: 
-        - "cert-manager/values.yaml"
+        - "loki/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -89
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        ingress.annotations.kubernetes\.io/ingress\.class: "contour"
+        ingress.hosts\.host[0]: "loki.minikube"
+
+    # Ingress Block
+    contour:
+      description: "High performance ingress controller for Kubernetes"
+      group: "ingress"
+      namespace: "ingress"
+      enabled: true
+      chart: "contour"
+      version: "4.1.2"
+      hooks:
+        deleteOnSuccess: true
+        successCondition: "Complete"
+      valuesFiles: 
+        - "contour/values.yaml"
       wait: true
       timeout: 300
       maxHistory: 100
@@ -229,7 +299,34 @@ apps:
       helmFlags:
         - "--atomic"
         - "--debug"
+      set:
+        envoy.service.externalIPs: "{${ELLESMERA_IP}}"
 
+    nginx:
+      description: "Nginx-Ingress Controller for K8S"
+      group: "ingress"
+      namespace: "ingress"
+      enabled: false
+      chart: "ingress-nginx"
+      version: "3.12.0"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n ingress-controller list --all"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "ingress-nginx/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -79
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        controller.service.externalIPs: "{${ELLESMERA_IP}}"
+
+    # Observability & Tracing Block
     jaeger:
       description: "Manager SSL certficates creation, renew and update."
       group: "miscellaneous"
@@ -252,53 +349,7 @@ apps:
         - "--atomic"
         - "--debug"
 
-    nginx:
-      description: "Nginx-Ingress Controller for K8S"
-      group: "ingress"
-      namespace: "ingress"
-      enabled: false
-      chart: "ingress-nginx"
-      version: "3.12.0"
-      hooks:
-        successCondition: "Complete"
-        preInstall: "helm -n ingress-controller list --all"
-        deleteOnSuccess: true
-      valuesFiles: 
-        - "ingress-nginx/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -50
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-      set:
-        controller.service.externalIPs: "{${ELLESMERA_IP}}"
-
-    contour:
-      description: "High performance ingress controller for Kubernetes"
-      group: "ingress"
-      namespace: "ingress"
-      enabled: true
-      chart: "contour"
-      version: "4.1.2"
-      hooks:
-        deleteOnSuccess: true
-        successCondition: "Complete"
-      valuesFiles: 
-        - "contour/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -40
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-      set:
-        envoy.service.externalIPs: "{${ELLESMERA_IP}}"
-
+    # API Gateway Block
     ambassador:
       description: "Kubernetes Ingress Controller and API Gateway."
       group: "api-gateways"
@@ -315,13 +366,14 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -30
+      priority: -60
       helmFlags:
         - "--atomic"
         - "--debug"
       set:
         envoy.service.externalIPs: "{${ELLESMERA_IP}}"
 
+    # Service Mesh Block
     linkerd2:
       description: "Linkerd service mesh for K8S"
       group: "meshes"
@@ -339,7 +391,7 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -40
+      priority: -50
       helmFlags:
         - "--atomic"
         - "--debug"
@@ -349,27 +401,3 @@ apps:
         identity.issuer.tls.keyPEM: linkerd2/certs/issuer.key
       set:
         identity.issuer.crtExpiry: "2021-12-27T19:35:23Z"
-
-    loki:
-      description: "Loki: like Prometheus, but for logs."
-      group: "logging"
-      namespace: "monitoring"
-      enabled: false
-      chart: "loki"
-      version: "2.3.0"
-      hooks:
-        successCondition: "Complete"
-        deleteOnSuccess: true
-      valuesFiles: 
-        - "loki/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -30
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-      set:
-        ingress.annotations.kubernetes\.io/ingress\.class: "contour"
-        ingress.hosts\.host[0]: "loki.minikube"
