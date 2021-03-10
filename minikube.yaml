@@ -98,7 +98,54 @@ helmRepos:
   datadog: https://helm.datadoghq.com
 
 apps:
-    # Security block
+
+  # Logging Block
+    datadog:
+      description: "Datadog: like Prometheus, but for logs."
+      group: "logging"
+      namespace: "monitoring"
+      enabled: true
+      chart: "datadog"
+      version: "2.10.1"
+      hooks:
+        successCondition: "Complete"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "datadog/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -130
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+    loki:
+      description: "Loki: like Prometheus, but for logs."
+      group: "logging"
+      namespace: "monitoring"
+      enabled: false
+      chart: "loki"
+      version: "2.3.0"
+      hooks:
+        successCondition: "Complete"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "loki/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -129
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        ingress.annotations.kubernetes\.io/ingress\.class: "contour"
+        ingress.hosts\.host[0]: "loki.minikube"
+
+  # Security block
     kyverno:
       description: "Kubernetes Native Policy Management"
       group: "security"
@@ -234,52 +281,6 @@ apps:
         - "--atomic"
         - "--debug"
 
-    # Logging Block
-    datadog:
-      description: "Datadog: like Prometheus, but for logs."
-      group: "logging"
-      namespace: "monitoring"
-      enabled: true
-      chart: "datadog"
-      version: "2.10.1"
-      hooks:
-        successCondition: "Complete"
-        deleteOnSuccess: true
-      valuesFiles: 
-        - "datadog/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -90
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-
-    loki:
-      description: "Loki: like Prometheus, but for logs."
-      group: "logging"
-      namespace: "monitoring"
-      enabled: false
-      chart: "loki"
-      version: "2.3.0"
-      hooks:
-        successCondition: "Complete"
-        deleteOnSuccess: true
-      valuesFiles: 
-        - "loki/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -89
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-      set:
-        ingress.annotations.kubernetes\.io/ingress\.class: "contour"
-        ingress.hosts\.host[0]: "loki.minikube"
-
     # Ingress Block
     contour:
       description: "High performance ingress controller for Kubernetes"
@@ -328,7 +329,7 @@ apps:
       set:
         controller.service.externalIPs: "{${ELLESMERA_IP}}"
 
-    # Observability & Tracing Block
+  # Observability & Tracing Block
     jaeger:
       description: "Manager SSL certficates creation, renew and update."
       group: "miscellaneous"
@@ -346,12 +347,13 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -70
+      priority: -80
       helmFlags:
         - "--atomic"
         - "--debug"
 
-    # API Gateway Block
+ 
+  # API Gateway Block
     ambassador:
       description: "Kubernetes Ingress Controller and API Gateway."
       group: "api-gateways"
@@ -368,14 +370,14 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -60
+      priority: -70
       helmFlags:
         - "--atomic"
         - "--debug"
       set:
         envoy.service.externalIPs: "{${ELLESMERA_IP}}"
 
-    # Service Mesh Block
+  # Service Mesh Block
     linkerd2:
       description: "Linkerd service mesh for K8S"
       group: "meshes"
@@ -393,7 +395,7 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -50
+      priority: -60
       helmFlags:
         - "--atomic"
         - "--debug"
