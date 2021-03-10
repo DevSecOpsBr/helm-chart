@@ -196,7 +196,7 @@ apps:
       description: "High performance ingress controller for Kubernetes"
       group: "ingress"
       namespace: "ingress"
-      enabled: true
+      enabled: false
       chart: "contour"
       version: "4.1.2"
       hooks:
