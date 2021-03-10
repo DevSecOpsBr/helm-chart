@@ -226,8 +226,8 @@ datadog:
   env:
   #   - name: <ENV_VAR_NAME>
   #     value: <ENV_VAR_VALUE>
-    - name: DD_CLUSTER_NAME
-      value: "ellesmera.local"
+    # - name: DD_CLUSTER_NAME
+    #   value: "ellesmera.local"
     - name: DD_AC_EXCLUDE
       value: "name:datadog"
 
@@ -485,8 +485,8 @@ clusterAgent:
   ## The Cluster-Agent supports many additional environment variables
   ## ref: https://docs.datadoghq.com/agent/cluster_agent/commands/#cluster-agent-options
   env:
-    - name: DD_CLUSTER_NAME
-      value: "ellesmera.local"
+    # - name: DD_CLUSTER_NAME
+    #   value: "ellesmera.local"
     - name: DD_AC_EXCLUDE
       value: "name:datadog"
 
