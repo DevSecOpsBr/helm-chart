@@ -169,7 +169,7 @@ apps:
 
     cert-manager:
       description: "Manager SSL certficates creation, renew and update."
-      group: "miscellaneous"
+      group: "security"
       namespace: "cert-manager"
       enabled: false
       chart: "cert-manager"
@@ -190,7 +190,7 @@ apps:
         - "--atomic"
         - "--debug"
 
-    # Deployment & CI/CD Block
+  # CI/CD Block
     argo:
       description: "ArgoCD - Declarative GitOps CD for Kubernetes"
       group: "cicd"
@@ -236,7 +236,7 @@ apps:
         - "--debug"
         - "--atomic"
 
-    # Monitoring Block
+  # Monitoring Block
     metrics-server:
       description: "Manager SSL certficates creation, renew and update."
       group: "monitoring"
