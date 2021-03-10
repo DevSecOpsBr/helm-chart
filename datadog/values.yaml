@@ -175,7 +175,7 @@ datadog:
   leaderElection: true
 
   # datadog.leaderLeaseDuration -- Set the lease time for leader election in second
-  leaderLeaseDuration:  # 60
+  leaderLeaseDuration: 60
 
   ## Enable logs agent and provide custom configs
   logs:
@@ -196,7 +196,7 @@ datadog:
   apm:
     # datadog.apm.enabled -- Enable this to enable APM and tracing, on port 8126
     ## ref: https://github.com/DataDog/docker-dd-agent#tracing-from-the-host
-    enabled: false
+    enabled: true
 
     # datadog.apm.port -- Override the trace Agent port
     ## Note: Make sure your client is sending to the same UDP port.
@@ -230,6 +230,8 @@ datadog:
     #   value: "ellesmera.local"
     - name: DD_AC_EXCLUDE
       value: "name:datadog"
+    # - name: DD_CRI_SOCKET_PATH
+    #   value: /var/run/crio/crio.sock
 
   # datadog.confd -- Provide additional check configurations (static and Autodiscovery)
   ## Each key becomes a file in /conf.d
@@ -258,7 +260,7 @@ datadog:
   dockerSocketPath:  # /var/run/docker.sock
 
   # datadog.criSocketPath -- Path to the container runtime socket (if different from Docker)
-  criSocketPath:  # /var/run/containerd/containerd.sock
+  criSocketPath: /var/run/crio/crio.sock
 
   # datadog.serviceTopology -- Configure service topology to send custom metrics and traces without using host ports
   # Important notes:
