@@ -99,7 +99,7 @@ helmRepos:
 
 apps:
 
-  # Logging Block
+  # Logging Block (priority: -130)
     datadog:
       description: "Datadog: like Prometheus, but for logs."
       group: "logging"
@@ -145,12 +145,12 @@ apps:
         ingress.annotations.kubernetes\.io/ingress\.class: "contour"
         ingress.hosts\.host[0]: "loki.minikube"
 
-  # Security block
+  # Security block (priority: -120)
     kyverno:
       description: "Kubernetes Native Policy Management"
       group: "security"
       namespace: "security" 
-      enabled: true 
+      enabled: false
       chart: "kyverno" 
       version: "1.2.1" 
       valuesFiles: 
@@ -189,99 +189,9 @@ apps:
       helmFlags:
         - "--atomic"
         - "--debug"
-
-  # CI/CD Block
-    argo:
-      description: "ArgoCD - Declarative GitOps CD for Kubernetes"
-      group: "cicd"
-      namespace: "miscellaneous" 
-      enabled: true 
-      chart: "argo/argo-cd" 
-      version: "2.11.0" 
-      valuesFiles: 
-        - "argo-cd/values.yaml" 
-      test: true
       protected: false
-      priority: -110
-      wait: true
-      hooks:
-        successCondition: "Complete"
-        successTimeout: "90s"
-        deleteOnSuccess: true
-      set:
-        server.ingress.hosts: "{argocd.minikube}"
-        server.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
-      helmFlags: 
-        - "--debug"
-        - "--atomic"
 
-    argo-notifications:
-      description: "ArgoCD - Notifications for Kubernetes"
-      group: "cicd"
-      namespace: "miscellaneous" 
-      enabled: true 
-      chart: "argo/argocd-notifications" 
-      version: "1.0.14" 
-      valuesFiles: 
-        - "argocd-notifications/values.yaml" 
-      test: true
-      protected: false
-      priority: -109
-      wait: true
-      hooks:
-        successCondition: "Complete"
-        successTimeout: "90s"
-        deleteOnSuccess: true
-      helmFlags: 
-        - "--debug"
-        - "--atomic"
-
-  # Monitoring Block
-    metrics-server:
-      description: "Manager SSL certficates creation, renew and update."
-      group: "monitoring"
-      namespace: "monitoring"
-      enabled: true
-      chart: "metrics-server"
-      version: "2.9.0"
-      hooks:
-        successCondition: "Complete"
-        preInstall: "helm -n monitoring list --all"
-        deleteOnSuccess: true
-      valuesFiles: 
-        - "metrics-server/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -100
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-
-    prometheus:
-      description: "Prometheus clusters atop Kubernetes"
-      group: "monitoring"
-      namespace: "monitoring"
-      enabled: true
-      chart: "prometheus-operator"
-      version: "8.12.12"
-      hooks:
-        successCondition: "Complete"
-        preInstall: "helm -n monitoring list --all"
-        deleteOnSuccess: true
-      valuesFiles: 
-        - "prometheus-operator/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -99
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-
-    # Ingress Block
+  # Ingress Block (priority: -110)
     contour:
       description: "High performance ingress controller for Kubernetes"
       group: "ingress"
@@ -298,7 +208,7 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -80
+      priority: -110
       helmFlags:
         - "--atomic"
         - "--debug"
@@ -322,14 +232,106 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -79
+      priority: -109
       helmFlags:
         - "--atomic"
         - "--debug"
       set:
         controller.service.externalIPs: "{${ELLESMERA_IP}}"
 
-  # Observability & Tracing Block
+  # CI/CD Block (priority: -100)
+    argo:
+      description: "ArgoCD - Declarative GitOps CD for Kubernetes"
+      group: "cicd"
+      namespace: "miscellaneous" 
+      enabled: true 
+      chart: "argo/argo-cd" 
+      version: "2.11.0" 
+      valuesFiles: 
+        - "argo-cd/values.yaml" 
+      test: true
+      protected: false
+      priority: -100
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      set:
+        server.ingress.hosts: "{argocd.minikube}"
+        server.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+        
+    argo-notifications:
+      description: "ArgoCD - Notifications for Kubernetes"
+      group: "cicd"
+      namespace: "miscellaneous" 
+      enabled: true 
+      chart: "argo/argocd-notifications" 
+      version: "1.0.14" 
+      valuesFiles: 
+        - "argocd-notifications/values.yaml" 
+      test: true
+      priority: -99
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+      protected: false
+
+  # Monitoring Block (priority: -90)
+    metrics-server:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: false
+      chart: "metrics-server"
+      version: "2.9.0"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n monitoring list --all"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "metrics-server/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -90
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+    prometheus:
+      description: "Prometheus clusters atop Kubernetes"
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: false
+      chart: "kube-prometheus-stack"
+      version: "8.12.12"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n monitoring list --all"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "kube-prometheus-stack/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -89
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      protected: false
+
+  # Observability & Tracing Block (priority: -80)
     jaeger:
       description: "Manager SSL certficates creation, renew and update."
       group: "miscellaneous"
@@ -351,9 +353,9 @@ apps:
       helmFlags:
         - "--atomic"
         - "--debug"
+      protected: false
 
- 
-  # API Gateway Block
+  # API Gateway Block (priority: -70)
     ambassador:
       description: "Kubernetes Ingress Controller and API Gateway."
       group: "api-gateways"
@@ -377,7 +379,7 @@ apps:
       set:
         envoy.service.externalIPs: "{${ELLESMERA_IP}}"
 
-  # Service Mesh Block
+  # Service Mesh Block (priority: -60)
     linkerd2:
       description: "Linkerd service mesh for K8S"
       group: "meshes"
