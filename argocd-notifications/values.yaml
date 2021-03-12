@@ -53,7 +53,7 @@ metrics:
       release: prometheus
     namespace: monitoring
     interval: 30s
-    scrapeTimeout: 10s
+    scrapeTimeout: 15s
 
 # Additional container environment variables
 extraEnv: []
@@ -90,7 +90,12 @@ subscriptions:
     - slack:deploys
     - email:rdgacarvalho@gmail.com
     triggers:
+    - on-deployed
+    - on-health-degraded
+    - on-sync-failed
+    - on-sync-running
     - on-sync-status-unknown
+    - on-sync-succeded
   # # subscription restricted to applications with matching labels only
   # - recipients:
   #   - slack:test3
