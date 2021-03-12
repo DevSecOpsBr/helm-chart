@@ -196,7 +196,7 @@ apps:
       description: "High performance ingress controller for Kubernetes"
       group: "ingress"
       namespace: "ingress"
-      enabled: false
+      enabled: true
       chart: "contour"
       version: "4.1.2"
       hooks:
@@ -290,7 +290,7 @@ apps:
       description: "Manager SSL certficates creation, renew and update."
       group: "monitoring"
       namespace: "monitoring"
-      enabled: false
+      enabled: true
       chart: "metrics-server"
       version: "2.9.0"
       hooks:
@@ -312,9 +312,9 @@ apps:
       description: "Prometheus clusters atop Kubernetes"
       group: "monitoring"
       namespace: "monitoring"
-      enabled: false
+      enabled: true
       chart: "kube-prometheus-stack"
-      version: "8.12.12"
+      version: "14.0.1"
       hooks:
         successCondition: "Complete"
         preInstall: "helm -n monitoring list --all"
