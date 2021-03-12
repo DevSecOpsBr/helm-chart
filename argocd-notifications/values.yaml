@@ -97,11 +97,16 @@ subscriptions:
     - on-sync-status-unknown
     - on-sync-succeded
   # # subscription restricted to applications with matching labels only
-  # - recipients:
-  #   - slack:test3
-  #   selector: test=true
-  #   triggers:
-  #   - on-sync-status-unknown
+  - recipients:
+    - slack:deploy
+    selector: cluster=minikube
+    triggers:
+    - on-deployed
+    - on-health-degraded
+    - on-sync-failed
+    - on-sync-running
+    - on-sync-status-unknown
+    - on-sync-succeded
 
 templates:
   # For more information: https://argocd-notifications.readthedocs.io/en/stable/templates/
