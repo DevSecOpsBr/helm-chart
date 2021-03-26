@@ -200,25 +200,26 @@ alertmanager:
   #       {{ end }}
 
   ingress:
-    enabled: false
+    enabled: true
 
     # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
     # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
-    # ingressClassName: nginx
+    ingressClassName: contour
 
-    annotations: {}
+    annotations:
+      kubernetes.io/ingress.class: contour
 
     labels: {}
 
     ## Hosts must be provided if Ingress is enabled.
     ##
-    hosts: []
-      # - alertmanager.domain.com
+    hosts: 
+      - alertmanager.minikube
 
     ## Paths to use for ingress rules - one path should match the alertmanagerSpec.routePrefix
     ##
-    paths: []
-    # - /
+    paths:
+      - /
 
     ## For Kubernetes >= 1.18 you should specify the pathType (determines how Ingress paths should be matched)
     ## See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#better-path-matching-with-path-types
@@ -605,17 +606,156 @@ grafana:
   ##
   defaultDashboardsEnabled: true
 
+  # Use the section below to install plugins
+  plugins:
+    - grafana-piechart-panel
+    - michaeldmoore-annunciator-panel
+    - grafana-kubernetes-app
+    - grafana-worldmap-panel
+    - jdbranham-diagram-panel
+    - devopsprodigy-kubegraf-app
+    - camptocamp-prometheus-alertmanager-datasource
+    - btplc-status-dot-panel
+
+  # Deploy 3rd-party dashboards
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'nginx-ingress'
+        orgId: 1
+        folder: 'Ingress'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/nginx-ingress
+      - name: 'traefik-ingress'
+        orgId: 1
+        folder: 'Ingress'
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/traefik-ingress
+      - name: 'kubernetes-costs'
+        orgId: 1
+        folder: 'Finance'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes-costs
+      - name: 'metrics-server'
+        orgId: 1
+        folder: 'K8S'
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/metrics-server
+      - name: 'kubernetes-cluster'
+        orgId: 1
+        folder: 'K8S'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes-cluster
+      - name: 'memory-overview'
+        orgId: 1
+        folder: 'K8S'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/memory-overview
+      - name: 'general-cluster-overview'
+        orgId: 1
+        folder: 'K8S'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/general-cluster-overview
+      - name: 'kubernetes-cluster-overview'
+        orgId: 1
+        folder: 'K8S'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes-cluster-overview
+      - name: 'kubernetes-cluster-prometheus'
+        orgId: 1
+        folder: 'K8S'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes-cluster-prometheus
+
+  dashboards:
+    nginx-ingress:
+      nginx-ingress-controller:
+        datasource: Prometheus
+        gnetId: 9614
+        revision: 1
+    traefik-ingress:
+      traefik-ingress-controller:
+        datasource: Prometheus
+        gnetId: 11462
+        revision: 1
+    kubernetes-costs:
+      kubernetes-costs-and-metrics:
+        datasource: Prometheus
+        gnetId: 8670
+        revision: 1
+    metrics-server:
+      metrics-server:
+        datasource: Prometheus
+        gnetId: 8754
+        revision: 1
+    kubernetes-cluster:
+      kubernetes-cluster:
+        datasource: Prometheus
+        gnetId: 7249
+        revision: 1
+    memory-overview:
+      memory-overview:
+        datasource: Prometheus
+        gnetId: 10266
+        revision: 1
+    general-cluster-overview:
+      general-cluster-overview:
+        datasource: Prometheus
+        gnetId: 10092
+        revision: 1
+    kubernetes-cluster-overview:
+      kubernetes-cluster-overview:
+        datasource: Prometheus
+        gnetId: 11802
+        revision: 1
+    kubernetes-cluster-prometheus:
+      kubernetes-cluster-prometheus:
+        datasource: Prometheus
+        gnetId: 6417
+        revision: 1
+
+
   adminPassword: prom-operator
 
   ingress:
     ## If true, Grafana Ingress will be created
     ##
-    enabled: false
+    enabled: true
+
+    ingressClassName: contour
 
     ## Annotations for Grafana Ingress
     ##
-    annotations: {}
-      # kubernetes.io/ingress.class: nginx
+    annotations:
+      kubernetes.io/ingress.class: contour
       # kubernetes.io/tls-acme: "true"
 
     ## Labels to be added to the Ingress
@@ -627,7 +767,8 @@ grafana:
     ##
     # hosts:
     #   - grafana.domain.com
-    hosts: []
+    hosts:
+      - grafana.minikube
 
     ## Path for grafana ingress
     path: /
@@ -1650,13 +1791,14 @@ prometheus:
     #   - thanos-gateway.domain.com
 
   ingress:
-    enabled: false
+    enabled: true
 
     # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
     # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
-    # ingressClassName: nginx
+    ingressClassName: contour
 
-    annotations: {}
+    annotations:
+      kubernetes.io/ingress.class: contour
     labels: {}
 
     ## Hostnames.
@@ -1664,12 +1806,13 @@ prometheus:
     ##
     # hosts:
     #   - prometheus.domain.com
-    hosts: []
+    hosts:
+      - prometheus.minikube
 
     ## Paths to use for ingress rules - one path should match the prometheusSpec.routePrefix
     ##
-    paths: []
-    # - /
+    paths:
+      - /
 
     ## For Kubernetes >= 1.18 you should specify the pathType (determines how Ingress paths should be matched)
     ## See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#better-path-matching-with-path-types
