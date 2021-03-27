@@ -331,7 +331,7 @@ service:
 # Ingress settings to expose teams endpoint
 ingress:
   create: true
-  # ingressClassName: contour
+  ingressClassName: contour
   annotations:
     kubernetes.io/ingress.class: contour
   host: botkube.minikube
