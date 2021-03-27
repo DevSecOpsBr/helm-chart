@@ -96,6 +96,8 @@ helmRepos:
   concourse: https://concourse-charts.storage.googleapis.com/
   # Datadog logging, monitoring and apm system
   datadog: https://helm.datadoghq.com
+  # BotKube is a messaging bot for monitoring and debugging Kubernetes clusters
+  infracloudio: https://infracloudio.github.io/charts
 
 apps:
 
