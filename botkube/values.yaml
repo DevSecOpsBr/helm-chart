@@ -272,7 +272,7 @@ communications:
   slack:
     enabled: true
     channel: 'reports'                   # Slack channel name without '#' prefix where you have added BotKube and want to receive notifications in
-    token: 'xoxb-1743285690293-1887777477111-WRXHnHtuHby2sF38kTYW4dLc'
+    token: 'xoxb-1743285690293-1911456266772-XsvCuJ8rRwCFtxtOcwvIxWQB'
     notiftype: long                           # Change notification type short/long you want to receive. notiftype is optional and Default notification type is short (if not specified) 
 
   # Settings for Mattermost
