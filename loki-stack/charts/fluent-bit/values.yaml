@@ -113,8 +113,9 @@ volumeMounts:
   readOnly: true
 
 serviceMonitor:
-  enabled: false
+  enabled: true
   interval: ""
-  additionalLabels: {}
+  additionalLabels:
+    release: prometheus
   annotations: {}
   # scrapeTimeout: 10s

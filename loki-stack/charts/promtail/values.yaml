@@ -93,13 +93,13 @@ readinessProbe:
   successThreshold: 1
   timeoutSeconds: 1
 
-resources: {}
-#  limits:
-#    cpu: 200m
-#    memory: 128Mi
-#  requests:
-#    cpu: 100m
-#    memory: 128Mi
+resources:
+  limits:
+    cpu: 200m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
 
 # Custom scrape_configs to override the default ones in the configmap
 scrapeConfigs: []
@@ -185,9 +185,10 @@ config:
     sync_period: 10s
 
 serviceMonitor:
-  enabled: false
+  enabled: true
   interval: ""
-  additionalLabels: {}
+  additionalLabels:
+    release: prometheus
   annotations: {}
   # scrapeTimeout: 10s
 
@@ -196,7 +197,7 @@ env: []
 
 # enable and configure if using the syslog scrape config
 syslogService:
-  enabled: false
+  enabled: true
   type: ClusterIP
   port: 1514
   # externalIPs: []
