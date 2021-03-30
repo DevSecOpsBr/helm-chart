@@ -11,9 +11,9 @@ image:
   #   - myRegistryKeySecretName
 
 ingress:
-  enabled: true
-  annotations:
-    kubernetes.io/ingress.class: contour
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: loki.minikube
