@@ -3,9 +3,13 @@ loki:
 
 promtail:
   enabled: true
+  loki:
+    serviceScheme: http
+    user: admin
+    password: admin
 
 fluent-bit:
-  enabled: false
+  enabled: true
 
 grafana:
   enabled: false
