@@ -146,20 +146,25 @@ alertmanager:
   config:
     global:
       resolve_timeout: 5m
+      slack_api_url: https://hooks.slack.com/services/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
+    templates:
+    - '/etc/alertmanager/config/devsecops4u.tmpl'
     route:
-      group_by: ['job']
+      group_by: ['job', 'alertname', 'datacenter', 'app']
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 12h
-      receiver: 'null'
+      receiver: 'slack'
       routes:
       - match:
           alertname: Watchdog
-        receiver: 'null'
+        receiver: 'slack'
     receivers:
-    - name: 'devsecops4u'
-    templates:
-    - '/etc/alertmanager/config/*.tmpl'
+    - name: 'slack'
+      slack_configs:
+      - channel: '#alerts'
+        send_resolved: true
+        text: '{{ template "devsecops4u.text" . }}'
 
   ## Pass the Alertmanager configuration directives through Helm's templating
   ## engine. If the Alertmanager configuration contains Alertmanager templates,
@@ -180,12 +185,10 @@ alertmanager:
   ##      https://prometheus.io/docs/alerting/notification_examples/
   ##
   templateFiles:
-  #
-  ## An example template:
     devsecops4u.tmpl: |-
         {{ define "cluster" }}{{ .ExternalURL | reReplaceAll ".*alertmanager\\.(.*)" "$1" }}{{ end }}
   
-        {{ define "slack.myorg.text" }}
+        {{ define "devsecops4u.text" }}
         {{- $root := . -}}
         {{ range .Alerts }}
           *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
