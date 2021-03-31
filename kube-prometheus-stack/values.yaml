@@ -146,20 +146,44 @@ alertmanager:
   config:
     global:
       resolve_timeout: 5m
+      slack_api_url: https://hooks.slack.com/services/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
+
     route:
-      group_by: ['job']
+      group_by: ['job', 'alertname', 'service', 'cluster']
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 12h
-      receiver: 'null'
+      # default receiver
+      receiver: 'slack'
       routes:
       - match:
           alertname: Watchdog
-        receiver: 'null'
+        receiver: amixr
+        continue: true
+
+      - match_re:
+          cluster: ^(minikube)$
+          severity: critical
+          continue: true
+        receiver: amixr
+        routes:
+        - match:
+            cluster: minikube
+          receiver: slack
+
     receivers:
-    - name: 'devsecops4u'
+    - name: 'slack'
+      slack_configs:
+      - channel: '#alerts'
+        send_resolved: true
+        text: '{{ template "devsecops4u.text" . }}'
+    - name: 'amixr'
+      webhook_configs:
+      - send_resolved: true
+        url: https://app.amixr.io/integrations/v1/alertmanager/19fFFGkTA44Aj5zW3Ei4EjzgX/
+
     templates:
-    - '/etc/alertmanager/config/*.tmpl'
+    - '/etc/alertmanager/config/devsecops4u.tmpl'
 
   ## Pass the Alertmanager configuration directives through Helm's templating
   ## engine. If the Alertmanager configuration contains Alertmanager templates,
@@ -180,12 +204,10 @@ alertmanager:
   ##      https://prometheus.io/docs/alerting/notification_examples/
   ##
   templateFiles:
-  #
-  ## An example template:
     devsecops4u.tmpl: |-
         {{ define "cluster" }}{{ .ExternalURL | reReplaceAll ".*alertmanager\\.(.*)" "$1" }}{{ end }}
   
-        {{ define "slack.myorg.text" }}
+        {{ define "devsecops4u.text" }}
         {{- $root := . -}}
         {{ range .Alerts }}
           *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`

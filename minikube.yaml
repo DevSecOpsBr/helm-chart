@@ -123,29 +123,29 @@ apps:
         - "--atomic"
         - "--debug"
 
-    loki:
-      description: "Loki: like Prometheus, but for logs."
-      group: "logging"
-      namespace: "monitoring"
-      enabled: false
-      chart: "loki"
-      version: "2.3.0"
-      hooks:
-        successCondition: "Complete"
-        deleteOnSuccess: true
-      valuesFiles: 
-        - "loki/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -129
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-      set:
-        ingress.annotations.kubernetes\.io/ingress\.class: "contour"
-        ingress.hosts\.host[0]: "loki.minikube"
+    # loki:
+    #   description: "Loki: like Prometheus, but for logs."
+    #   group: "logging"
+    #   namespace: "monitoring"
+    #   enabled: false
+    #   chart: "loki"
+    #   version: "2.3.0"
+    #   hooks:
+    #     successCondition: "Complete"
+    #     deleteOnSuccess: true
+    #   valuesFiles: 
+    #     - "loki/values.yaml"
+    #   wait: true
+    #   timeout: 300
+    #   maxHistory: 100
+    #   test: true
+    #   priority: -129
+    #   helmFlags:
+    #     - "--atomic"
+    #     - "--debug"
+    #   set:
+    #     ingress.annotations.kubernetes\.io/ingress\.class: "contour"
+    #     ingress.hosts\.host[0]: "loki.minikube"
 
   # Security block (priority: -120)
     kyverno:
