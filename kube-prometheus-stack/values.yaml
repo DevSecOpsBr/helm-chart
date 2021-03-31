@@ -147,24 +147,70 @@ alertmanager:
     global:
       resolve_timeout: 5m
       slack_api_url: https://hooks.slack.com/services/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
-    templates:
-    - '/etc/alertmanager/config/devsecops4u.tmpl'
+
     route:
-      group_by: ['job', 'alertname', 'datacenter', 'app']
+      group_by: ['job', 'alertname', 'service', 'cluster']
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 12h
+      # default receiver
       receiver: 'slack'
       routes:
       - match:
           alertname: Watchdog
-        receiver: 'slack'
+        receiver: slack
+        continue: true
+
+      - match_re:
+          service: ^(botkube)$
+        receiver: slack
+        routes:
+        - match:
+          receiver: amixr
+          continue: true
+
+      - match_re:
+          cluster: ^(ellesmera.local)$
+          severity: critical
+          continue: true
+        receiver: slack
+        routes:
+        - match:
+          severity: critical
+          receiver: amixr
+          continue: true
+
+
+      # This route handles all alerts coming from a database service. If there's
+      # no team to handle it, it defaults to the DB team.
+      # - match:
+      #     service: database
+      #   receiver: team-DB-pager
+      #   # Also group alerts by affected database.
+      #   group_by: [alertname, cluster, database]
+      #   routes:
+      #   - match:
+      #       owner: team-X
+      #     receiver: team-X-pager
+      #     continue: true
+      #   - match:
+      #       owner: team-Y
+      #     receiver: team-Y-pager
+
+
     receivers:
     - name: 'slack'
       slack_configs:
       - channel: '#alerts'
         send_resolved: true
         text: '{{ template "devsecops4u.text" . }}'
+    - name: 'amixr'
+      webhook_configs:
+      - send_resolved: true
+        url: https://app.amixr.io/integrations/v1/alertmanager/19fFFGkTA44Aj5zW3Ei4EjzgX/
+
+    templates:
+    - '/etc/alertmanager/config/devsecops4u.tmpl'
 
   ## Pass the Alertmanager configuration directives through Helm's templating
   ## engine. If the Alertmanager configuration contains Alertmanager templates,
