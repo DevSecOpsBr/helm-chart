@@ -158,45 +158,18 @@ alertmanager:
       routes:
       - match:
           alertname: Watchdog
-        receiver: slack
+        receiver: amixr
         continue: true
 
       - match_re:
-          service: ^(botkube)$
-        receiver: slack
-        routes:
-        - match:
-          receiver: amixr
-          continue: true
-
-      - match_re:
-          cluster: ^(ellesmera.local)$
+          cluster: ^(minikube)$
           severity: critical
           continue: true
-        receiver: slack
+        receiver: amixr
         routes:
         - match:
-          severity: critical
-          receiver: amixr
-          continue: true
-
-
-      # This route handles all alerts coming from a database service. If there's
-      # no team to handle it, it defaults to the DB team.
-      # - match:
-      #     service: database
-      #   receiver: team-DB-pager
-      #   # Also group alerts by affected database.
-      #   group_by: [alertname, cluster, database]
-      #   routes:
-      #   - match:
-      #       owner: team-X
-      #     receiver: team-X-pager
-      #     continue: true
-      #   - match:
-      #       owner: team-Y
-      #     receiver: team-Y-pager
-
+            cluster: minikube
+          receiver: slack
 
     receivers:
     - name: 'slack'
