@@ -161,9 +161,8 @@ alertmanager:
         receiver: amixr
         continue: true
 
-      - match_re:
-          cluster: ^(minikube)$
-          severity: critical
+      - match:
+          cluster: minikube
           continue: true
         receiver: amixr
         routes:
@@ -180,7 +179,7 @@ alertmanager:
     - name: 'amixr'
       webhook_configs:
       - send_resolved: true
-        url: https://app.amixr.io/integrations/v1/alertmanager/19fFFGkTA44Aj5zW3Ei4EjzgX/
+        url: https://app.amixr.io/integrations/v1/alertmanager/8G5nBQjLe57RsYUe9qbr11POH/
 
     templates:
     - '/etc/alertmanager/config/devsecops4u.tmpl'
