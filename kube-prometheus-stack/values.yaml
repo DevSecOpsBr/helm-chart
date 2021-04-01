@@ -158,7 +158,7 @@ alertmanager:
       # alerts as-is. This is unlikely to be what you want, unless you have
       # a very low alert volume or your upstream notification system performs
       # its own grouping. Example: group_by: [...]
-      group_by: ['job', 'alertname', 'severity', 'cluster']
+      group_by: ['alertname', 'cluster', 'service']
 
       # When a new group of alerts is created by an incoming alert, wait at
       # least 'group_wait' to send the initial notification.
@@ -181,16 +181,11 @@ alertmanager:
       routes:
       - match:
           alertname: Watchdog
-        severity: critical
-      receiver: amixr
+        receiver: amixr
 
       - match_re:
-          Cluster: minikube
+          Cluster: ^minikube$
         receiver: amixr
-        routes:
-        - match_re:
-            Cluster: minikube
-          receiver: slack
 
     receivers:
     - name: 'slack'
