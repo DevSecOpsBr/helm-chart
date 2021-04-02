@@ -195,7 +195,7 @@ alertmanager:
     - name: 'amixr'
       webhook_configs:
       - send_resolved: true
-        url: https://app.amixr.io/integrations/v1/alertmanager/8G5nBQjLe57RsYUe9qbr11POH/
+        url: https://app.amixr.io/integrations/v1/alertmanager/A5DjV4CpsEPLED5Qsg5Z14bQ2/
 
     templates:
     - '/etc/alertmanager/config/devsecops4u.tmpl'
