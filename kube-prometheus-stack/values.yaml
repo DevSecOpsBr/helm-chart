@@ -86,17 +86,17 @@ additionalPrometheusRulesMap:
 #      rules:
 #      - record: my_record
 #        expr: 100 * my_record
-  rule-name: amixr-heartbeat
-  groups:
-  - name: meta
-    rules:
-    - alert: amix-heartbeat
-      expr: vector(1)
-      labels:
-        severity: none
-      annotations:
-        description: This is heartbeat alert
-        summary: Alerting Amixr
+  - rule-name: amixr-heartbeat
+    groups:
+    - name: meta
+      rules:
+      - alert: amix-heartbeat
+        expr: vector(1)
+        labels:
+          severity: none
+        annotations:
+          description: This is heartbeat alert
+          summary: Alerting Amixr
 
 ##
 global:
@@ -217,7 +217,7 @@ alertmanager:
     - name: 'amixr-heartbeat'
       webhook_configs:
       - url: https://app.amixr.io/integrations/v1/alertmanager/A5DjV4CpsEPLED5Qsg5Z14bQ2/heartbeat/
-          send_resolved: false
+        send_resolved: false
 
     templates:
     - '/etc/alertmanager/config/devsecops4u.tmpl'
