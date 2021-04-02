@@ -31,7 +31,7 @@ secret:
     slack-token: xoxb-1743285690293-1818026275062-al1H3P6Zd0XInt0TmCSNiTmu
     #   # For more information: https://argocd-notifications.readthedocs.io/en/stable/services/slack/
 
-    # grafana-apiKey:
+    grafana-apiKey: eyJrIjoibEVLaFVCdFp1cU9xMTJCWkJJSVJuQlprUDExWkZsYXkiLCJuIjoiYXJnb2NkIiwiaWQiOjF9
     #   # For more information: https://argocd-notifications.readthedocs.io/en/stable/services/grafana/
 
     # webhooks-github-token:
