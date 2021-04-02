@@ -79,13 +79,24 @@ defaultRules:
 
 ## Provide custom recording or alerting rules to be deployed into the cluster.
 ##
-additionalPrometheusRulesMap: {}
+additionalPrometheusRulesMap:
 #  rule-name:
 #    groups:
 #    - name: my_group
 #      rules:
 #      - record: my_record
 #        expr: 100 * my_record
+  rule-name: amixr-heartbeat
+  groups:
+  - name: meta
+    rules:
+    - alert: amix-heartbeat
+      expr: vector(1)
+      labels:
+        severity: none
+      annotations:
+        description: This is heartbeat alert
+        summary: Alerting Amixr
 
 ##
 global:
@@ -185,7 +196,7 @@ alertmanager:
       - match_re:
           Cluster: ^minikube$
         receiver: amixr
-        
+
       - match:
           alertname: heartbeat
           receiver: 'heartbeat'
