@@ -8,13 +8,13 @@ fullnameOverride: ""
 
 ## set kubernetes cluster domain where minio is running
 ##
-clusterDomain: ellesmera.local
+clusterDomain: cluster.local
 
 ## Set default image, imageTag, and imagePullPolicy. mode is used to indicate the
 ##
 image:
   repository: minio/minio
-  tag: RELEASE.2020-03-25T07-03-04Z
+  tag: RELEASE.2021-02-14T04-01-33Z
   pullPolicy: IfNotPresent
 
 ## Set default image, imageTag, and imagePullPolicy for the `mc` (the minio
@@ -22,7 +22,7 @@ image:
 ##
 mcImage:
   repository: minio/mc
-  tag: RELEASE.2020-03-14T01-23-37Z
+  tag: RELEASE.2021-02-14T04-28-06Z
   pullPolicy: IfNotPresent
 
 ## Set default image, imageTag, and imagePullPolicy for the `jq` (the JSON
@@ -37,6 +37,12 @@ helmKubectlJqImage:
 ## Distributed Minio ref: https://docs.minio.io/docs/distributed-minio-quickstart-guide
 ##
 mode: standalone
+
+## Additional labels to include with deployment or statefulset
+additionalLabels: []
+
+## Additional annotations to include with deployment or statefulset
+additionalAnnotations: []
 
 ## Additional arguments to pass to minio binary
 extraArgs: []
@@ -61,12 +67,28 @@ priorityClassName: ""
 ## AccessKey and secretKey is generated when not set
 ## Distributed Minio ref: https://docs.minio.io/docs/distributed-minio-quickstart-guide
 ##
-existingSecret: ""
-accessKey: "ASIA555KKKDBJSTCJQOB"
-secretKey: "73iQtFfzOjPy9N/tVV4Ho5Xn5Rw8CcSsVoJOM9VI"
+accessKey: ""
+secretKey: ""
 certsPath: "/etc/minio/certs/"
 configPathmc: "/etc/minio/mc/"
 mountPath: "/export"
+
+## Use existing Secret that store following variables:
+##
+## | Chart var             | .data.<key> in Secret    |
+## |:----------------------|:-------------------------|
+## | accessKey             | accesskey                |
+## | secretKey             | secretkey                |
+## | gcsgateway.gcsKeyJson | gcs_key.json             |
+## | s3gateway.accessKey   | awsAccessKeyId           |
+## | s3gateway.secretKey   | awsSecretAccessKey       |
+## | etcd.clientCert       | etcd_client_cert.pem     |
+## | etcd.clientCertKey    | etcd_client_cert_key.pem |
+##
+## All mentioned variables will be ignored in values file.
+## .data.accesskey and .data.secretkey are mandatory,
+## others depend on enabled status of corresponding sections.
+existingSecret: ""
 
 ## Override the root directory which the minio server should serve from.
 ## If left empty, it defaults to the value of {{ .Values.mountPath }}
@@ -87,6 +109,12 @@ tls:
   certSecret: ""
   publicCrt: public.crt
   privateKey: private.key
+
+## Trusted Certificates Settings for Minio. Ref: https://docs.minio.io/docs/how-to-secure-access-to-minio-server-with-tls#install-certificates-from-third-party-cas
+## Bundle multiple trusted certificates into one secret and pass that here. Ref: https://github.com/minio/minio/tree/master/docs/tls/kubernetes#2-create-kubernetes-secret
+## When using self-signed certificates, remember to include Minio's own certificate in the bundle with key public.crt.
+## If certSecret is left empty and tls is enabled, this chart installs the public certificate from .Values.tls.certSecret.
+trustedCertsSecret: ""
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
@@ -111,7 +139,7 @@ persistence:
   storageClass: ""
   VolumeName: ""
   accessMode: ReadWriteOnce
-  size: 10Gi
+  size: 500Gi
 
   ## If subPath is set mount a sub folder of a volume instead of the root of the volume.
   ## This is especially handy for volume plugins that don't natively support sub mounting (like glusterfs).
@@ -127,7 +155,7 @@ service:
   type: ClusterIP
   clusterIP: ~
   port: 9000
-  nodePort: 31311
+  nodePort: 32000
 
   ## List of IP addresses at which the Prometheus server service is available
   ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
@@ -143,15 +171,16 @@ service:
 ## Configure Ingress based on the documentation here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ##
 
-ingress:
-  enabled: true
-  labels:
-    # node-role.kubernetes.io/ingress: platform
-    app: minio
+imagePullSecrets: []
+# - name: "image-pull-secret"
 
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/enable-opentracing: "true"
+ingress:
+  enabled: false
+  labels: {}
+    # node-role.kubernetes.io/ingress: platform
+
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
     # kubernetes.io/ingress.allow-http: "false"
     # kubernetes.io/ingress.global-static-ip-name: ""
@@ -160,7 +189,7 @@ ingress:
     # nginx.ingress.kubernetes.io/whitelist-source-range: 0.0.0.0/0
   path: /
   hosts:
-    - minio.minikube
+    - chart-example.local
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -176,7 +205,7 @@ affinity: {}
 ## Add stateful containers to have security context, if enabled MinIO will run as this
 ## user and group NOTE: securityContext is only enabled if persistence.enabled=true
 securityContext:
-  enabled: false
+  enabled: true
   runAsUser: 1000
   runAsGroup: 1000
   fsGroup: 1000
@@ -185,42 +214,27 @@ securityContext:
 podAnnotations: {}
 
 # Additional pod labels
-podLabels:
-  system.monitoring: prometheus
-
-## Liveness and Readiness probe values.
-## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
-livenessProbe:
-  initialDelaySeconds: 5
-  periodSeconds: 30
-  timeoutSeconds: 1
-  successThreshold: 1
-  failureThreshold: 3
-readinessProbe:
-  initialDelaySeconds: 60
-  periodSeconds: 15
-  timeoutSeconds: 1
-  successThreshold: 1
-  failureThreshold: 3
+podLabels: {}
 
 ## Configure resource requests and limits
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
 ##
 resources:
   requests:
-    memory: 256Mi
-    cpu: 250m
+    memory: 4Gi
 
 ## Create a bucket after minio install
 ##
 defaultBucket:
-  enabled: true
+  enabled: false
   ## If enabled, must be a string with length > 0
-  name: idaas-1874
+  name: bucket
   ## Can be one of none|download|upload|public
   policy: none
   ## Purge if bucket exists already
   purge: false
+  ## set versioning for bucket true|false
+  # versioning: false
 
 ## Create multiple buckets after minio install
 ## Enabling `defaultBucket` will take priority over this list
@@ -235,16 +249,33 @@ buckets: []
 
 ## Additional Annotations for the Kubernetes Batch (make-bucket-job)
 makeBucketJob:
+  podAnnotations:
   annotations:
+  securityContext:
+    enabled: false
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+  resources:
+    requests:
+      memory: 128Mi
 
 ## Additional Annotations for the Kubernetes Batch (update-prometheus-secret)
 updatePrometheusJob:
+  podAnnotations:
   annotations:
+  securityContext:
+    enabled: false
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
 
 s3gateway:
   enabled: false
   replicas: 4
   serviceEndpoint: ""
+  accessKey: ""
+  secretKey: ""
 
 ## Use minio as an azure blob gateway, you should disable data persistence so no volume claim are created.
 ## https://docs.minio.io/docs/minio-gateway-for-azure
@@ -265,12 +296,6 @@ gcsgateway:
   # Google cloud project-id
   projectId: ""
 
-ossgateway:
-  enabled: false
-  # Number of parallel instances
-  replicas: 4
-  endpointURL: ""
-
 ## Use minio on NAS backend
 ## https://docs.minio.io/docs/minio-gateway-for-nas
 
@@ -282,17 +307,12 @@ nasgateway:
   # a label like "pv: <value>", use value here.
   pv: ~
 
-## Use minio as Backblaze B2 gateway
-## https://github.com/minio/minio/blob/master/docs/gateway/b2.md
-b2gateway:
-  enabled: false
-  # Number of parallel instances
-  replicas: 4
-
 ## Use this field to add environment variables relevant to Minio server. These fields will be passed on to Minio container(s)
 ## when Chart is deployed
-environment:
+environment: {}
   ## Please refer for comprehensive list https://docs.minio.io/docs/minio-server-configuration-guide.html
+  ## MINIO_DOMAIN: "chart-example.local"
+  ## MINIO_BROWSER: "off"
 
 networkPolicy:
   enabled: false
@@ -311,14 +331,23 @@ serviceAccount:
   create: true
   ## The name of the service account to use. If 'create' is 'true', a service account with that name
   ## will be created. Otherwise, a name will be auto-generated.
-  name: minio
+  name:
 
 metrics:
   # Metrics can not be disabled yet: https://github.com/minio/minio/issues/7493
   serviceMonitor:
-    enabled: true
-    additionalLabels:
-      system.monitor: prometheus
-    namespace: monitoring
-    interval: 30s
-    scrapeTimeout: 10s
+    enabled: false
+    additionalLabels: {}
+    relabelConfigs: {}
+    # namespace: monitoring
+    # interval: 30s
+    # scrapeTimeout: 10s
+
+## ETCD settings: https://github.com/minio/minio/blob/master/docs/sts/etcd.md
+## Define endpoints to enable this section.
+etcd:
+  endpoints: []
+  pathPrefix: ""
+  corednsPathPrefix: ""
+  clientCert: ""
+  clientCertKey: ""
