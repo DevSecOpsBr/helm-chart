@@ -17,10 +17,10 @@ podAnnotations:
 # priority class name for pod priority configuration
 podPriorityClassName: ""
 
-metricsServer: "http://prometheus:9090"
+metricsServer: "http://prometheus-kube-prometheus-prometheus.monitoring:9090"
 
 # accepted values are kubernetes, istio, linkerd, appmesh, contour, nginx, gloo, skipper, traefik
-meshProvider: ""
+meshProvider: "contour"
 
 # single namespace restriction
 namespace: ""
@@ -37,7 +37,7 @@ configTracking:
 ingressAnnotationsPrefix: ""
 
 # ingress class used for annotating HTTPProxy objects
-ingressClass: ""
+ingressClass: "contour"
 
 # when enabled, it will add a security context for the flagger pod. You may
 # need to disable this if you are running flagger on OpenShift
@@ -54,7 +54,7 @@ slack:
   user: flagger
   channel: deploys
   # incoming webhook https://api.slack.com/incoming-webhooks
-  url: 
+  url: https://hooks.slack.com/services/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
 
 msteams:
   # MS Teams incoming webhook URL
@@ -104,15 +104,15 @@ rbac:
 
 crd:
   # crd.create: `true` if custom resource definitions should be created
-  create: false
+  create: true
 
 nameOverride: ""
 fullnameOverride: ""
 
 resources:
-  limits:
-    memory: "512Mi"
-    cpu: "1000m"
+  # limits:
+  #   memory: "512Mi"
+  #   cpu: "100m"
   requests:
     memory: "32Mi"
     cpu: "10m"
@@ -141,5 +141,5 @@ istio:
     key: "kubeconfig"
 
 podDisruptionBudget:
-  enabled: false
+  enabled: true
   minAvailable: 1
