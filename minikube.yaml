@@ -223,7 +223,7 @@ apps:
       description: "Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
-      enabled: false
+      enabled: true
       chart: "ingress-nginx"
       version: "3.12.0"
       hooks:
@@ -277,6 +277,27 @@ apps:
       version: "1.0.14" 
       valuesFiles: 
         - "argocd-notifications/values.yaml" 
+      test: true
+      priority: -99
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+      protected: false
+        
+    keel:
+      description: "Kubernetes Operator to automate Helm, DaemonSet, StatefulSet & Deployment updates"
+      group: "cicd"
+      namespace: "miscellaneous" 
+      enabled: true 
+      chart: "keel/keel" 
+      version: "0.8.19" 
+      valuesFiles: 
+        - "keel/values.yaml" 
       test: true
       priority: -99
       wait: true
