@@ -301,7 +301,7 @@ apps:
       valuesFiles: 
         - "keel/values.yaml" 
       test: true
-      priority: -99
+      priority: -98
       wait: true
       hooks:
         successCondition: "Complete"
@@ -334,7 +334,7 @@ apps:
       helmFlags:
         - "--atomic"
         - "--debug"
-
+        
     prometheus:
       description: "Prometheus clusters atop Kubernetes"
       group: "monitoring"
