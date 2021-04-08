@@ -98,8 +98,13 @@ helmRepos:
   datadog: https://helm.datadoghq.com
   # BotKube is a messaging bot for monitoring and debugging Kubernetes clusters
   infracloudio: https://infracloudio.github.io/charts
+<<<<<<< HEAD
   # A progressive delivery tool that automates the release process for applications running on Kubernetes.
   flagger: https://flagger.app
+=======
+  # High Performance, Kubernetes Native Object Storage
+  minio: https://helm.min.io/
+>>>>>>> a65aa22ad6ba37fd9d60e96d02a20194f642e98a
 
 apps:
 
