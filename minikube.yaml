@@ -98,6 +98,8 @@ helmRepos:
   datadog: https://helm.datadoghq.com
   # BotKube is a messaging bot for monitoring and debugging Kubernetes clusters
   infracloudio: https://infracloudio.github.io/charts
+  # A progressive delivery tool that automates the release process for applications running on Kubernetes.
+  flagger: https://flagger.app
   # High Performance, Kubernetes Native Object Storage
   minio: https://helm.min.io/
 
@@ -108,7 +110,7 @@ apps:
       description: "Datadog: like Prometheus, but for logs."
       group: "logging"
       namespace: "monitoring"
-      enabled: true
+      enabled: false
       chart: "datadog"
       version: "2.10.1"
       hooks:
@@ -125,29 +127,29 @@ apps:
         - "--atomic"
         - "--debug"
 
-    # loki:
-    #   description: "Loki: like Prometheus, but for logs."
-    #   group: "logging"
-    #   namespace: "monitoring"
-    #   enabled: false
-    #   chart: "loki"
-    #   version: "2.3.0"
-    #   hooks:
-    #     successCondition: "Complete"
-    #     deleteOnSuccess: true
-    #   valuesFiles: 
-    #     - "loki/values.yaml"
-    #   wait: true
-    #   timeout: 300
-    #   maxHistory: 100
-    #   test: true
-    #   priority: -129
-    #   helmFlags:
-    #     - "--atomic"
-    #     - "--debug"
-    #   set:
-    #     ingress.annotations.kubernetes\.io/ingress\.class: "contour"
-    #     ingress.hosts\.host[0]: "loki.minikube"
+    loki:
+      description: "Loki: like Prometheus, but for logs."
+      group: "logging"
+      namespace: "monitoring"
+      enabled: false
+      chart: "loki"
+      version: "2.3.0"
+      hooks:
+        successCondition: "Complete"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "loki-stack/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -129
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        ingress.annotations.kubernetes\.io/ingress\.class: "contour"
+        ingress.hosts\.host[0]: "loki.minikube"
 
   # Security block (priority: -120)
     kyverno:
@@ -223,7 +225,7 @@ apps:
       description: "Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
-      enabled: false
+      enabled: true
       chart: "ingress-nginx"
       version: "3.12.0"
       hooks:
@@ -277,6 +279,27 @@ apps:
       version: "1.0.14" 
       valuesFiles: 
         - "argocd-notifications/values.yaml" 
+      test: true
+      priority: -99
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+      protected: false
+        
+    keel:
+      description: "Kubernetes Operator to automate Helm, DaemonSet, StatefulSet & Deployment updates"
+      group: "cicd"
+      namespace: "miscellaneous" 
+      enabled: true 
+      chart: "keel/keel" 
+      version: "0.8.19" 
+      valuesFiles: 
+        - "keel/values.yaml" 
       test: true
       priority: -99
       wait: true

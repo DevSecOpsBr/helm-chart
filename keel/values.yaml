@@ -195,7 +195,7 @@ ingress:
   labels:
     prometheus: prometheus
   annotations:
-    kubernetes.io/ingress.class: nginx-deprecated
+    kubernetes.io/ingress.class: nginx
     jaeger-service-name: keel
     jaeger-sampler-param: "1.0"
     jaeger-sampler-type: const
