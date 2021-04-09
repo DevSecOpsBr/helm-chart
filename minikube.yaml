@@ -156,7 +156,7 @@ apps:
       description: "Kubernetes Native Policy Management"
       group: "security"
       namespace: "security" 
-      enabled: true
+      enabled: false
       chart: "kyverno" 
       version: "1.2.1" 
       valuesFiles: 
@@ -169,9 +169,6 @@ apps:
         successCondition: "Complete"
         successTimeout: "90s"
         deleteOnSuccess: true
-        postInstall: 
-          - kyverno/policies_rules/mutate_rules.yaml
-          - kyverno/policies_rules/validate_rules.yaml
       helmFlags: 
         - "--debug"
         - "--atomic"
