@@ -54,11 +54,11 @@ webhook:
 # Slack Notification
 # bot name (default keel) must exist!
 slack:
-  enabled: false
-  botName: ""
-  token: ""
-  channel: ""
-  approvalsChannel: ""
+  enabled: true
+  botName: "theBot"
+  token: "xoxb-1743285690293-1964812856336-oU17cSD3ddBC1Lr1d3SbvWuM"
+  channel: "deploys"
+  approvalsChannel: "deploys"
 
 # Hipchat notification and approvals
 hipchat:
@@ -122,7 +122,7 @@ keel:
   # trigger type, defaults to events such as pubsub, webhooks
   trigger: poll
   # polling schedule
-  pollSchedule: "@every 3m"
+  pollSchedule: "@every 5m"
   # images to track and update
   images:
     - repository: image.repository
@@ -179,7 +179,7 @@ aws:
   region: null
 
 podDisruptionBudget:
-  enabled: true
+  enabled: false
   maxUnavailable: 2
   minAvailable: 1
 
