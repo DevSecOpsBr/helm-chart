@@ -169,7 +169,7 @@ alertmanager:
       # alerts as-is. This is unlikely to be what you want, unless you have
       # a very low alert volume or your upstream notification system performs
       # its own grouping. Example: group_by: [...]
-      group_by: ['alertname']
+      group_by: ['job']
 
       # When a new group of alerts is created by an incoming alert, wait at
       # least 'group_wait' to send the initial notification.
@@ -265,8 +265,7 @@ alertmanager:
     ingressClassName: contour
 
     annotations:
-      kubernetes.io/ingress.class: contour
-
+      projectcontour.io/ingress.class: contour
     labels: {}
 
     ## Hosts must be provided if Ingress is enabled.
@@ -813,7 +812,7 @@ grafana:
     ## Annotations for Grafana Ingress
     ##
     annotations:
-      kubernetes.io/ingress.class: contour
+      projectcontour.io/ingress.class: contour
       # kubernetes.io/tls-acme: "true"
 
     ## Labels to be added to the Ingress
@@ -1856,7 +1855,7 @@ prometheus:
     ingressClassName: contour
 
     annotations:
-      kubernetes.io/ingress.class: contour
+      projectcontour.io/ingress.class: contour
     labels: {}
 
     ## Hostnames.
