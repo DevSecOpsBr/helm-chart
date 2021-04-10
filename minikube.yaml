@@ -297,10 +297,11 @@ apps:
       group: "cicd"
       namespace: "miscellaneous" 
       enabled: true 
+      protected: false
       chart: "keel/keel" 
-      version: "0.8.19" 
+      version: "0.9.8" 
       valuesFiles: 
-        - "keel/values.yaml" 
+        - "keel_0.9.8/values.yaml" 
       test: true
       priority: -98
       wait: true
@@ -311,7 +312,6 @@ apps:
       helmFlags: 
         - "--debug"
         - "--atomic"
-      protected: false
 
   # Monitoring Block (priority: -90)
     metrics-server:
