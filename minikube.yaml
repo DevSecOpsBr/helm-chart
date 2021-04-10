@@ -263,6 +263,7 @@ apps:
         successCondition: "Complete"
         successTimeout: "90s"
         deleteOnSuccess: true
+        postInstall: "kubectl get pods -n miscellaneous -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2"
       set:
         server.ingress.hosts: "{argocd.minikube}"
         server.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
