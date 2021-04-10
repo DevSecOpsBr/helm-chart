@@ -132,7 +132,7 @@ apps:
       group: "logging"
       namespace: "monitoring"
       enabled: false
-      chart: "loki"
+      chart: "grafana/loki-stack"
       version: "2.3.0"
       hooks:
         successCondition: "Complete"
@@ -330,7 +330,7 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -90
+      priority: -200
       helmFlags:
         - "--atomic"
         - "--debug"
@@ -339,7 +339,7 @@ apps:
       description: "Prometheus clusters atop Kubernetes"
       group: "monitoring"
       namespace: "monitoring"
-      enabled: true
+      enabled: false
       chart: "kube-prometheus-stack"
       version: "14.0.1"
       hooks:
@@ -352,7 +352,7 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -89
+      priority: -199
       helmFlags:
         - "--atomic"
         - "--debug"
