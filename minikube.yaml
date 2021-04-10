@@ -318,7 +318,7 @@ apps:
       description: "Manager SSL certficates creation, renew and update."
       group: "monitoring"
       namespace: "monitoring"
-      enabled: true
+      enabled: false
       chart: "metrics-server"
       version: "2.9.0"
       hooks:
