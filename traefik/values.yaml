@@ -10,12 +10,18 @@ image:
 #
 deployment:
   enabled: true
-  # Number of pods of the deployment
+  # Can be either Deployment or DaemonSet
+  kind: Deployment
+  # Number of pods of the deployment (only applies when kind == Deployment)
   replicas: 1
   # Additional deployment annotations (e.g. for jaeger-operator sidecar injection)
   annotations: {}
+  # Additional deployment labels (e.g. for filtering deployment by custom labels)
+  labels: {}
   # Additional pod annotations (e.g. for mesh injection or prometheus scraping)
   podAnnotations: {}
+  # Additional Pod labels (e.g. for filtering Pod by custom labels)
+  podLabels: {}
   # Additional containers (e.g. for metric offloading sidecars)
   additionalContainers: []
     # https://docs.datadoghq.com/developers/dogstatsd/unix_socket/?tab=host
@@ -29,7 +35,7 @@ deployment:
   additionalVolumes: []
     # - name: dsdsocket
     #   hostPath:
-    #   path: /var/run/statsd-exporter
+    #     path: /var/run/statsd-exporter
   # Additional initContainers (e.g. for setting file permission as shown below)
   initContainers: []
     # The "volume-permissions" init container is required if you run into permission issues.
@@ -55,18 +61,27 @@ podDisruptionBudget:
 # Use ingressClass. Ignored if Traefik version < 2.3 / kubernetes < 1.18.x
 ingressClass:
   # true is not unit-testable yet, pending https://github.com/rancher/helm-unittest/pull/12
-  enabled: false
+  enabled: true
   isDefaultClass: false
 
 # Activate Pilot integration
 pilot:
   enabled: false
   token: ""
+  # Toggle Pilot Dashboard
+  # dashboard: false
 
 # Enable experimental features
 experimental:
   plugins:
     enabled: false
+  kubernetesGateway:
+    enabled: false
+    appLabelSelector: "traefik"
+    certificates: []
+    # - group: "core"
+    #   kind: "Secret"
+    #   name: "mysecret"
 
 # Create an IngressRoute for the dashboard
 ingressRoute:
@@ -92,6 +107,7 @@ providers:
       # - "default"
   kubernetesIngress:
     enabled: true
+    # labelSelector: environment=production,method=traefik
     namespaces: []
       # - "default"
     # IP used for Kubernetes Ingress endpoints
@@ -107,6 +123,8 @@ providers:
 # After the volume has been mounted, add the configs into traefik by using the `additionalArguments` list below, eg:
 # additionalArguments:
 # - "--providers.file.filename=/config/dynamic.toml"
+# - "--ping"
+# - "--ping.entrypoint=web"
 volumes: []
 # - name: public-cert
 #   mountPath: "/certs"
@@ -133,7 +151,7 @@ logs:
     level: ERROR
   access:
     # To enable access logs
-    enabled: false
+    enabled: true
     # By default, logs are written using the Common Log Format (CLF).
     # To write logs in JSON, use json in the format option.
     # If the given format is unsupported, the default (CLF) is used instead.
@@ -210,7 +228,11 @@ ports:
     # means it's listening on all your interfaces and all your IPs. You may want
     # to set this value if you need traefik to listen on specific interface
     # only.
-    # hostIP: 192.168.64.17
+    # hostIP: 192.168.100.10
+
+    # Override the liveness/readiness port. This is useful to integrate traefik
+    # with an external Load Balancer that performs healthchecks.
+    # healthchecksPort: 9000
 
     # Defines whether the port is exposed if service.type is LoadBalancer or
     # NodePort.
@@ -227,7 +249,7 @@ ports:
     port: 8000
     # hostPort: 8000
     expose: true
-    exposedPort: 80
+    exposedPort: 8009
     # The port protocol (TCP/UDP)
     protocol: TCP
     # Use nodeport if set. This is useful if you have configured Traefik in a
@@ -289,9 +311,8 @@ service:
   loadBalancerSourceRanges: []
     # - 192.168.0.1/32
     # - 172.16.0.0/16
-  externalIPs:
+  externalIPs: []
     # - 1.2.3.4
-    - 192.168.64.27
 
 ## Create HorizontalPodAutoscaler object.
 ##
@@ -317,6 +338,7 @@ autoscaling:
 # It will persist TLS certificates.
 persistence:
   enabled: false
+  name: data
 #  existingClaim: ""
   accessMode: ReadWriteOnce
   size: 128Mi
@@ -347,7 +369,7 @@ podSecurityPolicy:
 serviceAccount:
   # If set, an existing service account is used
   # If not set, a service account is created automatically using the fullname template
-  name: "traefik-sa"
+  name: ""
 
 # Additional serviceAccount annotations (e.g. for oidc authentication)
 serviceAccountAnnotations: {}

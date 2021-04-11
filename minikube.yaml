@@ -102,6 +102,8 @@ helmRepos:
   flagger: https://flagger.app
   # High Performance, Kubernetes Native Object Storage
   minio: https://helm.min.io/
+  # Edge Router that makes publishing your services a fun and easy experience
+  traefik: https://helm.traefik.io/traefik
 
 apps:
 
@@ -230,7 +232,6 @@ apps:
       version: "3.12.0"
       hooks:
         successCondition: "Complete"
-        preInstall: "helm -n ingress-controller list --all"
         deleteOnSuccess: true
       valuesFiles: 
         - "ingress-nginx/values.yaml"
@@ -244,6 +245,29 @@ apps:
         - "--debug"
       set:
         controller.service.externalIPs: "{${ELLESMERA_IP}}"
+
+    traefik:
+      description: "Edge Router that makes publishing your services a fun and easy experience"
+      group: "ingress"
+      namespace: "ingress"
+      enabled: true
+      chart: "traefik"
+      version: "9.18.2"
+      hooks:
+        successCondition: "Complete"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "traefik/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -108
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        service.externalIPs: "{${ELLESMERA_IP}}"
 
   # CI/CD Block (priority: -100)
     argo:
