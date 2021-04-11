@@ -719,22 +719,6 @@ grafana:
         editable: true
         options:
           path: /var/lib/grafana/dashboards/kubernetes-cluster
-      - name: 'memory-overview'
-        orgId: 1
-        folder: 'K8S'
-        type: file
-        disableDeletion: true
-        editable: true
-        options:
-          path: /var/lib/grafana/dashboards/memory-overview
-      - name: 'general-cluster-overview'
-        orgId: 1
-        folder: 'K8S'
-        type: file
-        disableDeletion: true
-        editable: true
-        options:
-          path: /var/lib/grafana/dashboards/general-cluster-overview
       - name: 'kubernetes-cluster-overview'
         orgId: 1
         folder: 'K8S'
@@ -778,16 +762,6 @@ grafana:
         datasource: Prometheus
         gnetId: 7249
         revision: 1
-    memory-overview:
-      memory-overview:
-        datasource: Prometheus
-        gnetId: 10266
-        revision: 1
-    general-cluster-overview:
-      general-cluster-overview:
-        datasource: Prometheus
-        gnetId: 10092
-        revision: 1
     kubernetes-cluster-overview:
       kubernetes-cluster-overview:
         datasource: Prometheus
@@ -798,7 +772,6 @@ grafana:
         datasource: Prometheus
         gnetId: 6417
         revision: 1
-
 
   adminPassword: prom-operator
 
@@ -873,7 +846,7 @@ grafana:
 
   ## Configure additional grafana datasources (passed through tpl)
   ## ref: http://docs.grafana.org/administration/provisioning/#datasources
-  additionalDataSources: []
+  additionalDataSources:
   # - name: prometheus-sample
   #   access: proxy
   #   basicAuth: true
