@@ -74,7 +74,7 @@ pilot:
 # Enable experimental features
 experimental:
   plugins:
-    enabled: false
+    enabled: true
   kubernetesGateway:
     enabled: false
     appLabelSelector: "traefik"
