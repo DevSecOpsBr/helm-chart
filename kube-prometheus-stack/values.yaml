@@ -169,7 +169,7 @@ alertmanager:
       # alerts as-is. This is unlikely to be what you want, unless you have
       # a very low alert volume or your upstream notification system performs
       # its own grouping. Example: group_by: [...]
-      group_by: ['job']
+      group_by: ['job','alertname']
 
       # When a new group of alerts is created by an incoming alert, wait at
       # least 'group_wait' to send the initial notification.
@@ -186,7 +186,7 @@ alertmanager:
       repeat_interval: 3h
 
       # default receiver
-      # receiver: 'slack'
+      receiver: 'slack'
       
       routes:
       - match:
@@ -507,7 +507,7 @@ alertmanager:
 
     ## Log level for Alertmanager to be configured with.
     ##
-    logLevel: info
+    logLevel: debug
 
     ## Size is the expected size of the alertmanager cluster. The controller will eventually make the size of the
     ## running cluster equal to the expected size.
