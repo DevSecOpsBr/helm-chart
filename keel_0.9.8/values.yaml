@@ -17,9 +17,9 @@ polling:
 
 # Helm provider support
 helmProvider:
-  enabled: false
+  enabled: true
   # set to version "v3" for Helm v3
-  version: "v2"
+  version: "v3"
   tillerNamespace: "kube-system"
   # optional Tiller address (if portforwarder tunnel doesn't work),
   # if you are using default configuration, setting it to
@@ -104,8 +104,8 @@ basicauth:
 # Keel service
 # Enable to receive webhooks from Docker registries
 service:
-  enabled: false
-  type: LoadBalancer
+  enabled: true
+  type: ClusterIP
   externalPort: 9300
   clusterIP: ""
 
@@ -213,7 +213,7 @@ ingress:
   enabled: true
   labels: {}
   annotations:
-   kubernetes.io/ingress.class: contour
+    kubernetes.io/ingress.class: contour
   hosts:
    - host: keel.minikube
      paths:
