@@ -104,6 +104,8 @@ helmRepos:
   minio: https://helm.min.io/
   # Edge Router that makes publishing your services a fun and easy experience
   traefik: https://helm.traefik.io/traefik
+  # Continuously backup Kubernetes objets as YAML files in git
+  katafygio: https://bpineau.github.io/katafygio
 
 apps:
 
