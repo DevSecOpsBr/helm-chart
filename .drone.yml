@@ -1,0 +1,20 @@
+kind: pipeline
+type: exec
+name: kind_k8s
+
+platform:
+  os: darwin
+  arch: amd64
+
+steps:
+- name: listing_clusters
+  commands:
+  - kind get clusters
+trigger:
+  branch:
+    include:
+      - "CU-*"
+      - master
+  event:
+  - push
+  - pull_request
