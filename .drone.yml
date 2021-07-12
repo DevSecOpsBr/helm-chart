@@ -9,7 +9,7 @@ platform:
 steps:
 - name: listing_clusters
   commands:
-  - kind get clusters
+  - echo Hello, world
 trigger:
   branch:
     include:
