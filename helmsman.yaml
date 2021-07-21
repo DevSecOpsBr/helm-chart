@@ -1,11 +1,9 @@
 context: "ellesmera.local"     # defaults to "default" if not provided
 
-# metadata -- add as many key/value pairs as you want
 metadata:
-  # org: "ellesmera.io"
+  org: "ellesmera.io"
   maintainer: "devops team (devops@ellesmera.io)"
   description: "Desired State File."
-  # key: ${VALUE}
 
 # paths to the certificate for connecting to the cluster
 # You can skip this if you use Helmsman on a machine with kubectl already connected to your k8s cluster.
@@ -16,14 +14,14 @@ metadata:
   #caKey: "../ca.key" # valid local file relative path
 
 settings:
-  kubeContext: "ellesmera.local" # will try connect to this context first, if it does not exist, it will be created using the details below
+  kubeContext: "" # will try connect to this context first, if it does not exist, it will be created using the details below
   storageBackend: "secret"
-  slackWebhook:  "https://hooks.slack.com/services/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" # or your slack webhook url
+  slackWebhook:  "https://hooks.slack.com/services/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"
   #reverseDelete: false # reverse the priorities on delete
   globalHooks:
     successCondition: "Complete"
     deleteOnSuccess: true
-  globalMaxHistory: 200
+  globalMaxHistory: 500
 
 # define your environments and their k8s namespaces
 namespaces:
@@ -153,7 +151,7 @@ apps:
         - "--debug"
       set:
         ingress.annotations.kubernetes\.io/ingress\.class: "contour"
-        ingress.hosts\.host[0]: "loki.minikube"
+        ingress.hosts\.host[0]: "loki.$CLUSTER"
 
   # Security block (priority: -120)
     kyverno:
@@ -208,7 +206,7 @@ apps:
       namespace: "ingress"
       enabled: true
       chart: "contour"
-      version: "4.1.2"
+      version: "4.3.11"
       hooks:
         deleteOnSuccess: true
         successCondition: "Complete"
@@ -223,7 +221,7 @@ apps:
         - "--atomic"
         - "--debug"
       set:
-        envoy.service.externalIPs: "{${ELLESMERA_IP}}"
+        # envoy.service.externalIPs: "{${CLUSTER_IP}}"
 
     nginx:
       description: "Nginx-Ingress Controller for K8S"
@@ -246,7 +244,9 @@ apps:
         - "--atomic"
         - "--debug"
       set:
-        controller.service.externalIPs: "{${ELLESMERA_IP}}"
+        controller.service.externalIPs: "{${CLUSTER_IP}}"
+        controller.metrics.enabled: $MONITORING
+        controller.metrics.serviceMonitor.enabled: $MONITORING
 
     traefik:
       description: "Edge Router that makes publishing your services a fun and easy experience"
@@ -269,16 +269,16 @@ apps:
         - "--atomic"
         - "--debug"
       set:
-        service.externalIPs: "{${ELLESMERA_IP}}"
+        service.externalIPs: "{${CLUSTER_IP}}"
 
   # CI/CD Block (priority: -100)
-    argo:
+    argocd:
       description: "ArgoCD - Declarative GitOps CD for Kubernetes"
       group: "cicd"
       namespace: "miscellaneous" 
       enabled: true 
       chart: "argo/argo-cd" 
-      version: "2.11.0" 
+      version: "3.10.0" 
       valuesFiles: 
         - "argo-cd/values.yaml" 
       test: true
@@ -290,17 +290,24 @@ apps:
         successTimeout: "90s"
         deleteOnSuccess: true
       set:
-        server.ingress.hosts: "{argocd.minikube}"
-        server.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
+        dex.enabled: false
+        server.extraArgs: "{--insecure}"
+        server.ingress.enabled: "true"
+        server.ingress.hosts: "{argocd.$CLUSTER}"
+        server.ingress.annotations.kubernetes\.io/ingress\.class: "traefik"
+        controller.metrics.enabled: false
+        server.metrics.enabled: false
+        repoServer.metrics.enabled: false
       helmFlags: 
         - "--debug"
         - "--atomic"
-        
+
     argo-notifications:
       description: "ArgoCD - Notifications for Kubernetes"
       group: "cicd"
       namespace: "miscellaneous" 
       enabled: true 
+      protected: false
       chart: "argo/argocd-notifications" 
       version: "1.0.14" 
       valuesFiles: 
@@ -315,13 +322,14 @@ apps:
       helmFlags: 
         - "--debug"
         - "--atomic"
-      protected: false
+      set:
+        metrics.enabled: false
         
     keel:
       description: "Kubernetes Operator to automate Helm, DaemonSet, StatefulSet & Deployment updates"
       group: "cicd"
       namespace: "miscellaneous" 
-      enabled: true 
+      enabled: false
       protected: false
       chart: "keel/keel" 
       version: "0.9.8" 
@@ -343,7 +351,7 @@ apps:
       description: "Manager SSL certficates creation, renew and update."
       group: "monitoring"
       namespace: "monitoring"
-      enabled: false
+      enabled: true
       chart: "metrics-server"
       version: "2.9.0"
       hooks:
@@ -430,7 +438,7 @@ apps:
         - "--atomic"
         - "--debug"
       set:
-        envoy.service.externalIPs: "{${ELLESMERA_IP}}"
+        envoy.service.externalIPs: "{${CLUSTER_IP}}"
 
   # Service Mesh Block (priority: -60)
     linkerd2:

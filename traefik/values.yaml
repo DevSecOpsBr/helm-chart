@@ -249,7 +249,7 @@ ports:
     port: 8000
     # hostPort: 8000
     expose: true
-    exposedPort: 8009
+    exposedPort: 80
     # The port protocol (TCP/UDP)
     protocol: TCP
     # Use nodeport if set. This is useful if you have configured Traefik in a

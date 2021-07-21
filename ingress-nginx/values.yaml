@@ -386,7 +386,7 @@ controller:
     # healthCheckNodePort: 0
 
     ports:
-      http: 8008
+      http: 80
       https: 443
 
     targetPorts:
@@ -498,7 +498,7 @@ controller:
   metrics:
     port: 10254
     # if this port is changed,
-    enabled: true
+    enabled: false
 
     service:
       annotations:
@@ -520,7 +520,7 @@ controller:
       # nodePort: ""
 
     serviceMonitor:
-      enabled: true
+      enabled: false
       additionalLabels:
         self-monitor: "true"
         release: prometheus
