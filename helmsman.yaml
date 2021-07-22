@@ -292,12 +292,13 @@ apps:
       set:
         dex.enabled: false
         server.extraArgs: "{--insecure}"
-        server.ingress.enabled: "true"
-        server.ingress.hosts: "{argocd.$CLUSTER}"
-        server.ingress.annotations.kubernetes\.io/ingress\.class: "traefik"
         controller.metrics.enabled: false
+        server.ingress.enabled: true
         server.metrics.enabled: false
         repoServer.metrics.enabled: false
+        server.ingress.hosts: "{argocd.$CLUSTER}"
+        server.ingress.annotations.kubernetes\.io/ingress\.class: "traefik"
+        server.config.url: "http://argocd.$CLUSTER"
       helmFlags: 
         - "--debug"
         - "--atomic"
