@@ -206,7 +206,7 @@ apps:
       namespace: "ingress"
       enabled: true
       chart: "contour"
-      version: "4.3.11"
+      version: "5.0.1"
       hooks:
         deleteOnSuccess: true
         successCondition: "Complete"
@@ -221,7 +221,9 @@ apps:
         - "--atomic"
         - "--debug"
       set:
-        # envoy.service.externalIPs: "{${CLUSTER_IP}}"
+        replicaCount: 1
+        configInline.incluster: true
+        envoy.service.externalIPs: "{${CLUSTER_IP}}"
 
     nginx:
       description: "Nginx-Ingress Controller for K8S"
