@@ -17,10 +17,10 @@ podAnnotations:
 # priority class name for pod priority configuration
 podPriorityClassName: ""
 
-metricsServer: "http://prometheus-kube-prometheus-prometheus.monitoring:9090"
+metricsServer: ""
 
 # accepted values are kubernetes, istio, linkerd, appmesh, contour, nginx, gloo, skipper, traefik
-meshProvider: "contour"
+meshProvider: ""
 
 # single namespace restriction
 namespace: ""
