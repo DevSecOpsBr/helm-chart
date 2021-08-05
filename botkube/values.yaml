@@ -246,7 +246,7 @@ config:
   # Setting to support multiple clusters
   settings:
     # Cluster name to differentiate incoming messages
-    clustername: ellesmera.local
+    clustername: not-configured
     # Kubectl executor configs
     kubectl:
       # Set true to enable kubectl commands execution
@@ -330,11 +330,11 @@ service:
 
 # Ingress settings to expose teams endpoint
 ingress:
-  create: false
-  ingressClassName: contour
+  create: true
+  ingressClassName: traefik
   annotations:
-    kubernetes.io/ingress.class: contour
-  host: botkube.minikube
+    kubernetes.io/ingress.class: traefik
+  host: botkube.oromis.local
   urlPath: "/"
   tls:
     enabled: false
