@@ -88,7 +88,7 @@ operator:
     ## If one of these options is set a clusterRole and clusterRoleBinding is created to
     ## ensure that the operator is able to get data from other namespaces.
     ##
-    scanAllNamespaces: false
+    scanAllNamespaces: true
     scanNamespaces: []
   ## @param operator.rbac.create Create specifies whether to install and use RBAC rules
   ##
@@ -472,8 +472,8 @@ grafana:
       disable_initial_admin_creation: false
       disable_gravatar: false
       # ## Grafana Admin credentials, if omitted they will be admin:<random_pass>
-      # admin_user:
-      # admin_password:
+      admin_user: admin
+      admin_password: admin
       #
       # ## OIDC configuration
       # ##
