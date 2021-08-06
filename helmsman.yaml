@@ -17,7 +17,7 @@ settings:
   kubeContext: "" # will try connect to this context first, if it does not exist, it will be created using the details below
   storageBackend: "secret"
   slackWebhook:  "https://hooks.slack.com/services/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"
-  #reverseDelete: false # reverse the priorities on delete
+  reverseDelete: true 
   globalHooks:
     successCondition: "Complete"
     deleteOnSuccess: true
@@ -158,7 +158,7 @@ apps:
       description: "Kubernetes Native Policy Management"
       group: "security"
       namespace: "security" 
-      enabled: false
+      enabled: true
       chart: "kyverno" 
       version: "1.2.1" 
       valuesFiles: 
@@ -204,7 +204,7 @@ apps:
       description: "High performance ingress controller for Kubernetes"
       group: "ingress"
       namespace: "ingress"
-      enabled: true
+      enabled: false
       chart: "contour"
       version: "5.0.1"
       hooks:
@@ -229,7 +229,7 @@ apps:
       description: "Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
-      enabled: true
+      enabled: false
       chart: "ingress-nginx"
       version: "3.12.0"
       hooks:
@@ -295,6 +295,7 @@ apps:
         dex.enabled: false
         server.extraArgs: "{--insecure}"
         controller.metrics.enabled: false
+        meshProvider: "traefik"
         server.ingress.enabled: true
         server.metrics.enabled: false
         repoServer.metrics.enabled: false
@@ -376,7 +377,7 @@ apps:
       description: "Prometheus clusters atop Kubernetes"
       group: "monitoring"
       namespace: "monitoring"
-      enabled: true
+      enabled: false
       chart: "kube-prometheus-stack"
       version: "14.0.1"
       hooks:
