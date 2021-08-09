@@ -330,7 +330,7 @@ service:
 
 # Ingress settings to expose teams endpoint
 ingress:
-  create: true
+  create: false
   ingressClassName: traefik
   annotations:
     kubernetes.io/ingress.class: traefik
