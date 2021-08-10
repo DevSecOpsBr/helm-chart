@@ -18,3 +18,5 @@
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/helm,vscode
+
+linkerd2/certs/*

@@ -104,6 +104,8 @@ helmRepos:
   traefik: https://helm.traefik.io/traefik
   # Continuously backup Kubernetes objets as YAML files in git
   katafygio: https://bpineau.github.io/katafygio
+  # Linkerd service mesh
+  linkerd: https://helm.linkerd.io/stable
 
 apps:
 
@@ -449,26 +451,29 @@ apps:
       description: "Linkerd service mesh for K8S"
       group: "meshes"
       namespace: "linkerd"
-      enabled: false
+      enabled: true
       chart: "linkerd2"
-      version: "2.9.1"
+      version: "2.10.2"
       hooks:
         successCondition: "Complete"
-        preInstall: "bash -x linkerd2/step.sh main"
-        deleteOnSuccess: true
+        preInstall: "bash -x linkerd_certificates_step.sh main"
+        preUpgrade: "bash -x linkerd_certificates_step.sh main"
+        postInstall: "bash -x linkerd_certificates_step.sh cleanUp"
       valuesFiles: 
         - "linkerd2/values.yaml"
-      wait: true
-      timeout: 300
+        - "linkerd2/values-ha.yaml"
+      wait: false
+      timeout: 600
       maxHistory: 100
       test: true
       priority: -60
       helmFlags:
-        - "--atomic"
+        # - "--atomic"
         - "--debug"
       setFile:
-        global.identityTrustAnchorsPEM: linkerd2/certs/ca.crt
-        identity.issuer.tls.crtPEM: linkerd2/certs/issuer.crt
-        identity.issuer.tls.keyPEM: linkerd2/certs/issuer.key
+        identityTrustAnchorsPEM: linkerd2/certs/plane/ca.crt
+        identity.issuer.tls.keyPEM: linkerd2/certs/issuer/issuer.key
+        identity.issuer.tls.crtPEM: linkerd2/certs/issuer/issuer.crt
       set:
-        identity.issuer.crtExpiry: "2021-12-27T19:35:23Z"
+        identity.issuer.crtExpiry: __replaceme__
+        clusterDomain: $CLUSTER
