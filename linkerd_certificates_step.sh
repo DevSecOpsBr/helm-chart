@@ -9,28 +9,12 @@ DIRECTORY=$(dirname $0)/$CHART/$CERTS
 FOLDERS=(plane issuer webhook)
 OS=$(uname -s)
 HOURS=8760
+NS="linkerd"
 
 function main() {
-  
-  echo "Checking OS version ..."
 
-  if [ $OS == "Darwin" ]; then
-    # in Mac:
-    EXP=$(date -v+${HOURS}H +"%Y-%m-%dT%H:%M:%SZ")
-    echo "Updating certificate expiry"
-    sed -i '' "s/__replaceme__/${EXP}/g" helmsman.yaml
-  else
-    # in Linux:
-    EXP=$(date -d \'+${HOURS} hour\' +"%Y-%m-%dT%H:%M:%SZ")
-    echo "Updating certificate expiry"
-    sed -i '' "s/__replaceme__/${EXP}/g" helmsman.yaml
-  fi
-
-  certGen
-
-}
-
-function certGen() {
+  echo "Updating certificate expiry"
+  sed -i '' "s/__replaceme__/${EXP}/g" helmsman.yaml
 
   # Trust anchor certificate
   # step certificate create root.linkerd.cluster.local ca.crt ca.key --profile root-ca --no-password --insecure 
@@ -75,8 +59,38 @@ function certGen() {
     exit 333
   fi
 
-  echo "Updating certificate expiry"
-  sed -i '' "s/__replaceme__/${EXP}/g" helmsman.yaml
+  deploy
+
+}
+
+function certManager() {
+
+  echo "Creating namespace: $NS ..."
+  kubectl create ns $NS
+
+  echo "Creating tls secret ..."
+  kubectl -n $NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt \
+   --key=$DIRECTORY/plane/ca.key
+
+  deploy
+
+}
+
+function deploy() {
+
+  echo "Deploying linkerd ..."
+  #  --set identity.issuer.scheme="kubernetes.io/tls" \
+
+  helm upgrade --install linkerd2 \
+  --set-file identityTrustAnchorsPEM=$DIRECTORY/plane/ca.crt \
+  --set-file identity.issuer.tls.keyPEM=$DIRECTORY/issuer/issuer.key \
+  --set-file identity.issuer.tls.crtPEM=$DIRECTORY/issuer/issuer.crt \
+  --set identity.issuer.crtExpiry=$EXP \
+  --set clusterDomain=$CLUSTER \
+  --set installNamespace=true \
+  -f linkerd2/values-ha.yaml \
+  --timeout 600s --history-max 100 --debug \
+  linkerd/linkerd2
 
 }
 
@@ -85,6 +99,8 @@ function cleanUp() {
     if [[ -d $DIRECTORY ]]; then
       echo "Removing certificates ..."
       rm -rf $DIRECTORY
+      echo "Deleting namespace: $NS"
+      kubectl delete ns $NS
     fi
 
 }
@@ -98,6 +114,16 @@ if [ ! -d "${DIRECTORY}/${CERTS}" ]; then
 else
   echo "$DIRECTORY/$CERTS exits!"
   exit;
+fi
+
+echo "Checking OS version ..."
+
+if [ $OS == "Darwin" ]; then
+  # in Mac:
+  EXP=$(date -v+${HOURS}H +"%Y-%m-%dT%H:%M:%SZ")
+else
+  # in Linux:
+  EXP=$(date -d \'+${HOURS} hour\' +"%Y-%m-%dT%H:%M:%SZ")
 fi
 
 $@
