@@ -13,16 +13,13 @@ NS="linkerd"
 
 function main() {
 
-  echo "Updating certificate expiry"
-  sed -i '' "s/__replaceme__/${EXP}/g" helmsman.yaml
-
   # Trust anchor certificate
   # step certificate create root.linkerd.cluster.local ca.crt ca.key --profile root-ca --no-password --insecure 
 
   echo "Creating control plane certificates ..."
 
   $STEP certificate create root.linkerd.$CLUSTER \
-    $DIRECTORY/plane/ca.crt $DIRECTORY/plane/ca.key --profile root-ca --no-password --insecure
+    $DIRECTORY/plane/ca.crt $DIRECTORY/plane/ca.key --profile root-ca --no-password --insecure --force
 
     if [ $? -ne 0 ]; then 
       echo "Error creating control plane certificates!"
@@ -38,7 +35,7 @@ function main() {
 
   $STEP certificate create identity.linkerd.$CLUSTER $DIRECTORY/issuer/issuer.crt $DIRECTORY/issuer/issuer.key \
     --profile intermediate-ca --not-after "$HOURS"h --no-password --insecure \
-    --ca $DIRECTORY/plane/ca.crt --ca-key $DIRECTORY/plane/ca.key
+    --ca $DIRECTORY/plane/ca.crt --ca-key $DIRECTORY/plane/ca.key --force
 
     if [ $? -ne 0 ]; then 
       echo "Error creating issuer certificates!"
@@ -52,18 +49,14 @@ function main() {
   echo "Creating webhook certificates ..."
 
   $STEP certificate create webhook.linkerd.$CLUSTER ${DIRECTORY}/webhook/ca.crt ${DIRECTORY}/webhook/ca.key \
-  --profile root-ca --no-password --insecure --san webhook.linkerd.$CLUSTER
+  --profile root-ca --no-password --insecure --san webhook.linkerd.$CLUSTER --force
 
   if [ $? -ne 0 ]; then
     echo "Error creating webhook certificates!"
     exit 333
   fi
 
-<<<<<<< HEAD
   # deploy
-=======
-  deploy
->>>>>>> remotes/origin/master
 
 }
 
@@ -76,7 +69,7 @@ function certManager() {
   kubectl -n $NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt \
    --key=$DIRECTORY/plane/ca.key
 
-  deploy
+  # deploy
 
 }
 
