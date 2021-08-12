@@ -59,7 +59,11 @@ function main() {
     exit 333
   fi
 
+<<<<<<< HEAD
+  # deploy
+=======
   deploy
+>>>>>>> remotes/origin/master
 
 }
 
@@ -81,7 +85,7 @@ function deploy() {
   echo "Deploying linkerd ..."
   #  --set identity.issuer.scheme="kubernetes.io/tls" \
 
-  helm upgrade --install linkerd2 \
+  helm install linkerd2 \
   --set-file identityTrustAnchorsPEM=$DIRECTORY/plane/ca.crt \
   --set-file identity.issuer.tls.keyPEM=$DIRECTORY/issuer/issuer.key \
   --set-file identity.issuer.tls.crtPEM=$DIRECTORY/issuer/issuer.crt \
@@ -89,8 +93,8 @@ function deploy() {
   --set clusterDomain=$CLUSTER \
   --set installNamespace=true \
   -f linkerd2/values-ha.yaml \
-  --timeout 600s --history-max 100 --debug \
-  linkerd/linkerd2
+  --timeout 600s --atomic \
+  --debug linkerd/linkerd2
 
 }
 
@@ -99,12 +103,13 @@ function cleanUp() {
     if [[ -d $DIRECTORY ]]; then
       echo "Removing certificates ..."
       rm -rf $DIRECTORY
-      echo "Deleting namespace: $NS"
-      kubectl delete ns $NS
+      # echo "Uninstalling ..."
+      # helm -n $NS uninstall $NS
+      # echo "Deleting namespace: $NS"
+      # kubectl delete ns $NS
     fi
 
 }
-
 
 if [ ! -d "${DIRECTORY}/${CERTS}" ]; then
     echo "Creating ${CERTS} directory ..."
@@ -121,9 +126,13 @@ echo "Checking OS version ..."
 if [ $OS == "Darwin" ]; then
   # in Mac:
   EXP=$(date -v+${HOURS}H +"%Y-%m-%dT%H:%M:%SZ")
+  echo "Updating certificate expiry"
+  sed -i '' "s/__replaceme__/${EXP}/g" helmsman.yaml
 else
   # in Linux:
   EXP=$(date -d \'+${HOURS} hour\' +"%Y-%m-%dT%H:%M:%SZ")
+  echo "Updating certificate expiry"
+  sed -i '' "s/__replaceme__/${EXP}/g" helmsman.yaml
 fi
 
 $@

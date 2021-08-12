@@ -453,8 +453,8 @@ apps:
     linkerd2:
       description: "Linkerd service mesh for K8S"
       group: "meshes"
-      namespace: "meshes"
-      enabled: false
+      namespace: "linkerd"
+      enabled: true
       chart: "linkerd2"
       version: "2.10.2"
       hooks:
@@ -477,6 +477,7 @@ apps:
         # identity.issuer.tls.keyPEM: linkerd2/certs/issuer/issuer.key
         # identity.issuer.tls.crtPEM: linkerd2/certs/issuer/issuer.crt
       set:
-        identity.issuer.scheme: kubernetes.io/tls
-        identity.issuer.crtExpiry: 2022-08-11T12:48:22Z
+        # identity.issuer.scheme: kubernetes.io/tls
+        identity.issuer.crtExpiry: __replaceme__
+        installNamespace: false
         clusterDomain: $CLUSTER
