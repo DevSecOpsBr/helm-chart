@@ -377,12 +377,13 @@ apps:
       helmFlags:
         - "--atomic"
         - "--debug"
-        
+
     prometheus:
       description: "Prometheus clusters atop Kubernetes"
       group: "monitoring"
       namespace: "monitoring"
-      enabled: false
+      enabled: true
+      protected: false
       chart: "kube-prometheus-stack"
       version: "14.0.1"
       hooks:
@@ -399,7 +400,8 @@ apps:
       helmFlags:
         - "--atomic"
         - "--debug"
-      protected: false
+      set:
+        grafana.enabled: "false"
 
   # Observability & Tracing Block (priority: -80)
     botkube:

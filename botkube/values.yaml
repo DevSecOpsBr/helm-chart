@@ -340,7 +340,6 @@ ingress:
     enabled: false
     secretName: ''
 
-            
 serviceMonitor:
   ## If true, a ServiceMonitor CR is created for a BotKube
   ##  https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#servicemonitor
