@@ -331,10 +331,10 @@ service:
 # Ingress settings to expose teams endpoint
 ingress:
   create: false
-  ingressClassName: traefik
+  ingressClassName: nginx
   annotations:
-    kubernetes.io/ingress.class: traefik
-  host: botkube.oromis.local
+    kubernetes.io/ingress.class: nginx
+  host: {}
   urlPath: "/"
   tls:
     enabled: false
