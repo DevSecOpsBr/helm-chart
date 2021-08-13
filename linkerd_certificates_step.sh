@@ -62,9 +62,6 @@ function main() {
 
 function certManager() {
 
-  echo "Creating namespace: $NS ..."
-  kubectl create ns $NS
-
   echo "Creating tls secret ..."
   kubectl -n $NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt \
    --key=$DIRECTORY/plane/ca.key
@@ -96,10 +93,6 @@ function cleanUp() {
     if [[ -d $DIRECTORY ]]; then
       echo "Removing certificates ..."
       rm -rf $DIRECTORY
-      # echo "Uninstalling ..."
-      # helm -n $NS uninstall $NS
-      # echo "Deleting namespace: $NS"
-      # kubectl delete ns $NS
     fi
 
 }
