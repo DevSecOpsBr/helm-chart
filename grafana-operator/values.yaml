@@ -252,7 +252,7 @@ operator:
 grafana:
   ## @param grafana.enabled Enabled the deployment of the Grafana CRD object into the cluster
   ##
-  enabled: false
+  enabled: true
   ## @param grafana.image.registry Grafana image registry
   ## @param grafana.image.repository Grafana image name
   ## @param grafana.image.tag Grafana image tag
