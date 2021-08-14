@@ -472,8 +472,8 @@ grafana:
       disable_initial_admin_creation: false
       disable_gravatar: false
       # ## Grafana Admin credentials, if omitted they will be admin:<random_pass>
-      admin_user: admin
-      admin_password: admin
+      # admin_user: admin
+      # admin_password: admin
       #
       # ## OIDC configuration
       # ##
