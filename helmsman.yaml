@@ -403,6 +403,32 @@ apps:
       set:
         grafana.enabled: "false"
 
+    grafana-operator:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: true
+      protected: false
+      chart: "grafana-operator"
+      version: "2.14.0"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n monitoring list --all"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "grafana-operator/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -80
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        grafana.ingress.hostname: grafana.$CLUSTER
+        grafana.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
+
   # Observability & Tracing Block (priority: -80)
     botkube:
       description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"

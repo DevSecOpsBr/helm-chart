@@ -404,7 +404,7 @@ grafana:
     enabled: true
     ## @param grafana.ingress.hostname The hostname under which the grafana instance should be reachable
     ##
-    hostname: grafana.oromis.local
+    hostname: {}
     ## @param grafana.ingress.path The path for the ingress instance to forward to the grafana app
     ##
     path: /
@@ -418,7 +418,7 @@ grafana:
     ## If tls is set to true, annotation ingress.kubernetes.io/secure-backends: "true" will automatically be set
     ## If certManager is set to true, annotation kubernetes.io/tls-acme: "true" will automatically be set
     annotations:
-      kubernetes.io/ingress.class: traefik
+      kubernetes.io/ingress.class: {}
     ##
     # annotations: {}
     ## @param grafana.ingress.tls This enables tls support for the ingress resource
