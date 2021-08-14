@@ -488,8 +488,8 @@ apps:
       namespace: "miscellaneous" 
       enabled: true
       protected: false
-      chart: "flagger/flagger" 
-      version: "1.7.0" 
+      chart: "flagger" 
+      version: "1.12.1"
       valuesFiles: 
         - "flagger/values.yaml" 
       test: true
@@ -502,12 +502,44 @@ apps:
       helmFlags: 
         - "--debug"
         - "--atomic"
+      set:
+        logLevel: "debug"
+        meshProvider: "linkerd"
+        ingressClass: "contour"
+        slack.channel: "deploys"
+        slack.url: "https://hooks.slack.com/services/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"
+        podMonitor.enabled: $MONITORING
+        prometheus.install: "false"
+        crd.create: "false"
+
+    flagger-loadtester:
+      description: "Kubernetes Operator to automate Helm, DaemonSet, StatefulSet & Deployment updates"
+      group: "releases"
+      namespace: "miscellaneous" 
+      enabled: true
+      protected: false
+      chart: "flagger-loadtester" 
+      version: "0.18.0"
+      valuesFiles: 
+        - "flagger-loadtester/values.yaml" 
+      test: true
+      priority: -49
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+      set:
+        logLevel: "debug"
 
     keel:
       description: "Kubernetes Operator to automate Helm, DaemonSet, StatefulSet & Deployment updates"
-      group: "cicd"
+      group: "releases"
       namespace: "miscellaneous" 
-      enabled: false
+      enabled: true
       protected: false
       chart: "keel/keel" 
       version: "0.9.8" 

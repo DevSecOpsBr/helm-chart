@@ -129,6 +129,21 @@ spec:
                         - Ingress
                     name:
                       type: string
+                upstreamRef:
+                  description: Gloo Upstream selector
+                  type: object
+                  required: [ "apiVersion", "kind", "name" ]
+                  properties:
+                    apiVersion:
+                      type: string
+                    kind:
+                      type: string
+                      enum:
+                        - Upstream
+                    name:
+                      type: string
+                    namespace:
+                      type: string
                 service:
                   description: Kubernetes Service spec
                   type: object
@@ -941,6 +956,9 @@ spec:
                               - event
                               - rollback
                               - confirm-traffic-increase
+                          muteAlert:
+                            description: Mute all alerts for the webhook
+                            type: boolean
                           url:
                             description: URL address of this webhook
                             type: string
@@ -1088,6 +1106,7 @@ spec:
                         - datadog
                         - cloudwatch
                         - newrelic
+                        - graphite
                     address:
                       description: API address of this provider
                       type: string
@@ -1103,6 +1122,9 @@ spec:
                     region:
                       description: Region of the provider
                       type: string
+                    insecureSkipVerify:
+                      description: Disable SSL certificate validation for the provider address
+                      type: boolean
                 query:
                   description: Query of this metric template
                   type: string
@@ -1177,6 +1199,9 @@ spec:
                   type: string
                 address:
                   description: Hook URL address of this provider
+                  type: string
+                proxy:
+                  description: Http/s proxy of this provider
                   type: string
                 secretRef:
                   description: Kubernetes secret reference containing the provider address

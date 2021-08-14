@@ -2,12 +2,12 @@
 
 image:
   repository: ghcr.io/fluxcd/flagger
-  tag: 1.7.0
+  tag: 1.12.1
   pullPolicy: IfNotPresent
   pullSecret:
 
 # accepted values are debug, info, warning, error (defaults to info)
-logLevel: debug
+logLevel: info
 
 podAnnotations:
   prometheus.io/scrape: "true"
@@ -17,7 +17,7 @@ podAnnotations:
 # priority class name for pod priority configuration
 podPriorityClassName: ""
 
-metricsServer: ""
+metricsServer: "http://prometheus:9090"
 
 # accepted values are kubernetes, istio, linkerd, appmesh, contour, nginx, gloo, skipper, traefik
 meshProvider: ""
@@ -37,7 +37,7 @@ configTracking:
 ingressAnnotationsPrefix: ""
 
 # ingress class used for annotating HTTPProxy objects
-ingressClass: "contour"
+ingressClass: ""
 
 # when enabled, it will add a security context for the flagger pod. You may
 # need to disable this if you are running flagger on OpenShift
@@ -52,9 +52,10 @@ eventWebhook: ""
 
 slack:
   user: flagger
-  channel: deploys
+  channel:
   # incoming webhook https://api.slack.com/incoming-webhooks
-  url: https://hooks.slack.com/services/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
+  url:
+  proxy:
 
 msteams:
   # MS Teams incoming webhook URL
@@ -72,11 +73,21 @@ podMonitor:
 #    secretKeyRef:
 #      name: slack
 #      key: url
+#- name: SLACK_PROXY_URL
+#  valueFrom:
+#    secretKeyRef:
+#      name: slack
+#      key: proxy-url
 #- name: MSTEAMS_URL
 #  valueFrom:
 #    secretKeyRef:
 #      name: msteams
 #      key: url
+#- name: MSTEAMS_PROXY_URL
+#  valueFrom:
+#    secretKeyRef:
+#      name: msteams
+#      key: proxy-url
 #- name: EVENT_WEBHOOK_URL
 #  valueFrom:
 #    secretKeyRef:
@@ -104,15 +115,15 @@ rbac:
 
 crd:
   # crd.create: `true` if custom resource definitions should be created
-  create: true
+  create: false
 
 nameOverride: ""
 fullnameOverride: ""
 
 resources:
-  # limits:
-  #   memory: "512Mi"
-  #   cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "1000m"
   requests:
     memory: "32Mi"
     cpu: "10m"
@@ -127,6 +138,12 @@ prometheus:
   image: docker.io/prom/prometheus:v2.23.0
   pullSecret:
   retention: 2h
+  # when enabled, it will add a security context for the prometheus pod
+  securityContext:
+    enabled: false
+    context:
+      readOnlyRootFilesystem: true
+      runAsUser: 10001
 
 kubeconfigQPS: ""
 kubeconfigBurst: ""
@@ -141,5 +158,5 @@ istio:
     key: "kubeconfig"
 
 podDisruptionBudget:
-  enabled: true
+  enabled: false
   minAvailable: 1
