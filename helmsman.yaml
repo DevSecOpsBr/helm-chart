@@ -377,6 +377,33 @@ apps:
         - "--atomic"
         - "--debug"
 
+  # Observability & Tracing Block (priority: -80)
+    botkube:
+      description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
+      group: "miscellaneous"
+      namespace: "observability"
+      enabled: true
+      protected: false
+      chart: "botkube"
+      version: "v0.12.0"
+      hooks:
+        successCondition: "Complete"
+        preInstall: "helm -n observability list --all"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "botkube/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -80
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        config.settings.clustername: $CLUSTER
+        serviceMonitor.enabled: $MONITORING
+
     grafana-operator:
       description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
       group: "monitoring"
