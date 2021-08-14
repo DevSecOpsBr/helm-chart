@@ -403,32 +403,6 @@ apps:
       set:
         grafana.enabled: "false"
 
-    grafana-operator:
-      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
-      group: "monitoring"
-      namespace: "monitoring"
-      enabled: true
-      protected: false
-      chart: "grafana-operator"
-      version: "1.0.1"
-      hooks:
-        successCondition: "Complete"
-        preInstall: "helm -n monitoring list --all"
-        deleteOnSuccess: true
-      valuesFiles: 
-        - "grafana-operator/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -80
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-      set:
-        grafana.ingress.hostname: grafana.$CLUSTER
-        grafana.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
-
   # Observability & Tracing Block (priority: -80)
     botkube:
       description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
@@ -454,6 +428,7 @@ apps:
         - "--debug"
       set:
         config.settings.clustername: $CLUSTER
+        serviceMonitor.enabled: $MONITORING
 
     jaeger:
       description: "Manager SSL certficates creation, renew and update."
