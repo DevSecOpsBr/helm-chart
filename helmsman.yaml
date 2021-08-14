@@ -17,7 +17,7 @@ settings:
   kubeContext: "" # will try connect to this context first, if it does not exist, it will be created using the details below
   storageBackend: "secret"
   slackWebhook:  "https://hooks.slack.com/services/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"
-  reverseDelete: true 
+  #reverseDelete: false # reverse the priorities on delete
   globalHooks:
     successCondition: "Complete"
     deleteOnSuccess: true
@@ -40,10 +40,7 @@ namespaces:
   linkerd:
     protected: false
     annotations:
-      linkerd.io/inject: disabled
-    labels:
-      linkerd.io/is-control-plane: "true"
-      config.linkerd.io/admission-webhooks: disabled
+      iam.amazonaws.com/permitted: ".*"
   miscellaneous:
     protected: false
     annotations:
@@ -107,8 +104,6 @@ helmRepos:
   traefik: https://helm.traefik.io/traefik
   # Continuously backup Kubernetes objets as YAML files in git
   katafygio: https://bpineau.github.io/katafygio
-  # Linkerd service mesh
-  linkerd: https://helm.linkerd.io/stable
 
 apps:
 
@@ -118,6 +113,7 @@ apps:
       group: "logging"
       namespace: "monitoring"
       enabled: false
+      protected: false
       chart: "datadog"
       version: "2.10.1"
       hooks:
@@ -139,6 +135,7 @@ apps:
       group: "logging"
       namespace: "monitoring"
       enabled: false
+      protected: false
       chart: "grafana/loki-stack"
       version: "2.3.0"
       hooks:
@@ -163,13 +160,13 @@ apps:
       description: "Kubernetes Native Policy Management"
       group: "security"
       namespace: "security" 
-      enabled: true
+      enabled: false
+      protected: true
       chart: "kyverno" 
       version: "1.2.1" 
       valuesFiles: 
         - "kyverno/values.yaml" 
       test: true
-      protected: true
       priority: -120
       wait: true
       hooks:
@@ -182,15 +179,16 @@ apps:
 
     cert-manager:
       description: "Manager SSL certficates creation, renew and update."
-      enabled: true
       group: "security"
       namespace: "cert-manager"
-      chart: "cert-manager"
-      version: "v1.4.2"
+      enabled: false
       protected: false
+      chart: "cert-manager"
+      version: "v0.13.0"
       hooks:
         successCondition: "Complete"
         preInstall: "helm -n cert-manager list --all"
+        # postInstall: "cert-manager/test-resources.yaml"
         deleteOnSuccess: true
       valuesFiles: 
         - "cert-manager/values.yaml"
@@ -216,7 +214,7 @@ apps:
         successCondition: "Complete"
       valuesFiles: 
         - "contour/values.yaml"
-      wait: false
+      wait: true
       timeout: 300
       maxHistory: 100
       test: true
@@ -227,14 +225,13 @@ apps:
       set:
         replicaCount: 1
         configInline.incluster: true
-        envoy.useHostIP: true
         envoy.service.externalIPs: "{${CLUSTER_IP}}"
 
     nginx:
       description: "Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
-      enabled: false
+      enabled: true
       chart: "ingress-nginx"
       version: "3.12.0"
       hooks:
@@ -259,7 +256,7 @@ apps:
       description: "Edge Router that makes publishing your services a fun and easy experience"
       group: "ingress"
       namespace: "ingress"
-      enabled: false
+      enabled: true
       chart: "traefik"
       version: "9.18.2"
       hooks:
@@ -300,12 +297,11 @@ apps:
         dex.enabled: false
         server.extraArgs: "{--insecure}"
         controller.metrics.enabled: false
-        meshProvider: "traefik"
         server.ingress.enabled: true
         server.metrics.enabled: false
         repoServer.metrics.enabled: false
         server.ingress.hosts: "{argocd.$CLUSTER}"
-        server.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
+        server.ingress.annotations.kubernetes\.io/ingress\.class: "traefik"
         server.config.url: "http://argocd.$CLUSTER"
       helmFlags: 
         - "--debug"
@@ -333,27 +329,6 @@ apps:
         - "--atomic"
       set:
         metrics.enabled: false
-        
-    keel:
-      description: "Kubernetes Operator to automate Helm, DaemonSet, StatefulSet & Deployment updates"
-      group: "cicd"
-      namespace: "miscellaneous" 
-      enabled: true
-      protected: false
-      chart: "keel/keel" 
-      version: "0.9.8" 
-      valuesFiles: 
-        - "keel_0.9.8/values.yaml" 
-      test: true
-      priority: -98
-      wait: true
-      hooks:
-        successCondition: "Complete"
-        successTimeout: "90s"
-        deleteOnSuccess: true
-      helmFlags: 
-        - "--debug"
-        - "--atomic"
 
   # Monitoring Block (priority: -90)
     metrics-server:
@@ -361,6 +336,7 @@ apps:
       group: "monitoring"
       namespace: "monitoring"
       enabled: true
+      protected: false
       chart: "metrics-server"
       version: "2.9.0"
       hooks:
@@ -372,12 +348,12 @@ apps:
       wait: true
       timeout: 300
       maxHistory: 100
-      test: false
+      test: true
       priority: -200
       helmFlags:
         - "--atomic"
         - "--debug"
-
+        
     prometheus:
       description: "Prometheus clusters atop Kubernetes"
       group: "monitoring"
@@ -400,41 +376,40 @@ apps:
       helmFlags:
         - "--atomic"
         - "--debug"
-      set:
-        grafana.enabled: "false"
 
-  # Observability & Tracing Block (priority: -80)
-    botkube:
-      description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
-      group: "miscellaneous"
-      namespace: "observability"
+    grafana-operator:
+      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
+      group: "monitoring"
+      namespace: "monitoring"
       enabled: true
       protected: false
-      chart: "botkube"
-      version: "v0.12.0"
+      chart: "grafana-operator"
+      version: "1.0.1"
       hooks:
         successCondition: "Complete"
-        preInstall: "helm -n observability list --all"
+        preInstall: "helm -n monitoring list --all"
         deleteOnSuccess: true
       valuesFiles: 
-        - "botkube/values.yaml"
+        - "grafana-operator/values.yaml"
       wait: true
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -80
+      priority: -198
       helmFlags:
         - "--atomic"
         - "--debug"
       set:
-        config.settings.clustername: $CLUSTER
-        serviceMonitor.enabled: $MONITORING
+        grafana.ingress.hostname: grafana.$CLUSTER
+        grafana.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
 
+  # Observability & Tracing Block (priority: -80)
     jaeger:
       description: "Manager SSL certficates creation, renew and update."
       group: "miscellaneous"
       namespace: "observability"
       enabled: false
+      protected: false
       chart: "jaeger-operator"
       version: "2.14.0"
       hooks:
@@ -451,7 +426,6 @@ apps:
       helmFlags:
         - "--atomic"
         - "--debug"
-      protected: false
 
   # API Gateway Block (priority: -70)
     ambassador:
@@ -459,6 +433,7 @@ apps:
       group: "api-gateways"
       namespace: "ingress"
       enabled: false
+      protected: false
       chart: "ambassador"
       version: "6.5.18"
       hooks:
@@ -480,30 +455,71 @@ apps:
   # Service Mesh Block (priority: -60)
     linkerd2:
       description: "Linkerd service mesh for K8S"
-      group: "mesh"
+      group: "meshes"
       namespace: "linkerd"
-      enabled: true
+      enabled: false
       chart: "linkerd2"
-      version: "2.10.2"
+      version: "2.9.1"
       hooks:
         successCondition: "Complete"
-        preInstall: "bash -x linkerd_certificates_step.sh main"
-        preUpgrade: "bash -x linkerd_certificates_step.sh main"
+        preInstall: "bash -x linkerd2/step.sh main"
+        deleteOnSuccess: true
       valuesFiles: 
         - "linkerd2/values.yaml"
-        - "linkerd2/values-ha.yaml"
-      wait: false
-      timeout: 600
+      wait: true
+      timeout: 300
       maxHistory: 100
       test: true
       priority: -60
       helmFlags:
+        - "--atomic"
         - "--debug"
       setFile:
-        identityTrustAnchorsPEM: linkerd2/certs/plane/ca.crt
-        identity.issuer.tls.keyPEM: linkerd2/certs/issuer/issuer.key
-        identity.issuer.tls.crtPEM: linkerd2/certs/issuer/issuer.crt
+        global.identityTrustAnchorsPEM: linkerd2/certs/ca.crt
+        identity.issuer.tls.crtPEM: linkerd2/certs/issuer.crt
+        identity.issuer.tls.keyPEM: linkerd2/certs/issuer.key
       set:
-        # identity.issuer.scheme: kubernetes.io/tls
-        identity.issuer.crtExpiry: $EXP
-        installNamespace: false
+        identity.issuer.crtExpiry: "2021-12-27T19:35:23Z"
+
+  # Deployments & Automated Releases (priority: -50)
+    flagger:
+      description: "Kubernetes Operator to automate Helm, DaemonSet, StatefulSet & Deployment updates"
+      group: "releases"
+      namespace: "miscellaneous" 
+      enabled: true
+      protected: false
+      chart: "flagger/flagger" 
+      version: "1.7.0" 
+      valuesFiles: 
+        - "flagger/values.yaml" 
+      test: true
+      priority: -50
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+
+    keel:
+      description: "Kubernetes Operator to automate Helm, DaemonSet, StatefulSet & Deployment updates"
+      group: "cicd"
+      namespace: "miscellaneous" 
+      enabled: false
+      protected: false
+      chart: "keel/keel" 
+      version: "0.9.8" 
+      valuesFiles: 
+        - "keel_0.9.8/values.yaml" 
+      test: true
+      priority: -48
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
