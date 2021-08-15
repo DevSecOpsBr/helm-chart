@@ -231,7 +231,8 @@ apps:
       description: "Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
-      enabled: true
+      enabled: false
+      protected: true
       chart: "ingress-nginx"
       version: "3.12.0"
       hooks:
@@ -256,7 +257,8 @@ apps:
       description: "Edge Router that makes publishing your services a fun and easy experience"
       group: "ingress"
       namespace: "ingress"
-      enabled: true
+      enabled: false
+      protected: true
       chart: "traefik"
       version: "9.18.2"
       hooks:
@@ -301,7 +303,7 @@ apps:
         server.metrics.enabled: false
         repoServer.metrics.enabled: false
         server.ingress.hosts: "{argocd.$CLUSTER}"
-        server.ingress.annotations.kubernetes\.io/ingress\.class: "traefik"
+        server.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
         server.config.url: "http://argocd.$CLUSTER"
       helmFlags: 
         - "--debug"
@@ -482,14 +484,15 @@ apps:
   # Service Mesh Block (priority: -60)
     linkerd2:
       description: "Linkerd service mesh for K8S"
-      group: "meshes"
+      group: "mesh"
       namespace: "linkerd"
       enabled: false
       chart: "linkerd2"
-      version: "2.9.1"
+      version: "2.10.2"
       hooks:
         successCondition: "Complete"
-        preInstall: "bash -x linkerd2/step.sh main"
+        preInstall: "bash -x linkerd_certificates_step.sh main"
+        postInstall: "bash -x linkerd_certificates_step.sh cleanUp"
         deleteOnSuccess: true
       valuesFiles: 
         - "linkerd2/values.yaml"
@@ -502,11 +505,13 @@ apps:
         - "--atomic"
         - "--debug"
       setFile:
-        global.identityTrustAnchorsPEM: linkerd2/certs/ca.crt
-        identity.issuer.tls.crtPEM: linkerd2/certs/issuer.crt
-        identity.issuer.tls.keyPEM: linkerd2/certs/issuer.key
+        identityTrustAnchorsPEM: linkerd2/certs/plane/ca.crt
+        # identity.issuer.tls.keyPEM: linkerd2/certs/issuer/issuer.key
+        # identity.issuer.tls.crtPEM: linkerd2/certs/issuer/issuer.crt
       set:
-        identity.issuer.crtExpiry: "2021-12-27T19:35:23Z"
+        identity.issuer.scheme: "kubernetes.io/tls"
+        identity.issuer.crtExpiry: $EXP
+        installNamespace: "false"
 
   # Deployments & Automated Releases (priority: -50)
     flagger:
