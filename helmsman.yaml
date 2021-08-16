@@ -184,10 +184,10 @@ apps:
       description: "Manager SSL certficates creation, renew and update."
       group: "security"
       namespace: "cert-manager"
-      enabled: false
+      enabled: true
       protected: false
       chart: "cert-manager"
-      version: "v0.13.0"
+      version: "v1.4.2"
       hooks:
         successCondition: "Complete"
         preInstall: "helm -n cert-manager list --all"
