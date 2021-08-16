@@ -40,7 +40,10 @@ namespaces:
   linkerd:
     protected: false
     annotations:
-      iam.amazonaws.com/permitted: ".*"
+      linkerd.io/inject: disabled
+    labels:
+      linkerd.io/is-control-plane: "true"
+      config.linkerd.io/admission-webhooks: disabled
   miscellaneous:
     protected: false
     annotations:
@@ -350,8 +353,8 @@ apps:
       wait: true
       timeout: 300
       maxHistory: 100
-      test: true
-      priority: -200
+      test: false
+      priority: -90
       helmFlags:
         - "--atomic"
         - "--debug"
@@ -374,7 +377,7 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -199
+      priority: -89
       helmFlags:
         - "--atomic"
         - "--debug"
@@ -424,7 +427,7 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -198
+      priority: -88
       helmFlags:
         - "--atomic"
         - "--debug"
@@ -451,7 +454,7 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -80
+      priority: -79
       helmFlags:
         - "--atomic"
         - "--debug"
@@ -506,10 +509,9 @@ apps:
         - "--debug"
       setFile:
         identityTrustAnchorsPEM: linkerd2/certs/plane/ca.crt
-        # identity.issuer.tls.keyPEM: linkerd2/certs/issuer/issuer.key
-        # identity.issuer.tls.crtPEM: linkerd2/certs/issuer/issuer.crt
+        identity.issuer.tls.keyPEM: linkerd2/certs/issuer/issuer.key
+        identity.issuer.tls.crtPEM: linkerd2/certs/issuer/issuer.crt
       set:
-        identity.issuer.scheme: "kubernetes.io/tls"
         identity.issuer.crtExpiry: $EXP
         installNamespace: "false"
 
