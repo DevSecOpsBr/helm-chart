@@ -110,6 +110,47 @@ helmRepos:
 
 apps:
 
+  # Monitoring Block (priority: -140)
+    metrics-server:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: true
+      protected: false
+      chart: "metrics-server"
+      version: "2.9.0"
+      valuesFiles: 
+        - "metrics-server/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: false
+      priority: -140
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+        
+    prometheus:
+      description: "Prometheus clusters atop Kubernetes"
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: true
+      protected: false
+      chart: "kube-prometheus-stack"
+      version: "14.0.1"
+      valuesFiles: 
+        - "kube-prometheus-stack/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -139
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        grafana.enabled: false
+
   # Logging Block (priority: -130)
     datadog:
       description: "Datadog: like Prometheus, but for logs."
@@ -119,9 +160,6 @@ apps:
       protected: false
       chart: "datadog"
       version: "2.10.1"
-      hooks:
-        successCondition: "Complete"
-        deleteOnSuccess: true
       valuesFiles: 
         - "datadog/values.yaml"
       wait: true
@@ -141,9 +179,6 @@ apps:
       protected: false
       chart: "grafana/loki-stack"
       version: "2.3.0"
-      hooks:
-        successCondition: "Complete"
-        deleteOnSuccess: true
       valuesFiles: 
         - "loki-stack/values.yaml"
       wait: true
@@ -163,7 +198,7 @@ apps:
       description: "Kubernetes Native Policy Management"
       group: "security"
       namespace: "security" 
-      enabled: false
+      enabled: true
       protected: true
       chart: "kyverno" 
       version: "1.2.1" 
@@ -188,11 +223,6 @@ apps:
       protected: false
       chart: "cert-manager"
       version: "v1.4.2"
-      hooks:
-        successCondition: "Complete"
-        preInstall: "helm -n cert-manager list --all"
-        # postInstall: "cert-manager/test-resources.yaml"
-        deleteOnSuccess: true
       valuesFiles: 
         - "cert-manager/values.yaml"
       wait: true
@@ -212,9 +242,6 @@ apps:
       enabled: true
       chart: "contour"
       version: "5.0.1"
-      hooks:
-        deleteOnSuccess: true
-        successCondition: "Complete"
       valuesFiles: 
         - "contour/values.yaml"
       wait: true
@@ -238,9 +265,6 @@ apps:
       protected: true
       chart: "ingress-nginx"
       version: "3.12.0"
-      hooks:
-        successCondition: "Complete"
-        deleteOnSuccess: true
       valuesFiles: 
         - "ingress-nginx/values.yaml"
       wait: true
@@ -253,8 +277,8 @@ apps:
         - "--debug"
       set:
         controller.service.externalIPs: "{${CLUSTER_IP}}"
-        controller.metrics.enabled: $MONITORING
-        controller.metrics.serviceMonitor.enabled: $MONITORING
+        controller.metrics.enabled: true
+        controller.metrics.serviceMonitor.enabled: true
 
     traefik:
       description: "Edge Router that makes publishing your services a fun and easy experience"
@@ -294,17 +318,13 @@ apps:
       protected: false
       priority: -100
       wait: true
-      hooks:
-        successCondition: "Complete"
-        successTimeout: "90s"
-        deleteOnSuccess: true
       set:
         dex.enabled: false
         server.extraArgs: "{--insecure}"
-        controller.metrics.enabled: false
+        controller.metrics.enabled: true
         server.ingress.enabled: true
-        server.metrics.enabled: false
-        repoServer.metrics.enabled: false
+        server.metrics.enabled: true
+        repoServer.metrics.enabled: true
         server.ingress.hosts: "{argocd.$CLUSTER}"
         server.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
         server.config.url: "http://argocd.$CLUSTER"
@@ -325,62 +345,11 @@ apps:
       test: true
       priority: -99
       wait: true
-      hooks:
-        successCondition: "Complete"
-        successTimeout: "90s"
-        deleteOnSuccess: true
       helmFlags: 
         - "--debug"
         - "--atomic"
       set:
-        metrics.enabled: false
-
-  # Monitoring Block (priority: -90)
-    metrics-server:
-      description: "Manager SSL certficates creation, renew and update."
-      group: "monitoring"
-      namespace: "monitoring"
-      enabled: true
-      protected: false
-      chart: "metrics-server"
-      version: "2.9.0"
-      hooks:
-        successCondition: "Complete"
-        preInstall: "helm -n monitoring list --all"
-        deleteOnSuccess: true
-      valuesFiles: 
-        - "metrics-server/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: false
-      priority: -90
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-        
-    prometheus:
-      description: "Prometheus clusters atop Kubernetes"
-      group: "monitoring"
-      namespace: "monitoring"
-      enabled: true
-      protected: false
-      chart: "kube-prometheus-stack"
-      version: "14.0.1"
-      hooks:
-        successCondition: "Complete"
-        preInstall: "helm -n monitoring list --all"
-        deleteOnSuccess: true
-      valuesFiles: 
-        - "kube-prometheus-stack/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -89
-      helmFlags:
-        - "--atomic"
-        - "--debug"
+        metrics.enabled: true
 
   # Observability & Tracing Block (priority: -80)
     botkube:
@@ -391,10 +360,6 @@ apps:
       protected: false
       chart: "botkube"
       version: "v0.12.0"
-      hooks:
-        successCondition: "Complete"
-        preInstall: "helm -n observability list --all"
-        deleteOnSuccess: true
       valuesFiles: 
         - "botkube/values.yaml"
       wait: true
@@ -407,7 +372,7 @@ apps:
         - "--debug"
       set:
         config.settings.clustername: $CLUSTER
-        serviceMonitor.enabled: $MONITORING
+        serviceMonitor.enabled: true
 
     grafana-operator:
       description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
@@ -417,10 +382,6 @@ apps:
       protected: false
       chart: "grafana-operator"
       version: "1.0.1"
-      hooks:
-        successCondition: "Complete"
-        preInstall: "helm -n monitoring list --all"
-        deleteOnSuccess: true
       valuesFiles: 
         - "grafana-operator/values.yaml"
       wait: true
@@ -444,10 +405,6 @@ apps:
       protected: false
       chart: "jaeger-operator"
       version: "2.14.0"
-      hooks:
-        successCondition: "Complete"
-        preInstall: "helm -n observability list --all"
-        deleteOnSuccess: true
       valuesFiles: 
         - "jaeger-operator/values.yaml"
       wait: true
@@ -468,9 +425,6 @@ apps:
       protected: false
       chart: "ambassador"
       version: "6.5.18"
-      hooks:
-        deleteOnSuccess: true
-        successCondition: "Complete"
       valuesFiles: 
         - "ambassador/values.yaml"
       wait: true
@@ -489,16 +443,17 @@ apps:
       description: "Linkerd service mesh for K8S"
       group: "mesh"
       namespace: "linkerd"
-      enabled: false
+      enabled: true
       chart: "linkerd2"
       version: "2.10.2"
       hooks:
         successCondition: "Complete"
         preInstall: "bash -x linkerd_certificates_step.sh main"
         postInstall: "bash -x linkerd_certificates_step.sh cleanUp"
-        deleteOnSuccess: true
+        deleteOnSuccess: false
       valuesFiles: 
         - "linkerd2/values.yaml"
+        - "linkerd2/values-ha.yaml"
       wait: true
       timeout: 300
       maxHistory: 100
@@ -517,7 +472,7 @@ apps:
 
   # Deployments & Automated Releases (priority: -50)
     flagger:
-      description: "Kubernetes Operator to automate Helm, DaemonSet, StatefulSet & Deployment updates"
+      description: "A progressive delivery tool that automates the release process for applications running on Kubernetes."
       group: "releases"
       namespace: "miscellaneous" 
       enabled: true
@@ -542,12 +497,12 @@ apps:
         ingressClass: "contour"
         slack.channel: "deploys"
         slack.url: "https://hooks.slack.com/services/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"
-        podMonitor.enabled: $MONITORING
-        prometheus.install: "false"
-        crd.create: "false"
+        podMonitor.enabled: true
+        prometheus.install: false
+        crd.create: false
 
     flagger-loadtester:
-      description: "Kubernetes Operator to automate Helm, DaemonSet, StatefulSet & Deployment updates"
+      description: "Load testing services generates traffic during canary analysis when configured as a webhook."
       group: "releases"
       namespace: "miscellaneous" 
       enabled: true
@@ -559,10 +514,6 @@ apps:
       test: true
       priority: -49
       wait: true
-      hooks:
-        successCondition: "Complete"
-        successTimeout: "90s"
-        deleteOnSuccess: true
       helmFlags: 
         - "--debug"
         - "--atomic"
@@ -582,10 +533,6 @@ apps:
       test: true
       priority: -48
       wait: true
-      hooks:
-        successCondition: "Complete"
-        successTimeout: "90s"
-        deleteOnSuccess: true
       helmFlags: 
         - "--debug"
         - "--atomic"

@@ -56,7 +56,7 @@ function main() {
     exit 333
   fi
 
-  # deploy
+  certManager
 
 }
 
@@ -67,24 +67,6 @@ function certManager() {
    --key=$DIRECTORY/plane/ca.key
 
   # deploy
-
-}
-
-function deploy() {
-
-  echo "Deploying linkerd ..."
-  #  --set identity.issuer.scheme="kubernetes.io/tls" \
-
-  helm install linkerd2 \
-  --set-file identityTrustAnchorsPEM=$DIRECTORY/plane/ca.crt \
-  --set-file identity.issuer.tls.keyPEM=$DIRECTORY/issuer/issuer.key \
-  --set-file identity.issuer.tls.crtPEM=$DIRECTORY/issuer/issuer.crt \
-  --set identity.issuer.crtExpiry=$EXP \
-  --set clusterDomain=$CLUSTER \
-  --set installNamespace=true \
-  -f linkerd2/values-ha.yaml \
-  --timeout 600s --atomic \
-  --debug linkerd/linkerd2
 
 }
 
