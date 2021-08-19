@@ -7,8 +7,6 @@ CERTS="certs"
 CHART="linkerd2"
 DIRECTORY=$(dirname $0)/$CHART/$CERTS
 FOLDERS=(plane issuer webhook)
-OS=$(uname -s)
-HOURS=8760
 NS="linkerd"
 
 function main() {
@@ -87,20 +85,6 @@ if [ ! -d "${DIRECTORY}/${CERTS}" ]; then
 else
   echo "$DIRECTORY/$CERTS exits!"
   exit;
-fi
-
-echo "Checking OS version ..."
-
-if [ $OS == "Darwin" ]; then
-  # in Mac:
-  EXP=$(date -v+${HOURS}H +"%Y-%m-%dT%H:%M:%SZ")
-  echo "Updating certificate expiry"
-  sed -i '' "s/__replaceme__/${EXP}/g" helmsman.yaml
-else
-  # in Linux:
-  EXP=$(date -d \'+${HOURS} hour\' +"%Y-%m-%dT%H:%M:%SZ")
-  echo "Updating certificate expiry"
-  sed -i '' "s/__replaceme__/${EXP}/g" helmsman.yaml
 fi
 
 $@

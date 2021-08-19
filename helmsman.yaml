@@ -240,10 +240,8 @@ apps:
       group: "ingress"
       namespace: "ingress"
       enabled: true
-      chart: "contour"
+      chart: "bitnami/contour"
       version: "5.0.1"
-      valuesFiles: 
-        - "contour/values.yaml"
       wait: true
       timeout: 300
       maxHistory: 100
@@ -253,9 +251,11 @@ apps:
         - "--atomic"
         - "--debug"
       set:
-        replicaCount: 1
+        replicaCount: 2
         configInline.incluster: true
         envoy.service.externalIPs: "{${CLUSTER_IP}}"
+        envoy.nodeSelector.node-role\.kubernetes\.io/master: ""
+        default.backend.enabled: true
 
     nginx:
       description: "Nginx-Ingress Controller for K8S"
@@ -351,7 +351,7 @@ apps:
       set:
         metrics.enabled: true
 
-  # Observability & Tracing Block (priority: -80)
+  # Observability & Tracing Block (priority: -90)
     botkube:
       description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
       group: "miscellaneous"
@@ -366,7 +366,7 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -80
+      priority: -90
       helmFlags:
         - "--atomic"
         - "--debug"
@@ -388,7 +388,7 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -88
+      priority: -89
       helmFlags:
         - "--atomic"
         - "--debug"
@@ -444,24 +444,21 @@ apps:
       group: "mesh"
       namespace: "linkerd"
       enabled: true
+      protected: false
       chart: "linkerd2"
       version: "2.10.2"
       hooks:
         successCondition: "Complete"
         preInstall: "bash -x linkerd_certificates_step.sh main"
         postInstall: "bash -x linkerd_certificates_step.sh cleanUp"
-        deleteOnSuccess: false
-      valuesFiles: 
-        - "linkerd2/values.yaml"
-        - "linkerd2/values-ha.yaml"
-      wait: true
+        deleteOnSuccess: true
+      wait: false
       timeout: 300
       maxHistory: 100
       test: true
       priority: -60
-      helmFlags:
-        - "--atomic"
-        - "--debug"
+      valuesFiles:
+        - "linkerd2/values.yaml"
       setFile:
         identityTrustAnchorsPEM: linkerd2/certs/plane/ca.crt
         identity.issuer.tls.keyPEM: linkerd2/certs/issuer/issuer.key
