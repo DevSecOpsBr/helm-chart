@@ -45,20 +45,19 @@ function main() {
     exit 333
   fi
 
-  certManager
+  secrets
 
 }
 
-function certManager() {
+function secrets() {
 
-  kubectl -n $NS get secret linkerd-trust-anchors
-  if [[ $? -ne 0 ]]; then
-    echo "Creating tls secret ..."
-    kubectl -n $NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt \
-    --key=$DIRECTORY/plane/ca.key
-  else
-    echo "Secret already exists."
-  fi
+    echo "Creating secret tls ..."
+    kubectl -n $NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key
+    echo "linkerd-trust-anchor, created ..."
+    kubectl -n $NS create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key
+    echo "webhook-issuer-tls, created ..."
+    kubectl -n $NS create secret tls linkerd-identity-issuer --cert=$DIRECTORY/issuer/issuer.crt --key=$DIRECTORY/issuer/issuer.key
+    echo "linkerd-identity-issuer, created ..."
 
 }
 

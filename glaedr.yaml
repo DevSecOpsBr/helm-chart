@@ -34,8 +34,7 @@ apps:
       priority: -140
       helmFlags:
         - "--atomic"
-        - "--debug"
-        
+
     prometheus:
       description: "Prometheus clusters atop Kubernetes"
       group: "monitoring"
@@ -53,7 +52,6 @@ apps:
       priority: -139
       helmFlags:
         - "--atomic"
-        - "--debug"
       set:
         grafana.enabled: false
         alertmanager.ingress.hosts: "{alertmanager.$CLUSTER_GLAEDR}"
@@ -78,7 +76,6 @@ apps:
       priority: -129
       helmFlags:
         - "--atomic"
-        - "--debug"
       set:
         ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
         ingress.hosts\.host[0]: "loki.$CLUSTER_GLAEDR"
@@ -102,8 +99,7 @@ apps:
         successCondition: "Complete"
         successTimeout: "90s"
         deleteOnSuccess: true
-      helmFlags: 
-        - "--debug"
+      helmFlags:
         - "--atomic"
 
     cert-manager:
@@ -123,7 +119,6 @@ apps:
       priority: -119
       helmFlags:
         - "--atomic"
-        - "--debug"
 
   # Ingress Block (priority: -110)
 
@@ -166,7 +161,6 @@ apps:
       priority: -109
       helmFlags:
         - "--atomic"
-        - "--debug"
       set:
         controller.service.externalIPs: "{${GLAEDR_IPADDR}}"
         controller.metrics.enabled: true
@@ -192,7 +186,6 @@ apps:
       priority: -108
       helmFlags:
         - "--atomic"
-        - "--debug"
       set:
         service.externalIPs: "{${GLAEDR_IPADDR}}"
 
@@ -215,7 +208,6 @@ apps:
       priority: -90
       helmFlags:
         - "--atomic"
-        - "--debug"
       set:
         config.settings.clustername: $CLUSTER_GLAEDR
         serviceMonitor.enabled: true
@@ -240,15 +232,19 @@ apps:
       maxHistory: 100
       test: true
       priority: -60
-      valuesFiles:
-        - "linkerd2/values.yaml"
       setFile:
         identityTrustAnchorsPEM: linkerd2/certs/plane/ca.crt
-        identity.issuer.tls.keyPEM: linkerd2/certs/issuer/issuer.key
-        identity.issuer.tls.crtPEM: linkerd2/certs/issuer/issuer.crt
+        proxyInjector.caBundle: linkerd2/certs/plane/ca.crt
+        profileValidator.caBundle: linkerd2/certs/plane/ca.crt
       set:
+        identity.issuer.scheme: "kubernetes.io/tls"
+        identity.externalIssuer: true
+        proxyInjector.externalSecret: true
+        profileValidator.externalSecret: true
         identity.issuer.crtExpiry: $EXP
         installNamespace: "false"
+      helmFlags:
+        - "--atomic"
 
   # Deployments & Automated Releases (priority: -50)
 
@@ -270,7 +266,6 @@ apps:
         successTimeout: "90s"
         deleteOnSuccess: true
       helmFlags: 
-        - "--debug"
         - "--atomic"
       set:
         logLevel: "debug"
@@ -296,7 +291,6 @@ apps:
       priority: -49
       wait: true
       helmFlags: 
-        - "--debug"
         - "--atomic"
       set:
         logLevel: "debug"
