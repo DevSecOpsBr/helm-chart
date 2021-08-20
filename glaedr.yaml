@@ -300,26 +300,3 @@ apps:
         - "--atomic"
       set:
         logLevel: "debug"
-
-    keel:
-      description: "Kubernetes Operator to automate Helm, DaemonSet, StatefulSet & Deployment updates"
-      group: "releases"
-      namespace: "miscellaneous" 
-      enabled: true
-      protected: false
-      chart: "keel/keel" 
-      version: "0.9.8" 
-      valuesFiles: 
-        - "keel/values.yaml" 
-      test: true
-      priority: -48
-      wait: true
-      helmFlags: 
-        - "--debug"
-        - "--atomic"
-      set:
-        helmProvider.version: "v3"
-        ingress.enabled: true
-        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
-        ingress.hosts[0].host: "keel.$CLUSTER_GLAEDR"
-        ingress.hosts[0].paths: "{/}"
