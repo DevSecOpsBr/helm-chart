@@ -1,7 +1,7 @@
 # Keel - automated Kubernetes deployments for the rest of us
 
 * Website [https://keel.sh](https://keel.sh)
-* User Guide [https://keel.sh/user-guide/](https://keel.sh/user-guide/)
+* User Guide [https://keel.sh/docs/](https://keel.sh/docs/)
 
 Keel is a tool for automating [Kubernetes](https://kubernetes.io/) deployment updates. Keel is stateless, robust and lightweight.
 
@@ -19,7 +19,7 @@ Keel provides several key features:
 
 *  __[Polling](https://keel.sh/user-guide/#polling-deployment-example)__ - when webhooks and pubsub aren't available - Keel can still be useful by checking Docker Registry for new tags (if current tag is semver) or same tag SHA digest change (ie: `latest`).
 
-* __Notifications__ - out of the box Keel has Slack and standard webhook notifications, more info [here](https://keel.sh/user-guide/#notifications)
+* __Notifications__ - out of the box Keel has Slack, HipChat, Mattermost, Teams and standard webhook notifications, more info [here](https://keel.sh/user-guide/#notifications)
 
 
 ## Installing
@@ -81,6 +81,8 @@ The following table lists has the main configurable parameters (polling, trigger
 | ------------------------------------------- | -------------------------------------- | --------------------------------------------------------- |
 | `polling.enabled`                           | Docker registries polling              | `true`                                                    |
 | `helmProvider.enabled`                      | Enable/disable Helm provider           | `true`                                                    |
+| `helmProvider.helmDriver`                   | Set driver for Helm3                   | ``                                                        |
+| `helmProvider.helmDriverSqlConnectionString`| Set SQL connection string for Helm3    | ``                                                        |
 | `gcr.enabled`                               | Enable/disable GCR Registry            | `false`                                                   |
 | `gcr.projectId`                             | GCP Project ID GCR belongs to          |                                                           |
 | `gcr.pubsub.enabled`                        | Enable/disable GCP Pub/Sub trigger     | `false`                                                   |
@@ -97,6 +99,8 @@ The following table lists has the main configurable parameters (polling, trigger
 | `slack.token`                               | Slack token                            |                                                           |
 | `slack.channel`                             | Slack channel                          |                                                           |
 | `slack.approvalsChannel`                    | Slack channel for approvals            |                                                           |
+| `teams.enabled`                             | Enable/disable MS Teams Notification   | `false`                                                   |
+| `teams.webhookUrl`                          | MS Teams Connector's webhook url       |                                                           |
 | `service.enabled`                           | Enable/disable Keel service            | `false`                                                   |
 | `service.type`                              | Keel service type                      | `LoadBalancer`                                            |
 | `service.externalIP`                        | Keel static IP                         |                                                           |
@@ -114,6 +118,13 @@ The following table lists has the main configurable parameters (polling, trigger
 | `hipchat.botName`                           | Name of the Hipchat bot                |                                                           |
 | `hipchat.userName`                          | Hipchat username in Jabber format      |                                                           |
 | `hipchat.password`                          | Hipchat password for approvals user    |                                                           |
+| `mail.enabled`                              | Enable/disable mail notifications      | `false`                                                   |
+| `mail.from`                                 | Mail sender address                    |                                                           |
+| `mail.to`                                   | Mail destination address               |                                                           |
+| `mail.smtp.server`                          | Mail SMTP server address               |                                                           |
+| `mail.smtp.port`                            | Mail SMTP server port                  | `25`                                                      |
+| `mail.smtp.user`                            | Mail SMTP server user (optional)       |                                                           |
+| `mail.smtp.pass`                            | Mail SMTP server password (optional)   |                                                           |
 | `mattermost.enabled`                        | Enable/disable Mattermost integration  | `false`                                                   |
 | `mattermost.endpoint`                       | Mattermost API endpoint                |                                                           |
 | `googleApplicationCredentials`              | GCP Service account key configurable   |                                                           |

@@ -56,6 +56,8 @@ apps:
         - "--debug"
       set:
         grafana.enabled: false
+        alertmanager.ingress.hosts: "{alertmanager.$CLUSTER_GLAEDR}"
+        prometheus.ingress.hosts: "{prometheus.$CLUSTER_GLAEDR}"
 
   # Logging Block (priority: -130)
 
@@ -308,10 +310,16 @@ apps:
       chart: "keel/keel" 
       version: "0.9.8" 
       valuesFiles: 
-        - "keel_0.9.8/values.yaml" 
+        - "keel/values.yaml" 
       test: true
       priority: -48
       wait: true
       helmFlags: 
         - "--debug"
         - "--atomic"
+      set:
+        helmProvider.version: "v3"
+        ingress.enabled: true
+        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+        ingress.hosts[0].host: "keel.$CLUSTER_GLAEDR"
+        ingress.hosts[0].paths: "{/}"

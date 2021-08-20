@@ -270,8 +270,7 @@ alertmanager:
 
     ## Hosts must be provided if Ingress is enabled.
     ##
-    hosts: 
-      - alertmanager.minikube
+    hosts: {}
 
     ## Paths to use for ingress rules - one path should match the alertmanagerSpec.routePrefix
     ##
@@ -797,8 +796,7 @@ grafana:
     ##
     # hosts:
     #   - grafana.domain.com
-    hosts:
-      - grafana.minikube
+    hosts: {}
 
     ## Path for grafana ingress
     path: /
@@ -1836,8 +1834,7 @@ prometheus:
     ##
     # hosts:
     #   - prometheus.domain.com
-    hosts:
-      - prometheus.minikube
+    hosts: {}
 
     ## Paths to use for ingress rules - one path should match the prometheusSpec.routePrefix
     ##
