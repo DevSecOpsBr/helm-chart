@@ -1,0 +1,87 @@
+metadata:
+  maintainer: "devops team (devops@ellesmera.io)"
+
+# define your environments and their k8s namespaces
+namespaces:
+  cert-manager:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  chaos:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  ingress:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  linkerd:
+    protected: false
+    annotations:
+      linkerd.io/inject: disabled
+    labels:
+      linkerd.io/is-control-plane: "true"
+      config.linkerd.io/admission-webhooks: disabled
+  miscellaneous:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  monitoring:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  observability:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  security:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  velero:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+
+helmRepos:
+  stable: https://charts.helm.sh/stable
+  # argocd - continous deployment
+  argo: "https://argoproj.github.io/argo-helm"
+  # jfrog tools
+  jfrog: "https://charts.jfrog.io"
+  # kong api-gateway
+  kong: https://charts.konghq.com
+  # kong - kuma mesh
+  kong-mesh: https://kong.github.io/kong-mesh-charts
+  # grafana tools e.g: loki and etc...
+  grafana: https://grafana.github.io/helm-charts
+  # nginx ingress controller
+  ingress-nginx: https://kubernetes.github.io/ingress-nginx
+  # kube-prometheus-stack
+  prometheus-community: https://prometheus-community.github.io/helm-charts
+  # helm automation delivery
+  keel: https://charts.keel.sh
+  # cert-manager
+  jetstack: https://charts.jetstack.io
+  # bunch of charts
+  bitnami: https://charts.bitnami.com/bitnami
+  # ambassador ingress & api-gateway
+  datawire: https://www.getambassador.io
+  # kubernetes event driven application
+  kedacore: https://kedacore.github.io/charts
+  # develop, deploy and manage cloud-native applications without requiring any Kubernetes expertise
+  shipa-charts: https://shipa-charts.storage.googleapis.com
+  # Concourse is an open-source continuous thing-doer.
+  concourse: https://concourse-charts.storage.googleapis.com/
+  # Datadog logging, monitoring and apm system
+  datadog: https://helm.datadoghq.com
+  # BotKube is a messaging bot for monitoring and debugging Kubernetes clusters
+  infracloudio: https://infracloudio.github.io/charts
+  # A progressive delivery tool that automates the release process for applications running on Kubernetes.
+  flagger: https://flagger.app
+  # High Performance, Kubernetes Native Object Storage
+  minio: https://helm.min.io/
+  # Edge Router that makes publishing your services a fun and easy experience
+  traefik: https://helm.traefik.io/traefik
+  # Continuously backup Kubernetes objets as YAML files in git
+  katafygio: https://bpineau.github.io/katafygio

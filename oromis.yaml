@@ -1,0 +1,250 @@
+metadata:
+  org: "oromis.local"
+  description: "Oromis Cluster Desired State File."
+
+settings:
+  kubeContext: "oromis.local" # will try connect to this context first, if it does not exist, it will be created using the details below
+  storageBackend: "secret"
+  slackWebhook:  "https://hooks.slack.com/services/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"
+  #reverseDelete: false # reverse the priorities on delete
+  globalHooks:
+    successCondition: "Complete"
+    deleteOnSuccess: true
+  globalMaxHistory: 500
+  reverseDelete: true
+
+apps:
+
+  # Monitoring Block (priority: -140)
+
+    metrics-server:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: true
+      protected: false
+      chart: "metrics-server"
+      version: "2.9.0"
+      valuesFiles: 
+        - "metrics-server/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: false
+      priority: -140
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+    grafana-operator:
+      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: true
+      protected: false
+      chart: "grafana-operator"
+      version: "1.0.1"
+      valuesFiles: 
+        - "grafana-operator/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -139
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        grafana.ingress.hostname: grafana.$CLUSTER_OROMIS
+        grafana.ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+
+  # Logging Block (priority: -130)
+
+    loki:
+      description: "Loki: like Prometheus, but for logs."
+      group: "logging"
+      namespace: "monitoring"
+      enabled: false
+      protected: false
+      chart: "grafana/loki-stack"
+      version: "2.3.0"
+      valuesFiles: 
+        - "loki-stack/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -130
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+        ingress.hosts\.host[0]: "loki.$CLUSTER_OROMIS"
+
+  # Security block (priority: -120)
+
+    kyverno:
+      description: "Kubernetes Native Policy Management"
+      group: "security"
+      namespace: "security" 
+      enabled: true
+      protected: true
+      chart: "kyverno" 
+      version: "1.2.1" 
+      valuesFiles: 
+        - "kyverno/values.yaml" 
+      test: true
+      priority: -120
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+
+    cert-manager:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "security"
+      namespace: "cert-manager"
+      enabled: true
+      protected: false
+      chart: "cert-manager"
+      version: "v1.4.2"
+      valuesFiles: 
+        - "cert-manager/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -119
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+
+  # Ingress Block (priority: -110)
+
+    contour:
+      description: "High performance ingress controller for Kubernetes"
+      group: "ingress"
+      namespace: "ingress"
+      enabled: true
+      chart: "bitnami/contour"
+      version: "5.0.1"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -110
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        replicaCount: 2
+        configInline.incluster: true
+        envoy.service.externalIPs: "{${OROMIS_IPADDR}}"
+        envoy.nodeSelector.node-role\.kubernetes\.io/master: ""
+        default.backend.enabled: true
+
+  # CI/CD Block (priority: -100)
+
+    argocd:
+      description: "ArgoCD - Declarative GitOps CD for Kubernetes"
+      group: "cicd"
+      namespace: "miscellaneous" 
+      enabled: true 
+      chart: "argo/argo-cd" 
+      version: "3.10.0" 
+      valuesFiles: 
+        - "argo-cd/values.yaml" 
+      test: true
+      protected: false
+      priority: -100
+      wait: true
+      set:
+        dex.enabled: false
+        server.extraArgs: "{--insecure}"
+        controller.metrics.enabled: true
+        server.ingress.enabled: true
+        server.metrics.enabled: true
+        repoServer.metrics.enabled: true
+        server.ingress.hosts: "{argocd.$CLUSTER_OROMIS}"
+        server.ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+        server.config.url: "http://argocd.$CLUSTER_OROMIS"
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+
+    argocd-notifications:
+      description: "ArgoCD - Notifications for Kubernetes"
+      group: "cicd"
+      namespace: "miscellaneous" 
+      enabled: true 
+      protected: false
+      chart: "argo/argocd-notifications" 
+      version: "1.0.14" 
+      valuesFiles: 
+        - "argocd-notifications/values.yaml" 
+      test: true
+      priority: -99
+      wait: true
+      helmFlags: 
+        - "--debug"
+        - "--atomic"
+      set:
+        metrics.enabled: true
+
+  # Observability & Tracing Block (priority: -90)
+
+    botkube:
+      description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
+      group: "miscellaneous"
+      namespace: "observability"
+      enabled: true
+      protected: false
+      chart: "botkube"
+      version: "v0.12.0"
+      valuesFiles: 
+        - "botkube/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -90
+      helmFlags:
+        - "--atomic"
+        - "--debug"
+      set:
+        config.settings.clustername: $CLUSTER_OROMIS
+        serviceMonitor.enabled: true
+
+  # Service Mesh Block (priority: -60)
+
+    linkerd2:
+      description: "Linkerd service mesh for K8S"
+      group: "mesh"
+      namespace: "linkerd"
+      enabled: true
+      protected: false
+      chart: "linkerd2"
+      version: "2.10.2"
+      hooks:
+        preInstall: "bash -x linkerd_step.sh main"
+        postInstall: "bash -x linkerd_step.sh cleanUp"
+      wait: false
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -60
+      valuesFiles:
+        - "linkerd2/values.yaml"
+      setFile:
+        identityTrustAnchorsPEM: linkerd2/certs/plane/ca.crt
+        identity.issuer.tls.keyPEM: linkerd2/certs/issuer/issuer.key
+        identity.issuer.tls.crtPEM: linkerd2/certs/issuer/issuer.crt
+      set:
+        identity.issuer.crtExpiry: $EXP
+        installNamespace: "false"
+

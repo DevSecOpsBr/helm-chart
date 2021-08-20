@@ -12,8 +12,6 @@ NS="linkerd"
 function main() {
 
   # Trust anchor certificate
-  # step certificate create root.linkerd.cluster.local ca.crt ca.key --profile root-ca --no-password --insecure 
-
   echo "Creating control plane certificates ..."
 
   $STEP certificate create root.linkerd.$CLUSTER \
@@ -25,10 +23,6 @@ function main() {
     fi
 
   # Issuer certificate and key
-  # step certificate create identity.linkerd.cluster.local issuer.crt issuer.key \
-  # --profile intermediate-ca --not-after 8760h --no-password --insecure \
-  # --ca ca.crt --ca-key ca.key
-
   echo "Creating issuer certificates ..."
 
   $STEP certificate create identity.linkerd.$CLUSTER $DIRECTORY/issuer/issuer.crt $DIRECTORY/issuer/issuer.key \
@@ -41,9 +35,6 @@ function main() {
     fi
 
   # Webhook certificate
-  # step certificate create webhook.linkerd.cluster.local ca.crt ca.key \
-  # --profile root-ca --no-password --insecure --san webhook.linkerd.cluster.local
-
   echo "Creating webhook certificates ..."
 
   $STEP certificate create webhook.linkerd.$CLUSTER ${DIRECTORY}/webhook/ca.crt ${DIRECTORY}/webhook/ca.key \
@@ -60,11 +51,14 @@ function main() {
 
 function certManager() {
 
-  echo "Creating tls secret ..."
-  kubectl -n $NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt \
-   --key=$DIRECTORY/plane/ca.key
-
-  # deploy
+  kubectl -n $NS get secret linkerd-trust-anchors
+  if [[ $? -ne 0 ]]; then
+    echo "Creating tls secret ..."
+    kubectl -n $NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt \
+    --key=$DIRECTORY/plane/ca.key
+  else
+    echo "Secret already exists."
+  fi
 
 }
 

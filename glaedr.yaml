@@ -1,20 +1,9 @@
-context: "ellesmera.local"     # defaults to "default" if not provided
-
 metadata:
-  org: "ellesmera.io"
-  maintainer: "devops team (devops@ellesmera.io)"
-  description: "Desired State File."
-
-# paths to the certificate for connecting to the cluster
-# You can skip this if you use Helmsman on a machine with kubectl already connected to your k8s cluster.
-# you have to use exact key names here : 'caCrt' for certificate and 'caKey' for the key and caClient for the client certificate
-# certificates:
-  #caClient: "gs://mybucket/client.crt" # GCS bucket path
-  #caCrt: "s3://mybucket/ca.crt" # S3 bucket path
-  #caKey: "../ca.key" # valid local file relative path
+  org: "glaedr.local"
+  description: "Glaedr Cluster Desired State File."
 
 settings:
-  kubeContext: "" # will try connect to this context first, if it does not exist, it will be created using the details below
+  kubeContext: "glaedr.local" # will try connect to this context first, if it does not exist, it will be created using the details below
   storageBackend: "secret"
   slackWebhook:  "https://hooks.slack.com/services/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"
   #reverseDelete: false # reverse the priorities on delete
@@ -22,95 +11,12 @@ settings:
     successCondition: "Complete"
     deleteOnSuccess: true
   globalMaxHistory: 500
-
-# define your environments and their k8s namespaces
-namespaces:
-  cert-manager:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  chaos:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  ingress:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  linkerd:
-    protected: false
-    annotations:
-      linkerd.io/inject: disabled
-    labels:
-      linkerd.io/is-control-plane: "true"
-      config.linkerd.io/admission-webhooks: disabled
-  miscellaneous:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  monitoring:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  observability:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  security:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  velero:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-
-helmRepos:
-  stable: https://charts.helm.sh/stable
-  # argocd - continous deployment
-  argo: "https://argoproj.github.io/argo-helm"
-  # jfrog tools
-  jfrog: "https://charts.jfrog.io"
-  # kong api-gateway
-  kong: https://charts.konghq.com
-  # kong - kuma mesh
-  kong-mesh: https://kong.github.io/kong-mesh-charts
-  # grafana tools e.g: loki and etc...
-  grafana: https://grafana.github.io/helm-charts
-  # nginx ingress controller
-  ingress-nginx: https://kubernetes.github.io/ingress-nginx
-  # kube-prometheus-stack
-  prometheus-community: https://prometheus-community.github.io/helm-charts
-  # helm automation delivery
-  keel: https://charts.keel.sh
-  # cert-manager
-  jetstack: https://charts.jetstack.io
-  # bunch of charts
-  bitnami: https://charts.bitnami.com/bitnami
-  # ambassador ingress & api-gateway
-  datawire: https://www.getambassador.io
-  # kubernetes event driven application
-  kedacore: https://kedacore.github.io/charts
-  # develop, deploy and manage cloud-native applications without requiring any Kubernetes expertise
-  shipa-charts: https://shipa-charts.storage.googleapis.com
-  # Concourse is an open-source continuous thing-doer.
-  concourse: https://concourse-charts.storage.googleapis.com/
-  # Datadog logging, monitoring and apm system
-  datadog: https://helm.datadoghq.com
-  # BotKube is a messaging bot for monitoring and debugging Kubernetes clusters
-  infracloudio: https://infracloudio.github.io/charts
-  # A progressive delivery tool that automates the release process for applications running on Kubernetes.
-  flagger: https://flagger.app
-  # High Performance, Kubernetes Native Object Storage
-  minio: https://helm.min.io/
-  # Edge Router that makes publishing your services a fun and easy experience
-  traefik: https://helm.traefik.io/traefik
-  # Continuously backup Kubernetes objets as YAML files in git
-  katafygio: https://bpineau.github.io/katafygio
+  reverseDelete: true
 
 apps:
 
   # Monitoring Block (priority: -140)
+
     metrics-server:
       description: "Manager SSL certficates creation, renew and update."
       group: "monitoring"
@@ -152,24 +58,6 @@ apps:
         grafana.enabled: false
 
   # Logging Block (priority: -130)
-    datadog:
-      description: "Datadog: like Prometheus, but for logs."
-      group: "logging"
-      namespace: "monitoring"
-      enabled: false
-      protected: false
-      chart: "datadog"
-      version: "2.10.1"
-      valuesFiles: 
-        - "datadog/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -130
-      helmFlags:
-        - "--atomic"
-        - "--debug"
 
     loki:
       description: "Loki: like Prometheus, but for logs."
@@ -190,10 +78,11 @@ apps:
         - "--atomic"
         - "--debug"
       set:
-        ingress.annotations.kubernetes\.io/ingress\.class: "contour"
-        ingress.hosts\.host[0]: "loki.$CLUSTER"
+        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+        ingress.hosts\.host[0]: "loki.$CLUSTER_GLAEDR"
 
   # Security block (priority: -120)
+
     kyverno:
       description: "Kubernetes Native Policy Management"
       group: "security"
@@ -235,6 +124,7 @@ apps:
         - "--debug"
 
   # Ingress Block (priority: -110)
+
     contour:
       description: "High performance ingress controller for Kubernetes"
       group: "ingress"
@@ -253,7 +143,7 @@ apps:
       set:
         replicaCount: 2
         configInline.incluster: true
-        envoy.service.externalIPs: "{${CLUSTER_IP}}"
+        envoy.service.externalIPs: "{${GLAEDR_IPADDR}}"
         envoy.nodeSelector.node-role\.kubernetes\.io/master: ""
         default.backend.enabled: true
 
@@ -276,7 +166,7 @@ apps:
         - "--atomic"
         - "--debug"
       set:
-        controller.service.externalIPs: "{${CLUSTER_IP}}"
+        controller.service.externalIPs: "{${GLAEDR_IPADDR}}"
         controller.metrics.enabled: true
         controller.metrics.serviceMonitor.enabled: true
 
@@ -302,56 +192,10 @@ apps:
         - "--atomic"
         - "--debug"
       set:
-        service.externalIPs: "{${CLUSTER_IP}}"
-
-  # CI/CD Block (priority: -100)
-    argocd:
-      description: "ArgoCD - Declarative GitOps CD for Kubernetes"
-      group: "cicd"
-      namespace: "miscellaneous" 
-      enabled: true 
-      chart: "argo/argo-cd" 
-      version: "3.10.0" 
-      valuesFiles: 
-        - "argo-cd/values.yaml" 
-      test: true
-      protected: false
-      priority: -100
-      wait: true
-      set:
-        dex.enabled: false
-        server.extraArgs: "{--insecure}"
-        controller.metrics.enabled: true
-        server.ingress.enabled: true
-        server.metrics.enabled: true
-        repoServer.metrics.enabled: true
-        server.ingress.hosts: "{argocd.$CLUSTER}"
-        server.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
-        server.config.url: "http://argocd.$CLUSTER"
-      helmFlags: 
-        - "--debug"
-        - "--atomic"
-
-    argo-notifications:
-      description: "ArgoCD - Notifications for Kubernetes"
-      group: "cicd"
-      namespace: "miscellaneous" 
-      enabled: true 
-      protected: false
-      chart: "argo/argocd-notifications" 
-      version: "1.0.14" 
-      valuesFiles: 
-        - "argocd-notifications/values.yaml" 
-      test: true
-      priority: -99
-      wait: true
-      helmFlags: 
-        - "--debug"
-        - "--atomic"
-      set:
-        metrics.enabled: true
+        service.externalIPs: "{${GLAEDR_IPADDR}}"
 
   # Observability & Tracing Block (priority: -90)
+
     botkube:
       description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
       group: "miscellaneous"
@@ -371,74 +215,11 @@ apps:
         - "--atomic"
         - "--debug"
       set:
-        config.settings.clustername: $CLUSTER
+        config.settings.clustername: $CLUSTER_GLAEDR
         serviceMonitor.enabled: true
 
-    grafana-operator:
-      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
-      group: "monitoring"
-      namespace: "monitoring"
-      enabled: true
-      protected: false
-      chart: "grafana-operator"
-      version: "1.0.1"
-      valuesFiles: 
-        - "grafana-operator/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -89
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-      set:
-        grafana.ingress.hostname: grafana.$CLUSTER
-        grafana.ingress.annotations.kubernetes\.io/ingress\.class: "contour"
-
-  # Observability & Tracing Block (priority: -80)
-    jaeger:
-      description: "Manager SSL certficates creation, renew and update."
-      group: "miscellaneous"
-      namespace: "observability"
-      enabled: false
-      protected: false
-      chart: "jaeger-operator"
-      version: "2.14.0"
-      valuesFiles: 
-        - "jaeger-operator/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -79
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-
-  # API Gateway Block (priority: -70)
-    ambassador:
-      description: "Kubernetes Ingress Controller and API Gateway."
-      group: "api-gateways"
-      namespace: "ingress"
-      enabled: false
-      protected: false
-      chart: "ambassador"
-      version: "6.5.18"
-      valuesFiles: 
-        - "ambassador/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -70
-      helmFlags:
-        - "--atomic"
-        - "--debug"
-      set:
-        envoy.service.externalIPs: "{${CLUSTER_IP}}"
-
   # Service Mesh Block (priority: -60)
+
     linkerd2:
       description: "Linkerd service mesh for K8S"
       group: "mesh"
@@ -449,8 +230,8 @@ apps:
       version: "2.10.2"
       hooks:
         successCondition: "Complete"
-        preInstall: "bash -x linkerd_certificates_step.sh main"
-        postInstall: "bash -x linkerd_certificates_step.sh cleanUp"
+        preInstall: "bash -x linkerd_step.sh main"
+        postInstall: "bash -x linkerd_step.sh cleanUp"
         deleteOnSuccess: true
       wait: false
       timeout: 300
@@ -468,6 +249,7 @@ apps:
         installNamespace: "false"
 
   # Deployments & Automated Releases (priority: -50)
+
     flagger:
       description: "A progressive delivery tool that automates the release process for applications running on Kubernetes."
       group: "releases"
