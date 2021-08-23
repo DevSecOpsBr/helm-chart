@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This shell script contains all of the steps to generate Linkerd certificates
+# managed by cert-manager for auto-renew them 
+
 set -a
 
 STEP="/usr/local/bin/step"

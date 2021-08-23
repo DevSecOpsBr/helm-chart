@@ -86,7 +86,7 @@ apps:
       description: "Kubernetes Native Policy Management"
       group: "security"
       namespace: "security" 
-      enabled: true
+      enabled: false
       protected: true
       chart: "kyverno" 
       version: "1.2.1" 
@@ -213,7 +213,7 @@ apps:
         serviceMonitor.enabled: true
 
   # Service Mesh Block (priority: -60)
-
+  # On minkube the limits from coreDNS must be removed in order to works!
     linkerd2:
       description: "Linkerd service mesh for K8S"
       group: "mesh"
@@ -232,6 +232,8 @@ apps:
       maxHistory: 100
       test: true
       priority: -60
+      valuesFiles:
+        - "linkerd2/values-ha.yaml"
       setFile:
         identityTrustAnchorsPEM: linkerd2/certs/plane/ca.crt
         proxyInjector.caBundle: linkerd2/certs/plane/ca.crt
