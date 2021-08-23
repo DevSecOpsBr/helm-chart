@@ -8,6 +8,7 @@ set -a
 STEP="/usr/local/bin/step"
 CERTS="certs"
 CHART="linkerd2"
+CLUSTER="cluster.local"
 DIRECTORY=$(dirname $0)/$CHART/$CERTS
 FOLDERS=(plane issuer webhook)
 NS="linkerd"
@@ -48,11 +49,11 @@ function main() {
     exit 333
   fi
 
-  secrets
+  secrets_linkerd
 
 }
 
-function secrets() {
+function secrets_linkerd() {
 
     echo "Creating secret tls ..."
     kubectl -n $NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key
@@ -61,6 +62,13 @@ function secrets() {
     echo "webhook-issuer-tls, created ..."
     kubectl -n $NS create secret tls linkerd-identity-issuer --cert=$DIRECTORY/issuer/issuer.crt --key=$DIRECTORY/issuer/issuer.key
     echo "linkerd-identity-issuer, created ..."
+
+}
+
+function secrets_linkerd_viz() {
+
+    kubectl -n $NS-viz create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key
+    echo "viz webhook-issuer-tls, created ..."
 
 }
 

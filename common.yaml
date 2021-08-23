@@ -22,6 +22,14 @@ namespaces:
     labels:
       linkerd.io/is-control-plane: "true"
       config.linkerd.io/admission-webhooks: disabled
+      linkerd.io/control-plane-ns: "linkerd"
+  linkerd-viz:
+    protected: false
+    labels:
+      linkerd.io/extension: viz
+    annotations:
+      linkerd.io/inject: enabled
+      viz.linkerd.io/external-prometheus: $GLAEDR_PROMETHEUS
   miscellaneous:
     protected: false
     annotations:

@@ -1,0 +1,307 @@
+
+additionalPrometheusRulesMap:
+  - rule-name: amixr-heartbeat
+    groups:
+    - name: meta
+      rules:
+      - alert: amix-heartbeat
+        expr: vector(1)
+        labels:
+          severity: none
+        annotations:
+          description: This is heartbeat alert
+          summary: Alerting Amixr
+
+##
+alertmanager:
+
+  ##
+  config:
+    global:
+      resolve_timeout: 5m
+      slack_api_url: https://hooks.slack.com/services/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
+
+    route:
+      # The labels by which incoming alerts are grouped together. For example,
+      # multiple alerts coming in for cluster=A and alertname=LatencyHigh would
+      # be batched into a single group.
+      #
+      # To aggregate by all possible labels use '...' as the sole label name.
+      # This effectively disables aggregation entirely, passing through all
+      # alerts as-is. This is unlikely to be what you want, unless you have
+      # a very low alert volume or your upstream notification system performs
+      # its own grouping. Example: group_by: [...]
+      group_by: ['job','alertname']
+
+      # When a new group of alerts is created by an incoming alert, wait at
+      # least 'group_wait' to send the initial notification.
+      # This way ensures that you get multiple alerts for the same group that start
+      # firing shortly after another are batched together on the first
+      group_wait: 30s
+
+      # When the first notification was sent, wait 'group_interval' to send a batch
+      # of new alerts that started firing for that group.
+      group_interval: 5m
+
+      # If an alert has successfully been sent, wait 'repeat_interval' to
+      # resend them.
+      repeat_interval: 3h
+
+      # default receiver
+      receiver: 'slack'
+      
+      routes:
+      - match:
+          alertname: Watchdog
+        receiver: amixr
+
+      - match_re:
+          Cluster: ^minikube$
+        receiver: amixr
+
+      - match:
+          alertname: heartbeat
+          receiver: 'heartbeat'
+          group_wait: 0s
+          group_interval: 1m
+          repeat_interval: 50s
+
+    receivers:
+    - name: 'slack'
+      slack_configs:
+      - channel: '#alerts'
+        send_resolved: true
+        text: '{{ template "devsecops4u.text" . }}'
+    - name: 'amixr'
+      webhook_configs:
+      - send_resolved: true
+        url: https://app.amixr.io/integrations/v1/alertmanager/8G5nBQjLe57RsYUe9qbr11POH/
+    - name: 'amixr-heartbeat'
+      webhook_configs:
+      - url: https://app.amixr.io/integrations/v1/alertmanager/A5DjV4CpsEPLED5Qsg5Z14bQ2/heartbeat/
+        send_resolved: false
+
+    templates:
+    - '/etc/alertmanager/config/devsecops4u.tmpl'
+
+  templateFiles:
+    devsecops4u.tmpl: |-
+        {{ define "cluster" }}{{ .ExternalURL | reReplaceAll ".*alertmanager\\.(.*)" "$1" }}{{ end }}
+  
+        {{ define "devsecops4u.text" }}
+        {{- $root := . -}}
+        {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+          *Cluster:*  {{ template "cluster" $root }}
+          *Description:* {{ .Annotations.description }}
+          *Graph:* <{{ .GeneratorURL }}|:chart_with_upwards_trend:>
+          *Details:*
+            {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+            {{ end }}
+        {{ end }}
+        {{ end }}
+
+grafana:
+  enabled: true
+  namespaceOverride: ""
+
+  ## Deploy default dashboards.
+  ##
+  defaultDashboardsEnabled: true
+
+  # Use the section below to install plugins
+  plugins:
+    - grafana-piechart-panel
+    - michaeldmoore-annunciator-panel
+    - grafana-kubernetes-app
+    - grafana-worldmap-panel
+    - jdbranham-diagram-panel
+    - devopsprodigy-kubegraf-app
+    - camptocamp-prometheus-alertmanager-datasource
+    - btplc-status-dot-panel
+
+  # Deploy 3rd-party dashboards
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'nginx-ingress'
+        orgId: 1
+        folder: 'Ingress'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/nginx-ingress
+      - name: 'traefik-ingress'
+        orgId: 1
+        folder: 'Ingress'
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/traefik-ingress
+      - name: 'kubernetes-costs'
+        orgId: 1
+        folder: 'Finance'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes-costs
+      - name: 'metrics-server'
+        orgId: 1
+        folder: 'K8S'
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/metrics-server
+      - name: 'kubernetes-cluster'
+        orgId: 1
+        folder: 'K8S'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes-cluster
+      - name: 'kubernetes-cluster-overview'
+        orgId: 1
+        folder: 'K8S'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes-cluster-overview
+      - name: 'kubernetes-cluster-prometheus'
+        orgId: 1
+        folder: 'K8S'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/kubernetes-cluster-prometheus
+
+  dashboards:
+    nginx-ingress:
+      nginx-ingress-controller:
+        datasource: Prometheus
+        gnetId: 9614
+        revision: 1
+    traefik-ingress:
+      traefik-ingress-controller:
+        datasource: Prometheus
+        gnetId: 11462
+        revision: 1
+    kubernetes-costs:
+      kubernetes-costs-and-metrics:
+        datasource: Prometheus
+        gnetId: 8670
+        revision: 1
+    metrics-server:
+      metrics-server:
+        datasource: Prometheus
+        gnetId: 8754
+        revision: 1
+    kubernetes-cluster:
+      kubernetes-cluster:
+        datasource: Prometheus
+        gnetId: 7249
+        revision: 1
+    kubernetes-cluster-overview:
+      kubernetes-cluster-overview:
+        datasource: Prometheus
+        gnetId: 11802
+        revision: 1
+    kubernetes-cluster-prometheus:
+      kubernetes-cluster-prometheus:
+        datasource: Prometheus
+        gnetId: 6417
+        revision: 1
+
+  adminPassword: prom-operator
+
+## Deploy a Prometheus instance
+##
+prometheus:
+  prometheusSpec:
+    additionalScrapeConfigs:
+    - job_name: 'linkerd-controller'
+      kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+          - "linkerd"
+      relabel_configs:
+      - source_labels:
+        - __meta_kubernetes_pod_container_port_name
+        action: keep
+        regex: admin-http
+      - source_labels: [__meta_kubernetes_pod_container_name]
+        action: replace
+        target_label: component
+
+    - job_name: 'linkerd-service-mirror'
+      kubernetes_sd_configs:
+      - role: pod
+      relabel_configs:
+      - source_labels:
+        - __meta_kubernetes_pod_label_linkerd_io_control_plane_component
+        - __meta_kubernetes_pod_container_port_name
+        action: keep
+        regex: linkerd-service-mirror;admin-http$
+      - source_labels: [__meta_kubernetes_pod_container_name]
+        action: replace
+        target_label: component
+
+    - job_name: 'linkerd-proxy'
+      kubernetes_sd_configs:
+      - role: pod
+      relabel_configs:
+      - source_labels:
+        - __meta_kubernetes_pod_container_name
+        - __meta_kubernetes_pod_container_port_name
+        - __meta_kubernetes_pod_label_linkerd_io_control_plane_ns
+        action: keep
+        regex: ^{{default .Values.proxyContainerName "linkerd-proxy" .Values.proxyContainerName}};linkerd-admin;{{.Values.linkerdNamespace}}$
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: pod
+      # special case k8s' "job" label, to not interfere with prometheus' "job"
+      # label
+      # __meta_kubernetes_pod_label_linkerd_io_proxy_job=foo =>
+      # k8s_job=foo
+      - source_labels: [__meta_kubernetes_pod_label_linkerd_io_proxy_job]
+        action: replace
+        target_label: k8s_job
+      # drop __meta_kubernetes_pod_label_linkerd_io_proxy_job
+      - action: labeldrop
+        regex: __meta_kubernetes_pod_label_linkerd_io_proxy_job
+      # __meta_kubernetes_pod_label_linkerd_io_proxy_deployment=foo =>
+      # deployment=foo
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_linkerd_io_proxy_(.+)
+      # drop all labels that we just made copies of in the previous labelmap
+      - action: labeldrop
+        regex: __meta_kubernetes_pod_label_linkerd_io_proxy_(.+)
+      # __meta_kubernetes_pod_label_linkerd_io_foo=bar =>
+      # foo=bar
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_linkerd_io_(.+)
+      # Copy all pod labels to tmp labels
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+        replacement: __tmp_pod_label_$1
+      # Take `linkerd_io_` prefixed labels and copy them without the prefix
+      - action: labelmap
+        regex: __tmp_pod_label_linkerd_io_(.+)
+        replacement:  __tmp_pod_label_$1
+      # Drop the `linkerd_io_` originals
+      - action: labeldrop
+        regex: __tmp_pod_label_linkerd_io_(.+)
+      # Copy tmp labels into real labels
+      - action: labelmap
+        regex: __tmp_pod_label_(.+)

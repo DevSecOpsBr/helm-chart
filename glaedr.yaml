@@ -42,9 +42,9 @@ apps:
       enabled: true
       protected: false
       chart: "kube-prometheus-stack"
-      version: "14.0.1"
+      version: "18.0.0"
       valuesFiles: 
-        - "kube-prometheus-stack/values.yaml"
+        - "kube-prometheus-stack/values-custom.yaml"
       wait: true
       timeout: 300
       maxHistory: 100
@@ -52,8 +52,37 @@ apps:
       priority: -139
       set:
         grafana.enabled: false
+        alertmanager.ingress.enabled: true
+        alertmanager.ingress.ingressClassName: $INGRESS_CLASS
         alertmanager.ingress.hosts: "{alertmanager.$CLUSTER_GLAEDR}"
+        prometheus.ingress.enabled: true
+        prometheus.ingress.ingressClassName: $INGRESS_CLASS
         prometheus.ingress.hosts: "{prometheus.$CLUSTER_GLAEDR}"
+        kubeControllerManager.enabled: false
+        kubeScheduler.enabled: false
+        kubeEtcd.enabled: false
+        kubeDns.enabled: false
+      helmFlags:
+        - "--atomic"
+
+    grafana-operator:
+      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: true
+      protected: false
+      chart: "grafana-operator"
+      version: "1.0.1"
+      valuesFiles: 
+        - "grafana-operator/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -138
+      set:
+        grafana.ingress.hostname: grafana.$CLUSTER_GLAEDR
+        grafana.ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
       helmFlags:
         - "--atomic"
 
@@ -223,10 +252,8 @@ apps:
       chart: "linkerd2"
       version: "2.10.2"
       hooks:
-        successCondition: "Complete"
         preInstall: "bash -x linkerd_step.sh main"
-        postInstall: "bash -x linkerd_step.sh cleanUp"
-        deleteOnSuccess: true
+        # postInstall: "bash -x linkerd_step.sh cleanUp"
       wait: false
       timeout: 300
       maxHistory: 100
@@ -245,6 +272,39 @@ apps:
         profileValidator.externalSecret: true
         identity.issuer.crtExpiry: $EXP
         installNamespace: "false"
+      helmFlags:
+        - "--atomic"
+
+    linkerd2-viz:
+      description: "Linkerd Viz"
+      group: "mesh"
+      namespace: "linkerd-viz"
+      enabled: true
+      protected: false
+      chart: "linkerd-viz"
+      version: "2.10.2"
+      wait: false
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -59
+      hooks:
+        preInstall: "bash -x linkerd_step.sh secrets_linkerd_viz"
+        postInstall: "bash -x linkerd_step.sh cleanUp"
+      valuesFiles:
+        - "linkerd-viz/values-ha.yaml"
+      setFile:
+        tap.caBundle: linkerd2/certs/plane/ca.crt
+        tapInjector.caBundle: linkerd2/certs/plane/ca.crt
+      set:
+        installNamespace: false
+        tap.externalSecret: true
+        tapInjector.externalSecret: true
+        tap.replicas: 1
+        grafana.enabled: false
+        grafanaUrl: "http://grafana-service.monitoring:3000"
+        prometheus.enabled: false
+        prometheusUrl: "http://prometheus-kube-prometheus-prometheus.monitoring:9090"
       helmFlags:
         - "--atomic"
 
