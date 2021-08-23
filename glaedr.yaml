@@ -50,12 +50,12 @@ apps:
       maxHistory: 100
       test: true
       priority: -139
-      helmFlags:
-        - "--atomic"
       set:
         grafana.enabled: false
         alertmanager.ingress.hosts: "{alertmanager.$CLUSTER_GLAEDR}"
         prometheus.ingress.hosts: "{prometheus.$CLUSTER_GLAEDR}"
+      helmFlags:
+        - "--atomic"
 
   # Logging Block (priority: -130)
 
@@ -74,11 +74,11 @@ apps:
       maxHistory: 100
       test: true
       priority: -129
-      helmFlags:
-        - "--atomic"
       set:
         ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
         ingress.hosts\.host[0]: "loki.$CLUSTER_GLAEDR"
+      helmFlags:
+        - "--atomic"
 
   # Security block (priority: -120)
 
@@ -134,15 +134,14 @@ apps:
       maxHistory: 100
       test: true
       priority: -110
-      helmFlags:
-        - "--atomic"
-        - "--debug"
       set:
         replicaCount: 2
         configInline.incluster: true
         envoy.service.externalIPs: "{${GLAEDR_IPADDR}}"
         envoy.nodeSelector.node-role\.kubernetes\.io/master: ""
         default.backend.enabled: true
+      helmFlags:
+        - "--atomic"
 
     nginx:
       description: "Nginx-Ingress Controller for K8S"
@@ -159,12 +158,12 @@ apps:
       maxHistory: 100
       test: true
       priority: -109
-      helmFlags:
-        - "--atomic"
       set:
         controller.service.externalIPs: "{${GLAEDR_IPADDR}}"
         controller.metrics.enabled: true
         controller.metrics.serviceMonitor.enabled: true
+      helmFlags:
+        - "--atomic"
 
     traefik:
       description: "Edge Router that makes publishing your services a fun and easy experience"
@@ -184,16 +183,16 @@ apps:
       maxHistory: 100
       test: true
       priority: -108
-      helmFlags:
-        - "--atomic"
       set:
         service.externalIPs: "{${GLAEDR_IPADDR}}"
+      helmFlags:
+        - "--atomic"
 
   # Observability & Tracing Block (priority: -90)
 
     botkube:
       description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
-      group: "miscellaneous"
+      group: "observers"
       namespace: "observability"
       enabled: true
       protected: false
@@ -206,14 +205,15 @@ apps:
       maxHistory: 100
       test: true
       priority: -90
-      helmFlags:
-        - "--atomic"
       set:
         config.settings.clustername: $CLUSTER_GLAEDR
         serviceMonitor.enabled: true
+      helmFlags:
+        - "--atomic"
 
   # Service Mesh Block (priority: -60)
   # On minkube the limits from coreDNS must be removed in order to works!
+
     linkerd2:
       description: "Linkerd service mesh for K8S"
       group: "mesh"
@@ -267,8 +267,6 @@ apps:
         successCondition: "Complete"
         successTimeout: "90s"
         deleteOnSuccess: true
-      helmFlags: 
-        - "--atomic"
       set:
         logLevel: "debug"
         meshProvider: "linkerd"
@@ -278,6 +276,8 @@ apps:
         podMonitor.enabled: true
         prometheus.install: false
         crd.create: false
+      helmFlags: 
+        - "--atomic"
 
     flagger-loadtester:
       description: "Load testing services generates traffic during canary analysis when configured as a webhook."
@@ -292,7 +292,7 @@ apps:
       test: true
       priority: -49
       wait: true
-      helmFlags: 
-        - "--atomic"
       set:
         logLevel: "debug"
+      helmFlags: 
+        - "--atomic"
