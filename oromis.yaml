@@ -206,7 +206,7 @@ apps:
       wait: true
       set:
         config.settings.clustername: $CLUSTER_OROMIS
-        serviceMonitor.enabled: true
+        serviceMonitor.enabled: false
       helmFlags:
         - "--atomic"
 

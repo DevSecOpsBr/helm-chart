@@ -253,6 +253,8 @@ apps:
       version: "2.10.2"
       hooks:
         preInstall: "bash -x linkerd_step.sh main"
+        preUpgrade: "bash -x linkerd_step.sh main"
+        # Uncomment the line below if linkerd-viz is not necessary
         # postInstall: "bash -x linkerd_step.sh cleanUp"
       wait: false
       timeout: 300
@@ -302,9 +304,9 @@ apps:
         tapInjector.externalSecret: true
         tap.replicas: 1
         grafana.enabled: false
-        grafanaUrl: "http://grafana-service.monitoring:3000"
+        grafanaUrl: $GLAEDR_GRAFANA
         prometheus.enabled: false
-        prometheusUrl: "http://prometheus-kube-prometheus-prometheus.monitoring:9090"
+        prometheusUrl: $GLAEDR_PROMETHEUS
       helmFlags:
         - "--atomic"
 
