@@ -226,67 +226,148 @@ grafana:
 prometheus:
   prometheusSpec:
     additionalScrapeConfigs:
-    - job_name: 'linkerd-controller'
+    - job_name: linkerd
+      honor_labels: true
+      honor_timestamps: true
+      params:
+        match[]:
+        - '{job="linkerd-proxy"}'
+        - '{job="linkerd-controller"}'
+      scrape_interval: 30s
+      scrape_timeout: 10s
+      metrics_path: /federate
+      scheme: http
+      follow_redirects: true
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_container_name]
+        separator: ;
+        regex: ^prometheus$
+        replacement: $1
+        action: keep
       kubernetes_sd_configs:
       - role: pod
+        kubeconfig_file: ""
+        follow_redirects: true
         namespaces:
           names:
-          - "linkerd"
-          - "linkerd-viz"
+          - linkerd
+          - linkerd-viz
+    - job_name: linkerd-controller
+      honor_timestamps: true
+      scrape_interval: 30s
+      scrape_timeout: 10s
+      metrics_path: /metrics
+      scheme: http
+      follow_redirects: true
       relabel_configs:
-      - source_labels:
-        - __meta_kubernetes_pod_container_port_name
-        action: keep
+      - source_labels: [__meta_kubernetes_pod_container_port_name]
+        separator: ;
         regex: admin-http
+        replacement: $1
+        action: keep
       - source_labels: [__meta_kubernetes_pod_container_name]
-        action: replace
+        separator: ;
+        regex: (.*)
         target_label: component
-    - job_name: 'linkerd-service-mirror'
+        replacement: $1
+        action: replace
       kubernetes_sd_configs:
       - role: pod
+        kubeconfig_file: ""
+        follow_redirects: true
+        namespaces:
+          names:
+          - linkerd
+          - linkerd-viz
+    - job_name: linkerd-service-mirror
+      honor_timestamps: true
+      scrape_interval: 30s
+      scrape_timeout: 10s
+      metrics_path: /metrics
+      scheme: http
+      follow_redirects: true
       relabel_configs:
-      - source_labels:
-        - __meta_kubernetes_pod_label_linkerd_io_control_plane_component
-        - __meta_kubernetes_pod_container_port_name
-        action: keep
+      - source_labels: [__meta_kubernetes_pod_label_linkerd_io_control_plane_component,
+          __meta_kubernetes_pod_container_port_name]
+        separator: ;
         regex: linkerd-service-mirror;admin-http$
+        replacement: $1
+        action: keep
       - source_labels: [__meta_kubernetes_pod_container_name]
-        action: replace
+        separator: ;
+        regex: (.*)
         target_label: component
-    - job_name: 'linkerd-proxy'
+        replacement: $1
+        action: replace
       kubernetes_sd_configs:
       - role: pod
+        kubeconfig_file: ""
+        follow_redirects: true
+    - job_name: linkerd-proxy
+      honor_timestamps: true
+      scrape_interval: 30s
+      scrape_timeout: 10s
+      metrics_path: /metrics
+      scheme: http
+      follow_redirects: true
       relabel_configs:
-      - source_labels:
-        - __meta_kubernetes_pod_container_name
-        - __meta_kubernetes_pod_container_port_name
-        - __meta_kubernetes_pod_label_linkerd_io_control_plane_ns
+      - source_labels: [__meta_kubernetes_pod_container_name, __meta_kubernetes_pod_container_port_name,
+          __meta_kubernetes_pod_label_linkerd_io_control_plane_ns]
+        separator: ;
+        regex: ^linkerd-proxy;linkerd-admin;linkerd$
+        replacement: $1
         action: keep
-        regex: ^{{default .Values.proxyContainerName "linkerd-proxy" .Values.proxyContainerName}};linkerd-admin;linkerd$
       - source_labels: [__meta_kubernetes_namespace]
-        action: replace
+        separator: ;
+        regex: (.*)
         target_label: namespace
+        replacement: $1
+        action: replace
       - source_labels: [__meta_kubernetes_pod_name]
-        action: replace
+        separator: ;
+        regex: (.*)
         target_label: pod
-      - source_labels: [__meta_kubernetes_pod_label_linkerd_io_proxy_job]
+        replacement: $1
         action: replace
+      - source_labels: [__meta_kubernetes_pod_label_linkerd_io_proxy_job]
+        separator: ;
+        regex: (.*)
         target_label: k8s_job
-      - action: labeldrop
+        replacement: $1
+        action: replace
+      - separator: ;
         regex: __meta_kubernetes_pod_label_linkerd_io_proxy_job
-      - action: labelmap
+        replacement: $1
+        action: labeldrop
+      - separator: ;
         regex: __meta_kubernetes_pod_label_linkerd_io_proxy_(.+)
-      - action: labeldrop
+        replacement: $1
+        action: labelmap
+      - separator: ;
         regex: __meta_kubernetes_pod_label_linkerd_io_proxy_(.+)
-      - action: labelmap
+        replacement: $1
+        action: labeldrop
+      - separator: ;
         regex: __meta_kubernetes_pod_label_linkerd_io_(.+)
-      - action: labelmap
+        replacement: $1
+        action: labelmap
+      - separator: ;
         regex: __meta_kubernetes_pod_label_(.+)
         replacement: __tmp_pod_label_$1
-      - action: labelmap
+        action: labelmap
+      - separator: ;
         regex: __tmp_pod_label_linkerd_io_(.+)
-        replacement:  __tmp_pod_label_$1
-      - action: labeldrop
+        replacement: __tmp_pod_label_$1
+        action: labelmap
+      - separator: ;
         regex: __tmp_pod_label_linkerd_io_(.+)
-      - action: labelmap
+        replacement: $1
+        action: labeldrop
+      - separator: ;
         regex: __tmp_pod_label_(.+)
+        replacement: $1
+        action: labelmap
+      kubernetes_sd_configs:
+      - role: pod
+        kubeconfig_file: ""
+        follow_redirects: true
