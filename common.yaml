@@ -1,56 +1,6 @@
 metadata:
   maintainer: "devops team (devops@ellesmera.io)"
 
-# define your environments and their k8s namespaces
-namespaces:
-  cert-manager:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  chaos:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  ingress:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  linkerd:
-    protected: false
-    annotations:
-      linkerd.io/inject: disabled
-    labels:
-      linkerd.io/is-control-plane: "true"
-      config.linkerd.io/admission-webhooks: disabled
-      linkerd.io/control-plane-ns: "linkerd"
-  linkerd-viz:
-    protected: false
-    labels:
-      linkerd.io/extension: viz
-    annotations:
-      linkerd.io/inject: enabled
-      viz.linkerd.io/external-prometheus: $GLAEDR_PROMETHEUS
-  miscellaneous:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  monitoring:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  observability:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  security:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-  velero:
-    protected: false
-    annotations:
-      iam.amazonaws.com/permitted: ".*"
-
 helmRepos:
   stable: https://charts.helm.sh/stable
   # argocd - continous deployment
@@ -93,3 +43,38 @@ helmRepos:
   traefik: https://helm.traefik.io/traefik
   # Continuously backup Kubernetes objets as YAML files in git
   katafygio: https://bpineau.github.io/katafygio
+
+# define your environments and their k8s namespaces
+namespaces:
+  cert-manager:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  chaos:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  ingress:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  miscellaneous:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  monitoring:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  observability:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  security:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"
+  velero:
+    protected: false
+    annotations:
+      iam.amazonaws.com/permitted: ".*"

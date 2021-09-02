@@ -13,6 +13,23 @@ settings:
   globalMaxHistory: 500
   reverseDelete: true
 
+namespaces:
+  linkerd:
+    protected: false
+    annotations:
+      linkerd.io/inject: disabled
+    labels:
+      linkerd.io/is-control-plane: "true"
+      config.linkerd.io/admission-webhooks: disabled
+      linkerd.io/control-plane-ns: "linkerd"
+  linkerd-viz:
+    protected: false
+    labels:
+      linkerd.io/extension: viz
+    annotations:
+      linkerd.io/inject: enabled
+      viz.linkerd.io/external-prometheus: $GLAEDR_PROMETHEUS
+
 apps:
 
   # Monitoring Block (priority: -140)
@@ -83,6 +100,22 @@ apps:
       set:
         grafana.ingress.hostname: grafana.$CLUSTER_GLAEDR
         grafana.ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+      helmFlags:
+        - "--atomic"
+
+    grafana-operator-configs:
+      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: true
+      protected: false
+      chart: "grafana-operator-configs"
+      version: "1.0.0"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -137
       helmFlags:
         - "--atomic"
 
@@ -162,13 +195,13 @@ apps:
       timeout: 300
       maxHistory: 100
       test: true
-      priority: -110
+      priority: -150  # Increased due to minikube ip conflicts
       set:
         replicaCount: 2
         configInline.incluster: true
         envoy.service.externalIPs: "{${GLAEDR_IPADDR}}"
         envoy.nodeSelector.node-role\.kubernetes\.io/master: ""
-        default.backend.enabled: true
+        default.backend.enabled: false
       helmFlags:
         - "--atomic"
 
@@ -261,8 +294,9 @@ apps:
       maxHistory: 100
       test: true
       priority: -60
+      # add values-ha.yaml for HA
       valuesFiles:
-        - "linkerd2/values-ha.yaml"
+        - "linkerd2/values.yaml"
       setFile:
         identityTrustAnchorsPEM: linkerd2/certs/plane/ca.crt
         proxyInjector.caBundle: linkerd2/certs/plane/ca.crt
@@ -293,8 +327,9 @@ apps:
       hooks:
         preInstall: "bash -x linkerd_step.sh secrets_linkerd_viz"
         postInstall: "bash -x linkerd_step.sh cleanUp"
+      # add values-ha.yaml for HA
       valuesFiles:
-        - "linkerd-viz/values-ha.yaml"
+        - "linkerd-viz/values.yaml"
       setFile:
         tap.caBundle: linkerd2/certs/plane/ca.crt
         tapInjector.caBundle: linkerd2/certs/plane/ca.crt
