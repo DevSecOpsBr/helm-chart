@@ -1,0 +1,395 @@
+metadata:
+  org: "Epic Games"
+  description: "Rodrigo's EKS cluster"
+
+settings:
+  kubeContext: "epic-dev-euc1r-cluster" # will try connect to this context first, if it does not exist, it will be created using the details below
+  storageBackend: "secret"
+  slackWebhook:  "https://hooks.slack.com/services/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"
+  #reverseDelete: false # reverse the priorities on delete
+  globalHooks:
+    successCondition: "Complete"
+    deleteOnSuccess: true
+  globalMaxHistory: 500
+  reverseDelete: true
+
+namespaces:
+  linkerd:
+    protected: false
+    annotations:
+      linkerd.io/inject: disabled
+    labels:
+      linkerd.io/is-control-plane: "true"
+      config.linkerd.io/admission-webhooks: disabled
+      linkerd.io/control-plane-ns: "linkerd"
+  linkerd-viz:
+    protected: false
+    labels:
+      linkerd.io/extension: viz
+    annotations:
+      linkerd.io/inject: enabled
+      viz.linkerd.io/external-prometheus: $PROMETHEUS_DEVEUC1R
+
+apps:
+
+  # Monitoring Block (priority: -140)
+
+    metrics-server:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: false
+      protected: false
+      chart: "metrics-server"
+      version: "2.9.0"
+      valuesFiles: 
+        - "metrics-server/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: false
+      priority: -140
+      helmFlags:
+        - "--atomic"
+
+    prometheus:
+      description: "Prometheus clusters atop Kubernetes"
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: false
+      protected: false
+      chart: "kube-prometheus-stack"
+      version: "18.0.0"
+      valuesFiles: 
+        - "kube-prometheus-stack/values-custom.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -139
+      set:
+        grafana.enabled: false
+        alertmanager.ingress.enabled: true
+        alertmanager.ingress.ingressClassName: $INGRESS_CLASS
+        alertmanager.ingress.hosts: "{alertmanager.$CLUSTER_DEVEUC1R}"
+        prometheus.ingress.enabled: true
+        prometheus.ingress.ingressClassName: $INGRESS_CLASS
+        prometheus.ingress.hosts: "{prometheus.$CLUSTER_DEVEUC1R}"
+        kubeControllerManager.enabled: true
+        kubeScheduler.enabled: true
+        kubeEtcd.enabled: false
+        kubeDns.enabled: false
+      helmFlags:
+        - "--atomic"
+
+    grafana-operator:
+      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: false
+      protected: false
+      chart: "grafana-operator"
+      version: "1.0.1"
+      valuesFiles: 
+        - "grafana-operator/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -138
+      set:
+        grafana.ingress.hostname: grafana.$CLUSTER_DEVEUC1R
+        grafana.ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+      helmFlags:
+        - "--atomic"
+
+    grafana-operator-configs:
+      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
+      group: "monitoring"
+      namespace: "monitoring"
+      enabled: false
+      protected: false
+      chart: "grafana-operator-configs"
+      version: "1.0.0"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -137
+      helmFlags:
+        - "--atomic"
+
+  # Logging Block (priority: -130)
+
+    loki:
+      description: "Loki: like Prometheus, but for logs."
+      group: "logging"
+      namespace: "monitoring"
+      enabled: false
+      protected: false
+      chart: "grafana/loki-stack"
+      version: "2.3.0"
+      valuesFiles: 
+        - "loki-stack/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -129
+      set:
+        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+        ingress.hosts\.host[0]: "loki.$CLUSTER_GLAEDR"
+      helmFlags:
+        - "--atomic"
+
+  # Security block (priority: -120)
+
+    kyverno:
+      description: "Kubernetes Native Policy Management"
+      group: "security"
+      namespace: "security" 
+      enabled: true
+      protected: true
+      chart: "kyverno" 
+      version: "1.2.1" 
+      valuesFiles: 
+        - "kyverno/values.yaml" 
+      test: true
+      priority: -120
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      helmFlags:
+        - "--atomic"
+
+    cert-manager:
+      description: "Manager SSL certficates creation, renew and update."
+      group: "security"
+      namespace: "cert-manager"
+      enabled: false
+      protected: false
+      chart: "cert-manager"
+      version: "v1.4.2"
+      valuesFiles: 
+        - "cert-manager/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -119
+      helmFlags:
+        - "--atomic"
+
+  # Ingress Block (priority: -110)
+
+    contour:
+      description: "High performance ingress controller for Kubernetes"
+      group: "ingress"
+      namespace: "ingress"
+      enabled: true
+      chart: "bitnami/contour"
+      version: "5.0.1"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -110
+      valuesFiles:
+        - "contour/values.yaml"
+      set:
+        replicaCount: 3
+        configInline.incluster: true
+        default.backend.enabled: true
+      helmFlags:
+        - "--atomic"
+
+    nginx:
+      description: "Nginx-Ingress Controller for K8S"
+      group: "ingress"
+      namespace: "ingress"
+      enabled: false
+      protected: true
+      chart: "ingress-nginx"
+      version: "3.12.0"
+      valuesFiles: 
+        - "ingress-nginx/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -109
+      set:
+        controller.metrics.enabled: true
+        controller.metrics.serviceMonitor.enabled: true
+      helmFlags:
+        - "--atomic"
+
+    traefik:
+      description: "Edge Router that makes publishing your services a fun and easy experience"
+      group: "ingress"
+      namespace: "ingress"
+      enabled: false
+      protected: true
+      chart: "traefik"
+      version: "9.18.2"
+      hooks:
+        successCondition: "Complete"
+        deleteOnSuccess: true
+      valuesFiles: 
+        - "traefik/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -108
+      set:
+
+      helmFlags:
+        - "--atomic"
+
+  # Observability & Tracing Block (priority: -90)
+
+    botkube:
+      description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
+      group: "observers"
+      namespace: "observability"
+      enabled: true
+      protected: false
+      chart: "botkube"
+      version: "v0.12.0"
+      valuesFiles: 
+        - "botkube/values.yaml"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -90
+      set:
+        config.settings.clustername: $CLUSTER_DEVEUC1R
+        serviceMonitor.enabled: true
+      helmFlags:
+        - "--atomic"
+
+  # Service Mesh Block (priority: -60) On minkube the limits from coreDNS must be removed in order to works!
+
+    linkerd2:
+      description: "Linkerd service mesh for K8S"
+      group: "mesh"
+      namespace: "linkerd"
+      enabled: false
+      protected: false
+      chart: "linkerd2"
+      version: "2.10.2"
+      hooks:
+        preInstall: "bash -x linkerd_step.sh main"
+        preUpgrade: "bash -x linkerd_step.sh main"
+        # Uncomment the line below if linkerd-viz is not necessary
+        # postInstall: "bash -x linkerd_step.sh cleanUp"
+      wait: false
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -60
+      # add values-ha.yaml for HA
+      valuesFiles:
+        - "linkerd2/values.yaml"
+        - "linkerd2/values-ha.yaml"
+      setFile:
+        identityTrustAnchorsPEM: linkerd2/certs/plane/ca.crt
+        proxyInjector.caBundle: linkerd2/certs/plane/ca.crt
+        profileValidator.caBundle: linkerd2/certs/plane/ca.crt
+      set:
+        identity.issuer.scheme: "kubernetes.io/tls"
+        identity.externalIssuer: true
+        proxyInjector.externalSecret: true
+        profileValidator.externalSecret: true
+        identity.issuer.crtExpiry: $EXP
+        installNamespace: "false"
+      helmFlags:
+        - "--atomic"
+
+    linkerd2-viz:
+      description: "Linkerd Viz"
+      group: "mesh"
+      namespace: "linkerd-viz"
+      enabled: false
+      protected: false
+      chart: "linkerd-viz"
+      version: "2.10.2"
+      wait: false
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -59
+      hooks:
+        preInstall: "bash -x linkerd_step.sh secrets_linkerd_viz"
+        postInstall: "bash -x linkerd_step.sh cleanUp"
+      # add values-ha.yaml for HA
+      valuesFiles:
+        - "linkerd-viz/values.yaml"
+        - "linkerd-viz/values-ha.yaml"
+      setFile:
+        tap.caBundle: linkerd2/certs/plane/ca.crt
+        tapInjector.caBundle: linkerd2/certs/plane/ca.crt
+      set:
+        installNamespace: false
+        tap.externalSecret: true
+        tapInjector.externalSecret: true
+        tap.replicas: 1
+        grafana.enabled: false
+        grafanaUrl: $GLAEDR_GRAFANA
+        prometheus.enabled: false
+        prometheusUrl: $GLAEDR_PROMETHEUS
+      helmFlags:
+        - "--atomic"
+
+  # Deployments & Automated Releases (priority: -50)
+
+    flagger:
+      description: "A progressive delivery tool that automates the release process for applications running on Kubernetes."
+      group: "releases"
+      namespace: "miscellaneous" 
+      enabled: false
+      protected: false
+      chart: "flagger" 
+      version: "1.12.1"
+      valuesFiles: 
+        - "flagger/values.yaml" 
+      test: true
+      priority: -50
+      wait: true
+      hooks:
+        successCondition: "Complete"
+        successTimeout: "90s"
+        deleteOnSuccess: true
+      set:
+        logLevel: "debug"
+        meshProvider: "linkerd"
+        ingressClass: "contour"
+        slack.channel: "deploys"
+        slack.url: "https://hooks.slack.com/services/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"
+        podMonitor.enabled: true
+        prometheus.install: false
+        crd.create: false
+      helmFlags: 
+        - "--atomic"
+
+    flagger-loadtester:
+      description: "Load testing services generates traffic during canary analysis when configured as a webhook."
+      group: "releases"
+      namespace: "miscellaneous" 
+      enabled: false
+      protected: false
+      chart: "flagger-loadtester" 
+      version: "0.18.0"
+      valuesFiles: 
+        - "flagger-loadtester/values.yaml" 
+      test: true
+      priority: -49
+      wait: true
+      set:
+        logLevel: "debug"
+      helmFlags: 
+        - "--atomic"
