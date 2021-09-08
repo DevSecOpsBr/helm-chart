@@ -209,19 +209,21 @@ apps:
       description: "Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
-      enabled: false
+      enabled: true
       protected: true
       chart: "ingress-nginx"
       version: "3.12.0"
-      valuesFiles: 
-        - "ingress-nginx/values.yaml"
       wait: true
       timeout: 300
       maxHistory: 100
       test: true
       priority: -109
+      valuesFiles: 
+        - "ingress-nginx/values.yaml"
       set:
         controller.service.externalIPs: "{${GLAEDR_IPADDR}}"
+        controller.service.ports.http: 8081
+        controller.service.ports.https: 8082
         controller.metrics.enabled: true
         controller.metrics.serviceMonitor.enabled: true
       helmFlags:
@@ -231,24 +233,45 @@ apps:
       description: "Edge Router that makes publishing your services a fun and easy experience"
       group: "ingress"
       namespace: "ingress"
-      enabled: false
+      enabled: true
       protected: true
       chart: "traefik"
       version: "9.18.2"
-      hooks:
-        successCondition: "Complete"
-        deleteOnSuccess: true
-      valuesFiles: 
-        - "traefik/values.yaml"
       wait: true
       timeout: 300
       maxHistory: 100
       test: true
       priority: -108
+      valuesFiles: 
+        - "traefik/values.yaml"
       set:
+        ports.traefik.expose: true
+        ports.web.exposedPort: 8083
+        ports.websecure.exposedPort: 8084
         service.externalIPs: "{${GLAEDR_IPADDR}}"
       helmFlags:
         - "--atomic"
+
+    ingress-classes:
+      description: "IngressClass for ingress controllers"
+      group: "ingress"
+      namespace: "ingress"
+      enabled: false
+      protected: true
+      chart: "ingress-classes"
+      version: "1.0.0"
+      hooks:
+        successCondition: "Complete"
+        deleteOnSuccess: true
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -107
+      valuesFiles:
+        - "ingress-classes/values.yaml"
+      # helmFlags:
+      #   - "--atomic"
 
   # Observability & Tracing Block (priority: -90)
 
@@ -273,8 +296,7 @@ apps:
       helmFlags:
         - "--atomic"
 
-  # Service Mesh Block (priority: -60)
-  # On minkube the limits from coreDNS must be removed in order to works!
+  # Service Mesh Block (priority: -60) On minkube the limits from coreDNS must be removed in order to works!
 
     linkerd2:
       description: "Linkerd service mesh for K8S"

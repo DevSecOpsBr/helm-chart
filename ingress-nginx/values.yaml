@@ -525,7 +525,6 @@ controller:
         self-monitor: "true"
         release: prometheus
       namespace: "monitoring"
-      namespaceSelector: {}
       # Default: scrape .Release.Namespace only
       # To scrape all,
       namespaceSelector:
