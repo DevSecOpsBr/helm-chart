@@ -83,8 +83,8 @@ appsTemplates:
       tapInjector.externalSecret: true
       tap.replicas: 1
       grafana.enabled: true
-      # grafanaUrl: $GLAEDR_GRAFANA
-      prometheus.enabled: false
+      grafanaUrl: $GLAEDR_GRAFANA
+      prometheus.enabled: true
       prometheusUrl: $GLAEDR_PROMETHEUS
     # helmFlags:
     #   - "--atomic"
@@ -212,7 +212,7 @@ apps:
         default.backend.enabled: false
 
     nginx:
-      <<: *enabled
+      <<: *disabled
       description: "Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
