@@ -36,7 +36,6 @@ appsTemplates:
     enabled: true
     test: true
     wait: true
-    protected: true
     timeout: 300
     helmFlags:
       - "--atomic"
@@ -48,7 +47,6 @@ appsTemplates:
     enabled: true
     test: false
     wait: false
-    protected: false
     timeout: 300
     hooks:
       preInstall: "bash -x linkerd_step.sh main"
@@ -72,7 +70,6 @@ appsTemplates:
     enabled: true
     test: false
     wait: false
-    protected: false
     timeout: 300
     hooks:
       preInstall: "bash -x linkerd_step.sh secrets_linkerd_viz"
@@ -103,9 +100,10 @@ apps:
       namespace: "monitoring"
       chart: "metrics-server"
       version: "2.9.0"
+      priority: -140
+      protected: true
       valuesFiles: 
         - "metrics-server/values.yaml"
-      priority: -140
 
     prometheus:
       <<: *enabled
@@ -118,10 +116,10 @@ apps:
         - "kube-prometheus-stack/values-custom.yaml"
       priority: -139
       set:
-        grafana.enabled: false
         alertmanager.ingress.enabled: true
         alertmanager.ingress.ingressClassName: $INGRESS_CLASS
         alertmanager.ingress.hosts: "{alertmanager.$CLUSTER_GLAEDR}"
+        grafana.enabled: false
         prometheus.ingress.enabled: true
         prometheus.ingress.ingressClassName: $INGRESS_CLASS
         prometheus.ingress.hosts: "{prometheus.$CLUSTER_GLAEDR}"
@@ -177,11 +175,9 @@ apps:
       group: "security"
       namespace: "security" 
       chart: "kyverno" 
-      version: "1.2.1" 
-      hooks:
-        successCondition: "Complete"
-        successTimeout: "90s"
-        deleteOnSuccess: true
+      version: "1.2.1"
+      priority: -120 
+      protected: true
       valuesFiles: 
         - "kyverno/values.yaml"
 
@@ -216,7 +212,7 @@ apps:
         default.backend.enabled: false
 
     nginx:
-      <<: *disabled
+      <<: *enabled
       description: "Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
@@ -233,7 +229,7 @@ apps:
         defaultBackend.service.servicePort: 8085
 
     traefik:
-      <<: *disabled
+      <<: *enabled
       description: "Edge Router that makes publishing your services a fun and easy experience"
       group: "ingress"
       namespace: "ingress"
@@ -271,6 +267,7 @@ apps:
       chart: "botkube"
       version: "v0.12.0"
       priority: -90
+      protected: true
       valuesFiles: 
         - "botkube/values.yaml"
       set:
@@ -331,6 +328,7 @@ apps:
       chart: "flagger-loadtester" 
       version: "0.18.0"
       priority: -49
+      protected: true
       valuesFiles: 
         - "flagger-loadtester/values.yaml" 
       set:
