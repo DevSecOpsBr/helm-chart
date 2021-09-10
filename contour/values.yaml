@@ -518,15 +518,7 @@ envoy:
     loadBalancerSourceRanges: []
     ## @param envoy.service.annotations Annotations for Envoy service
     ##
-    annotations:
-      service.beta.kubernetes.io/aws-load-balancer-type: nlb
-      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
-      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "ssl"
-      service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "false"
-      service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "3600"
-      service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
-      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:eu-central-1:329489003955:certificate/125ba8af-c3c8-47f7-9a86-658100f8b09f
-      service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: "Environment=Production,Service=LoadBalancer,Team=DevOps"
+    annotations: {}
 
     ports:
       ## @param envoy.service.ports.http Sets service http port
