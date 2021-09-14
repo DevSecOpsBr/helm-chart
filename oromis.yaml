@@ -58,27 +58,6 @@ apps:
 
   # Logging Block (priority: -130)
 
-    loki:
-      description: "Loki: like Prometheus, but for logs."
-      group: "logging"
-      namespace: "monitoring"
-      enabled: false
-      protected: false
-      chart: "grafana/loki-stack"
-      version: "2.3.0"
-      valuesFiles: 
-        - "loki-stack/values.yaml"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -130
-      set:
-        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
-        ingress.hosts\.host[0]: "loki.$CLUSTER_OROMIS"
-      helmFlags:
-        - "--atomic"
-
   # Security block (priority: -120)
 
     kyverno:
@@ -148,12 +127,10 @@ apps:
       description: "ArgoCD - Declarative GitOps CD for Kubernetes"
       group: "cicd"
       namespace: "miscellaneous" 
-      enabled: false
+      enabled: true
       protected: false
       chart: "argo/argo-cd" 
-      version: "3.10.0" 
-      valuesFiles: 
-        - "argo-cd/values.yaml" 
+      version: "3.17.6" 
       test: true
       priority: -100
       wait: false
@@ -174,10 +151,10 @@ apps:
       description: "ArgoCD - Notifications for Kubernetes"
       group: "cicd"
       namespace: "miscellaneous" 
-      enabled: false
+      enabled: true
       protected: false
       chart: "argo/argocd-notifications" 
-      version: "1.0.14" 
+      version: "1.0.14"
       valuesFiles: 
         - "argocd-notifications/values.yaml" 
       test: true
@@ -211,34 +188,3 @@ apps:
         - "--atomic"
 
   # Service Mesh Block (priority: -60)
-
-    linkerd2:
-      description: "Linkerd service mesh for K8S"
-      group: "mesh"
-      namespace: "linkerd"
-      enabled: false
-      protected: false
-      chart: "linkerd2"
-      version: "2.10.2"
-      hooks:
-        successCondition: "Complete"
-        preInstall: "bash -x linkerd_step.sh main"
-        postInstall: "bash -x linkerd_step.sh cleanUp"
-        deleteOnSuccess: true
-      test: true
-      priority: -60
-      wait: false
-      setFile:
-        identityTrustAnchorsPEM: linkerd2/certs/plane/ca.crt
-        proxyInjector.caBundle: linkerd2/certs/plane/ca.crt
-        profileValidator.caBundle: linkerd2/certs/plane/ca.crt
-      set:
-        identity.issuer.scheme: "kubernetes.io/tls"
-        identity.externalIssuer: true
-        proxyInjector.externalSecret: true
-        profileValidator.externalSecret: true
-        identity.issuer.crtExpiry: $EXP
-        installNamespace: "false"
-      helmFlags:
-        - "--atomic"
-
