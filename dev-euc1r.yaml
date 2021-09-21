@@ -29,6 +29,8 @@ namespaces:
     annotations:
       linkerd.io/inject: enabled
       viz.linkerd.io/external-prometheus: $PROMETHEUS_DEVEUC1R
+  devtroncd:
+    protected: false
 
 apps:
 
@@ -189,7 +191,7 @@ apps:
       group: "ingress"
       namespace: "ingress"
       enabled: true
-      chart: "bitnami/contour"
+      chart: "contour"
       version: "5.0.1"
       wait: true
       timeout: 300
@@ -202,6 +204,13 @@ apps:
         replicaCount: 3
         configInline.incluster: true
         default.backend.enabled: true
+        envoy.containerPorts.https: 80
+        envoy.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-type: nlb
+        envoy.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-proxy-protocol: '*'
+        envoy.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-ssl-ports: "https"
+        envoy.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-backend-protocol: "http"
+        envoy.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-ssl-cert: arn:aws:acm:eu-central-1:329489003955:certificate/125ba8af-c3c8-47f7-9a86-658100f8b09f
+        envoy.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-additional-resource-tags: "Maintainers=Team:DevOps"
       helmFlags:
         - "--atomic"
 
@@ -272,13 +281,31 @@ apps:
       helmFlags:
         - "--atomic"
 
+  # CI/CD Block (priority: -90)
+    devtron:
+      description: "A delivery workflow for kubernetes"
+      group: "cicd"
+      namespace: "devtroncd"
+      enabled: true
+      protected: false
+      chart: "devtron/devtron-operator"
+      version: "v0.11.0"
+      wait: true
+      timeout: 300
+      maxHistory: 100
+      test: true
+      priority: -80
+      set:
+      helmFlags:
+        - "--atomic"
+
   # Service Mesh Block (priority: -60) On minkube the limits from coreDNS must be removed in order to works!
 
     linkerd2:
       description: "Linkerd service mesh for K8S"
       group: "mesh"
       namespace: "linkerd"
-      enabled: false
+      enabled: true
       protected: false
       chart: "linkerd2"
       version: "2.10.2"
@@ -314,7 +341,7 @@ apps:
       description: "Linkerd Viz"
       group: "mesh"
       namespace: "linkerd-viz"
-      enabled: false
+      enabled: true
       protected: false
       chart: "linkerd-viz"
       version: "2.10.2"
@@ -338,10 +365,10 @@ apps:
         tap.externalSecret: true
         tapInjector.externalSecret: true
         tap.replicas: 1
-        grafana.enabled: false
-        grafanaUrl: $GLAEDR_GRAFANA
-        prometheus.enabled: false
-        prometheusUrl: $GLAEDR_PROMETHEUS
+        grafana.enabled: true
+        # grafanaUrl: $GLAEDR_GRAFANA
+        prometheus.enabled: true
+        # prometheusUrl: $GLAEDR_PROMETHEUS
       helmFlags:
         - "--atomic"
 
@@ -351,7 +378,7 @@ apps:
       description: "A progressive delivery tool that automates the release process for applications running on Kubernetes."
       group: "releases"
       namespace: "miscellaneous" 
-      enabled: false
+      enabled: true
       protected: false
       chart: "flagger" 
       version: "1.12.1"
@@ -380,7 +407,7 @@ apps:
       description: "Load testing services generates traffic during canary analysis when configured as a webhook."
       group: "releases"
       namespace: "miscellaneous" 
-      enabled: false
+      enabled: true
       protected: false
       chart: "flagger-loadtester" 
       version: "0.18.0"
