@@ -190,14 +190,14 @@ apps:
       namespace: "ingress"
       enabled: true
       chart: "bitnami/contour"
-      version: "5.0.1"
+      version: "5.5.2"
       wait: true
       timeout: 300
       maxHistory: 100
       test: true
       priority: -150  # Increased due to minikube ip conflicts
       set:
-        replicaCount: 2
+        replicaCount: 1
         configInline.incluster: true
         envoy.service.externalIPs: "{${GLAEDR_IPADDR}}"
         envoy.nodeSelector.node-role\.kubernetes\.io/master: ""
