@@ -56,6 +56,8 @@ helmRepos:
   katafygio: https://bpineau.github.io/katafygio
   # A delivery workflow for kubernetes
   devtron: https://helm.devtron.ai
+  # A scalable, efficient source of container resource metrics for Kubernetes built-in autoscaling pipelines.
+  metrics-server: https://kubernetes-sigs.github.io/metrics-server
 
 # define your environments and their k8s namespaces
 namespaces:

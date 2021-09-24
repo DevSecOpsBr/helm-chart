@@ -1,6 +1,5 @@
 metadata:
   scope: "epic-dev-euc1r-cluster"
-  description: "Rodrigo's EKS cluster"
 
 settings:
   kubeContext: "epic-dev-euc1r-cluster"
