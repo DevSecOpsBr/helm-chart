@@ -1,15 +1,11 @@
 metadata:
-  org: "oromis.local"
+  scope: "oromis.local"
   description: "Oromis Cluster Desired State File."
 
 settings:
-  kubeContext: "oromis.local" # will try connect to this context first, if it does not exist, it will be created using the details below
+  kubeContext: "oromis.local"
   storageBackend: "secret"
   slackWebhook:  "https://hooks.slack.com/services/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"
-  #reverseDelete: false # reverse the priorities on delete
-  globalHooks:
-    successCondition: "Complete"
-    deleteOnSuccess: true
   globalMaxHistory: 500
   reverseDelete: true
 

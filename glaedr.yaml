@@ -1,15 +1,10 @@
 metadata:
-  org: "glaedr.local"
-  description: "Glaedr Cluster Desired State File."
+  scope: "glaedr.local"
 
 settings:
-  kubeContext: "glaedr.local" # will try connect to this context first, if it does not exist, it will be created using the details below
+  kubeContext: "glaedr.local"
   storageBackend: "secret"
   slackWebhook:  "https://hooks.slack.com/services/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"
-  #reverseDelete: false # reverse the priorities on delete
-  globalHooks:
-    successCondition: "Complete"
-    deleteOnSuccess: true
   globalMaxHistory: 500
   reverseDelete: true
 
@@ -37,7 +32,7 @@ apps:
     metrics-server:
       description: "Manager SSL certficates creation, renew and update."
       group: "monitoring"
-      namespace: "monitoring"
+      namespace: "kube-system"
       enabled: true
       protected: false
       chart: "metrics-server"
@@ -190,7 +185,7 @@ apps:
       namespace: "ingress"
       enabled: true
       chart: "bitnami/contour"
-      version: "5.5.2"
+      version: "5.5.3"
       wait: true
       timeout: 300
       maxHistory: 100
@@ -222,8 +217,8 @@ apps:
         - "ingress-nginx/values.yaml"
       set:
         controller.service.externalIPs: "{${GLAEDR_IPADDR}}"
-        controller.service.ports.http: 8081
-        controller.service.ports.https: 8082
+        controller.service.ports.http: 8083
+        controller.service.ports.https: 8084
         controller.metrics.enabled: true
         controller.metrics.serviceMonitor.enabled: true
       helmFlags:
@@ -246,8 +241,8 @@ apps:
         - "traefik/values.yaml"
       set:
         ports.traefik.expose: true
-        ports.web.exposedPort: 8083
-        ports.websecure.exposedPort: 8084
+        ports.web.exposedPort: 8085
+        ports.websecure.exposedPort: 8086
         service.externalIPs: "{${GLAEDR_IPADDR}}"
       helmFlags:
         - "--atomic"
@@ -364,6 +359,7 @@ apps:
         grafanaUrl: $GLAEDR_GRAFANA
         prometheus.enabled: false
         prometheusUrl: $GLAEDR_PROMETHEUS
+        dashboard.enforcedHostRegexp: "linkerd-contour.glaedr.local"
       helmFlags:
         - "--atomic"
 

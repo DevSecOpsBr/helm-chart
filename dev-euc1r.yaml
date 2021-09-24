@@ -1,15 +1,12 @@
 metadata:
-  org: "Epic Games"
+  scope: "epic-dev-euc1r-cluster"
   description: "Rodrigo's EKS cluster"
 
 settings:
-  kubeContext: "epic-dev-euc1r-cluster" # will try connect to this context first, if it does not exist, it will be created using the details below
+  kubeContext: "epic-dev-euc1r-cluster"
   storageBackend: "secret"
   slackWebhook:  "https://hooks.slack.com/services/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"
   #reverseDelete: false # reverse the priorities on delete
-  globalHooks:
-    successCondition: "Complete"
-    deleteOnSuccess: true
   globalMaxHistory: 500
   reverseDelete: true
 
@@ -192,14 +189,12 @@ apps:
       namespace: "ingress"
       enabled: true
       chart: "contour"
-      version: "5.0.1"
+      version: "5.5.3"
       wait: true
       timeout: 300
       maxHistory: 100
       test: true
       priority: -110
-      valuesFiles:
-        - "contour/values.yaml"
       set:
         replicaCount: 3
         configInline.incluster: true

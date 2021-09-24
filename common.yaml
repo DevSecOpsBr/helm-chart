@@ -1,6 +1,17 @@
 metadata:
+  org: "DevOps"
   maintainer: "devops team (devops@ellesmera.io)"
+  description: "Kubernetes clusters"
 
+settings:
+  kubeContext: ""
+  storageBackend: "secret"
+  slackWebhook:  "https://hooks.slack.com/services/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"
+  globalHooks:
+    successCondition: "Complete"
+    deleteOnSuccess: true
+
+# define your helm repositories
 helmRepos:
   stable: https://charts.helm.sh/stable
   # argocd - continous deployment
