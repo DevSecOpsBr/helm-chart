@@ -88,19 +88,6 @@ apps:
 
   # Monitoring Block (priority: -140)
 
-    metrics-server:
-      <<: *disabled
-      description: "Manager SSL certficates creation, renew and update."
-      group: "monitoring"
-      namespace: "monitoring"
-      protected: false
-      chart: "metrics-server/metrics-server"
-      version: "3.5.0"
-      priority: -140
-      set:
-        args.kubelet-insecure-tls: true
-        args.metric-resolution: "15s"
-
     prometheus:
       <<: *enabled
       description: "Prometheus clusters atop Kubernetes"
@@ -138,15 +125,6 @@ apps:
         grafana.ingress.hostname: grafana.$CLUSTER_GLAEDR
         grafana.ingress.annotations.kubernetes\.io/ingress\.class: "{$INGRESS_CLASS}"
 
-    grafana-operator-configs:
-      <<: *disabled
-      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
-      group: "monitoring"
-      namespace: "monitoring"
-      chart: "grafana-operator-configs"
-      version: "1.0.0"
-      priority: -137
-
   # Logging Block (priority: -130)
 
     loki:
@@ -164,29 +142,6 @@ apps:
         ingress.hosts\.host[0]: "loki.$CLUSTER_GLAEDR"
 
   # Security block (priority: -120)
-
-    kyverno:
-      <<: *disabled
-      description: "Kubernetes Native Policy Management"
-      group: "security"
-      namespace: "security" 
-      chart: "kyverno" 
-      version: "1.2.1"
-      priority: -120 
-      protected: true
-      valuesFiles: 
-        - "kyverno/values.yaml"
-
-    cert-manager:
-      <<: *enabled
-      description: "Manager SSL certficates creation, renew and update."
-      group: "security"
-      namespace: "cert-manager"
-      chart: "cert-manager"
-      version: "v1.4.2"
-      priority: -119
-      valuesFiles: 
-        - "cert-manager/values.yaml"
 
   # Ingress Block (priority: -110)
 
@@ -242,17 +197,6 @@ apps:
         ports.websecure.exposedPort: 8087
         service.externalIPs: "{${GLAEDR_IPADDR}}"
 
-    ingress-classes:
-      <<: *disabled
-      description: "IngressClass for ingress controllers"
-      group: "ingress"
-      namespace: "ingress"
-      chart: "ingress-classes"
-      version: "1.0.0"
-      priority: -107
-      valuesFiles:
-        - "ingress-classes/values.yaml"
-
   # Observability & Tracing Block (priority: -90)
 
     botkube:
@@ -269,6 +213,22 @@ apps:
       set:
         config.settings.clustername: $CLUSTER_GLAEDR
         serviceMonitor.enabled: true
+
+  # Loft (priority: -80)
+    
+    loft:
+      <<: *enabled
+      description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
+      group: "management"
+      namespace: "miscellaneous"
+      chart: "loft"
+      version: "1.15.0"
+      priority: -80
+      protected: true
+      set:
+        serviceMonitor.enabled: true
+        ingress.host: loft.$CLUSTER_GLAEDR
+        ingress.tls.enabled: false
 
   # Service Mesh Block (priority: -60) On minkube the limits from coreDNS must be removed in order to works!
 

@@ -93,3 +93,79 @@ namespaces:
     protected: false
     annotations:
       iam.amazonaws.com/permitted: ".*"
+
+appsTemplates:
+
+  it_in_use: &enabled
+    enabled: true
+    test: true
+    wait: true
+    timeout: 300
+    helmFlags:
+      - "--atomic"
+
+  not_in_use: &disabled
+    enabled: false
+
+apps:
+
+  # Monitoring Block (priority: -140)
+
+    metrics-server:
+      <<: *enabled
+      description: "Manager SSL certficates creation, renew and update."
+      group: "monitoring"
+      namespace: "monitoring"
+      protected: false
+      chart: "metrics-server"
+      version: "2.9.0"
+      priority: -140
+      valuesFiles:
+        - "metrics-server/values.yaml"
+
+    grafana-operator-configs:
+      <<: *disabled
+      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
+      group: "monitoring"
+      namespace: "monitoring"
+      chart: "grafana-operator-configs"
+      version: "1.0.0"
+      priority: -137
+
+  # Security block (priority: -120)
+
+    kyverno:
+      <<: *enabled
+      description: "Kubernetes Native Policy Management"
+      group: "security"
+      namespace: "security" 
+      chart: "kyverno" 
+      version: "1.2.1"
+      priority: -120 
+      protected: true
+      valuesFiles: 
+        - "kyverno/values.yaml"
+
+    cert-manager:
+      <<: *enabled
+      description: "Manager SSL certficates creation, renew and update."
+      group: "security"
+      namespace: "cert-manager"
+      chart: "cert-manager"
+      version: "v1.4.2"
+      priority: -119
+      valuesFiles: 
+        - "cert-manager/values.yaml"
+
+  # Ingress Block (priority: -110)
+
+    ingress-classes:
+      <<: *disabled
+      description: "IngressClass for ingress controllers"
+      group: "ingress"
+      namespace: "ingress"
+      chart: "ingress-classes"
+      version: "1.0.0"
+      priority: -107
+      valuesFiles:
+        - "ingress-classes/values.yaml"
