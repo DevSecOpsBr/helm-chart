@@ -101,11 +101,11 @@ apps:
       set:
         alertmanager.ingress.enabled: true
         alertmanager.ingress.ingressClassName: $INGRESS_CLASS
-        alertmanager.ingress.hosts: "{alertmanager.$CLUSTER_GLAEDR}"
+        alertmanager.ingress.hosts: "{alertmanager.$CONTOUR_GLAEDR}"
         grafana.enabled: false
         prometheus.ingress.enabled: true
         prometheus.ingress.ingressClassName: $INGRESS_CLASS
-        prometheus.ingress.hosts: "{prometheus.$CLUSTER_GLAEDR}"
+        prometheus.ingress.hosts: "{prometheus.$CONTOUR_GLAEDR}"
         kubeControllerManager.enabled: false
         kubeScheduler.enabled: false
         kubeEtcd.enabled: false
@@ -117,13 +117,12 @@ apps:
       group: "monitoring"
       namespace: "monitoring"
       chart: "bitnami/grafana-operator"
-      version: "1.1.3"
-      # valuesFiles: 
-      #   - "grafana-operator/values.yaml"
+      version: "1.1.4"
       priority: -138
       set:
-        grafana.ingress.hostname: grafana.$CLUSTER_GLAEDR
-        grafana.ingress.annotations.kubernetes\.io/ingress\.class: "{$INGRESS_CLASS}"
+        grafana.ingress.enabled: true
+        grafana.ingress.hostname: grafana.$NGINX_GLAEDR
+        grafana.ingress.annotations.kubernetes\.io/ingress\.class: "nginx"
 
   # Logging Block (priority: -130)
 
@@ -139,11 +138,22 @@ apps:
         - "loki-stack/values.yaml"
       set:
         ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
-        ingress.hosts\.host[0]: "loki.$CLUSTER_GLAEDR"
+        ingress.hosts\.host[0]: "loki.$CONTOUR_GLAEDR"
 
   # Security block (priority: -120)
 
   # Ingress Block (priority: -110)
+    metallb:
+      <<: *enabled
+      description: "Load Balancer management for minikube"
+      group: "ingress"
+      namespace: "ingress"
+      chart: "bitnami/metallb"
+      version: "2.5.5"
+      maxHistory: 100
+      priority: -110  # Increased due to minikube ip conflicts
+      valuesFiles:
+        - "metallb/values.yaml"
 
     contour:
       <<: *enabled
@@ -152,17 +162,10 @@ apps:
       namespace: "ingress"
       chart: "bitnami/contour"
       version: "5.5.3"
-      wait: true
-      timeout: 300
-      maxHistory: 100
-      test: true
-      priority: -110  # Increased due to minikube ip conflicts
+      priority: -109  # Increased due to minikube ip conflicts
       set:
         replicaCount: 1
         configInline.incluster: true
-        envoy.service.externalIPs: "{${GLAEDR_IPADDR}}"
-        envoy.service.ports.http: 8081
-        envoy.service.ports.https: 8082
         envoy.nodeSelector.node-role\.kubernetes\.io/master: ""
         default.backend.enabled: false
 
@@ -172,16 +175,11 @@ apps:
       group: "ingress"
       namespace: "ingress"
       chart: "ingress-nginx/ingress-nginx"
-      version: "3.36.0"
-      priority: -109
+      version: "4.0.3"
+      priority: -108
       set:
-        controller.service.externalIPs: "{${GLAEDR_IPADDR}}"
-        controller.service.ports.http: 8083
-        controller.service.ports.https: 8084
         controller.metrics.enabled: true
         controller.metrics.serviceMonitor.enabled: true
-        defaultBackend.service.externalIPs: "{${GLAEDR_IPADDR}}"
-        defaultBackend.service.servicePort: 8085
 
     traefik:
       <<: *enabled
@@ -190,12 +188,9 @@ apps:
       namespace: "ingress"
       chart: "traefik"
       version: "9.18.2"
-      priority: -108
+      priority: -107
       set:
         ports.traefik.expose: true
-        ports.web.exposedPort: 8086
-        ports.websecure.exposedPort: 8087
-        service.externalIPs: "{${GLAEDR_IPADDR}}"
 
   # Observability & Tracing Block (priority: -90)
 
@@ -207,11 +202,10 @@ apps:
       chart: "botkube"
       version: "v0.12.0"
       priority: -90
-      protected: true
       valuesFiles: 
         - "botkube/values.yaml"
       set:
-        config.settings.clustername: $CLUSTER_GLAEDR
+        config.settings.clustername: $GLAEDR
         serviceMonitor.enabled: true
 
   # Loft (priority: -80)
@@ -224,10 +218,9 @@ apps:
       chart: "loft"
       version: "1.15.0"
       priority: -80
-      protected: true
       set:
         serviceMonitor.enabled: true
-        ingress.host: loft.$CLUSTER_GLAEDR
+        ingress.host: loft.$NGINX_GLAEDR
         ingress.tls.enabled: false
 
   # Service Mesh Block (priority: -60) On minkube the limits from coreDNS must be removed in order to works!
@@ -284,7 +277,6 @@ apps:
       chart: "flagger-loadtester" 
       version: "0.18.0"
       priority: -49
-      protected: true
       valuesFiles: 
         - "flagger-loadtester/values.yaml" 
       set:

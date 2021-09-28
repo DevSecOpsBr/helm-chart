@@ -58,41 +58,43 @@ helmRepos:
   devtron: https://helm.devtron.ai
   # A scalable, efficient source of container resource metrics for Kubernetes built-in autoscaling pipelines.
   metrics-server: https://kubernetes-sigs.github.io/metrics-server
-
+  # A network load-balancer implementation for Kubernetes using standard routing protocols
+  metallb: https://metallb.github.io/metallb
+  
 # define your environments and their k8s namespaces
 namespaces:
   cert-manager:
     protected: false
     annotations:
-      iam.amazonaws.com/permitted: ".*"
+      linkerd.io/inject: disabled
   chaos:
     protected: false
     annotations:
-      iam.amazonaws.com/permitted: ".*"
+      linkerd.io/inject: disabled
   ingress:
     protected: false
     annotations:
-      iam.amazonaws.com/permitted: ".*"
+      linkerd.io/inject: disabled
   miscellaneous:
     protected: false
     annotations:
-      iam.amazonaws.com/permitted: ".*"
+      linkerd.io/inject: disabled
   monitoring:
     protected: false
     annotations:
-      iam.amazonaws.com/permitted: ".*"
+      linkerd.io/inject: disabled
   observability:
     protected: false
     annotations:
-      iam.amazonaws.com/permitted: ".*"
+      linkerd.io/inject: disabled
   security:
     protected: false
     annotations:
-      iam.amazonaws.com/permitted: ".*"
+      linkerd.io/inject: disabled
   velero:
     protected: false
     annotations:
-      iam.amazonaws.com/permitted: ".*"
+      linkerd.io/inject: disabled
 
 appsTemplates:
 

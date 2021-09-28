@@ -1,0 +1,6 @@
+configInline:
+  address-pools:
+  - name: ingress-controllers
+    protocol: layer2
+    addresses:
+    - 192.168.64.99-192.168.64.110
