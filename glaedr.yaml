@@ -81,8 +81,9 @@ appsTemplates:
       # grafanaUrl: $GLAEDR_GRAFANA
       prometheus.enabled: false
       prometheusUrl: $GLAEDR_PROMETHEUS
-    # helmFlags:
-    #   - "--atomic"
+      dashboard.enforcedHostRegexp: ".*"
+    helmFlags:
+      - "--atomic"
 
 apps:
 
