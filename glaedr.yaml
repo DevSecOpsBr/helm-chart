@@ -79,8 +79,8 @@ appsTemplates:
       tap.replicas: 1
       grafana.enabled: true
       # grafanaUrl: $GLAEDR_GRAFANA
-      prometheus.enabled: false
-      prometheusUrl: $GLAEDR_PROMETHEUS
+      prometheus.enabled: true
+      # prometheusUrl: $GLAEDR_PROMETHEUS
       dashboard.enforcedHostRegexp: ".*"
     helmFlags:
       - "--atomic"
@@ -144,6 +144,7 @@ apps:
   # Security block (priority: -120)
 
   # Ingress Block (priority: -110)
+
     metallb:
       <<: *enabled
       description: "Load Balancer management for minikube"
@@ -168,7 +169,10 @@ apps:
         replicaCount: 1
         configInline.incluster: true
         envoy.nodeSelector.node-role\.kubernetes\.io/master: ""
-        default.backend.enabled: false
+        default.backend.enabled: true
+        envoy.serviceAccount.automountServiceAccountToken: true
+        envoy.podAnnotations.linkerd\.io/inject: "ingress"
+
 
     nginx:
       <<: *enabled
@@ -181,6 +185,7 @@ apps:
       set:
         controller.metrics.enabled: true
         controller.metrics.serviceMonitor.enabled: true
+        controller.podAnnotations.linkerd\.io/inject: "ingress"
 
     traefik:
       <<: *enabled
@@ -192,6 +197,7 @@ apps:
       priority: -107
       set:
         ports.traefik.expose: true
+        deployment.podAnnotations.linkerd\.io/inject: "ingress"
 
   # Observability & Tracing Block (priority: -90)
 
@@ -203,11 +209,12 @@ apps:
       chart: "botkube"
       version: "v0.12.0"
       priority: -90
-      valuesFiles: 
-        - "botkube/values.yaml"
       set:
         config.settings.clustername: $GLAEDR
+        config.settings.kubectl.restrictAccess: true
         serviceMonitor.enabled: true
+        communications.slack.channel: "reports" 
+        communications.slack.token: "$BOTKUBE"
 
   # Loft (priority: -80)
     
@@ -258,14 +265,12 @@ apps:
       chart: "flagger" 
       version: "1.12.1"
       priority: -50
-      valuesFiles: 
-        - "flagger/values.yaml" 
       set:
         logLevel: "debug"
         meshProvider: "linkerd"
         ingressClass: "contour"
         slack.channel: "deploys"
-        slack.url: "https://hooks.slack.com/services/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"
+        slack.url: "$SLACK_HOOK"
         podMonitor.enabled: true
         prometheus.install: false
         crd.create: false
@@ -278,7 +283,5 @@ apps:
       chart: "flagger-loadtester" 
       version: "0.18.0"
       priority: -49
-      valuesFiles: 
-        - "flagger-loadtester/values.yaml" 
       set:
         logLevel: "debug"

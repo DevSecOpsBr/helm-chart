@@ -98,7 +98,7 @@ namespaces:
 
 appsTemplates:
 
-  it_in_use: &enabled
+  is_in_use: &enabled
     enabled: true
     test: true
     wait: true
