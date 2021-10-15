@@ -12,6 +12,7 @@ CLUSTER="cluster.local"
 DIRECTORY=$(dirname $0)/$CHART/$CERTS
 FOLDERS=(plane issuer webhook)
 NS="linkerd"
+KBCTL="kubectl"
 
 function main() {
 
@@ -56,18 +57,20 @@ function main() {
 function secrets_linkerd() {
 
     echo "Creating secret tls ..."
-    kubectl -n $NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
+    ${KBCTL} -n $NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
     echo "linkerd-trust-anchor, created ..."
-    kubectl -n $NS create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
+    ${KBCTL} -n $NS create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
     echo "webhook-issuer-tls, created ..."
-    kubectl -n $NS create secret tls linkerd-identity-issuer --cert=$DIRECTORY/issuer/issuer.crt --key=$DIRECTORY/issuer/issuer.key || echo "Secret already exist ..."
+    ${KBCTL} -n $NS create secret tls linkerd-identity-issuer --cert=$DIRECTORY/issuer/issuer.crt --key=$DIRECTORY/issuer/issuer.key || echo "Secret already exist ..."
     echo "linkerd-identity-issuer, created ..."
+
+  secrets_linkerd_viz
 
 }
 
 function secrets_linkerd_viz() {
 
-    kubectl -n $NS-viz create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
+    ${KBCTL} -n $NS-viz create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
     echo "viz webhook-issuer-tls, created ..."
 
 }
