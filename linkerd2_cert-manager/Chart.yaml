@@ -1,5 +1,5 @@
 apiVersion: v1
-name: linkerd-hooks-certificates
+name: linkerd-webhooks-certificates
 version: 1.0.1
 appVersion: 1.0.1
 description: linkerd webhook certificates managed by cert-manager

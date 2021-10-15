@@ -60,7 +60,9 @@ helmRepos:
   metrics-server: https://kubernetes-sigs.github.io/metrics-server
   # A network load-balancer implementation for Kubernetes using standard routing protocols
   metallb: https://metallb.github.io/metallb
-  
+  # Linkerd service mesh
+  linkerd: https://helm.linkerd.io/stable
+
 # define your environments and their k8s namespaces
 namespaces:
   cert-manager:

@@ -173,7 +173,6 @@ apps:
         envoy.serviceAccount.automountServiceAccountToken: true
         envoy.podAnnotations.linkerd\.io/inject: "ingress"
 
-
     nginx:
       <<: *enabled
       description: "Nginx-Ingress Controller for K8S"
@@ -238,22 +237,31 @@ apps:
       description: "Linkerd service mesh for K8S"
       group: "mesh"
       namespace: "linkerd"
-      chart: "linkerd2"
+      chart: "linkerd/linkerd2"
       version: "2.10.2"
       priority: -60
-      valuesFiles:
-        - "linkerd2/values.yaml"
+      # valuesFiles:
+      #   - "linkerd2/values.yaml"
 
-    linkerd2-viz:
+    linkerd-webhooks-certificates:
+      <<: *enabled
+      description: "Webhook certificates managed by cert-manager"
+      group: "mesh"
+      namespace: "linkerd"
+      chart: "linkerd2_cert-manager"
+      version: "1.0.1"
+      priority: -60
+
+    linkerd-viz:
       <<: *mesh2
       description: "Linkerd Viz"
       group: "mesh"
       namespace: "linkerd-viz"
-      chart: "linkerd-viz"
+      chart: "linkerd/linkerd-viz"
       version: "2.10.2"
-      priority: -59
-      valuesFiles:
-        - "linkerd-viz/values.yaml"
+      priority: -58
+      # valuesFiles:
+      #   - "linkerd-viz/values.yaml"
 
   # Deployments & Automated Releases (priority: -50)
 
