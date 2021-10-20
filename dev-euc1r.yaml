@@ -2,7 +2,7 @@ metadata:
   scope: "epic-dev-euc1r-cluster"
 
 settings:
-  kubeContext: "epic-dev-euc1r-cluster"
+  kubeContext: "epic-dev-euc1r"
   storageBackend: "secret"
   slackWebhook:  "https://hooks.slack.com/services/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"
   #reverseDelete: false # reverse the priorities on delete
@@ -136,7 +136,7 @@ apps:
       priority: -129
       set:
         ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
-        ingress.hosts\.host[0]: "loki.$CLUSTER_GLAEDR"
+        ingress.hosts\.host[0]: "loki.$CLUSTER_DEVEUC1R"
       helmFlags:
         - "--atomic"
 
@@ -271,6 +271,9 @@ apps:
       priority: -90
       set:
         config.settings.clustername: $CLUSTER_DEVEUC1R
+        communications.slack.enabled: true
+        communications.slacke.channel: "quicksilver-reports"
+        communications.slack.token: $SLACK_TOKEN
         serviceMonitor.enabled: true
       helmFlags:
         - "--atomic"
