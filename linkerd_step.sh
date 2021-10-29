@@ -13,6 +13,7 @@ DIRECTORY=$(dirname $0)/$CHART/$CERTS
 FOLDERS=(plane issuer webhook)
 NS="linkerd"
 KBCTL="kubectl"
+HOURS=87600
 
 function main() {
 
