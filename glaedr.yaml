@@ -29,7 +29,7 @@ appsTemplates:
 
   in_use: &enabled
     enabled: true
-    test: true
+    test: false
     wait: true
     timeout: 300
     helmFlags:
@@ -150,8 +150,7 @@ apps:
       group: "ingress"
       namespace: "ingress"
       chart: "bitnami/metallb"
-      version: "2.5.5"
-      maxHistory: 100
+      version: "2.5.9"
       priority: -110  # Increased due to minikube ip conflicts
       valuesFiles:
         - "metallb/values.yaml"
@@ -171,6 +170,7 @@ apps:
         default.backend.enabled: true
         envoy.serviceAccount.automountServiceAccountToken: true
         envoy.podAnnotations.linkerd\.io/inject: "ingress"
+        prometheus.serviceMonitor.enabled: true
 
     nginx:
       <<: *enabled

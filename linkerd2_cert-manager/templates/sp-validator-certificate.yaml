@@ -6,7 +6,7 @@ metadata:
   namespace: linkerd
 spec:
   secretName: linkerd-sp-validator-k8s-tls
-  duration: 24h
+  duration: 720h
   renewBefore: 1h
   issuerRef:
     name: webhook-issuer
