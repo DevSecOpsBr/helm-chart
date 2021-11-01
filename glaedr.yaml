@@ -94,7 +94,7 @@ apps:
       group: "monitoring"
       namespace: "monitoring"
       chart: "kube-prometheus-stack"
-      version: "18.0.0"
+      version: "19.2.2"
       valuesFiles: 
         - "kube-prometheus-stack/values-custom.yaml"
       priority: -139
@@ -116,18 +116,22 @@ apps:
       description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
       group: "monitoring"
       namespace: "monitoring"
-      chart: "bitnami/grafana-operator"
+      chart: "grafana-operator"
       version: "1.1.4"
       priority: -138
       set:
         grafana.ingress.enabled: true
         grafana.ingress.hostname: grafana.$NGINX_GLAEDR
         grafana.ingress.annotations.kubernetes\.io/ingress\.class: "nginx"
+        operator.args.scanAllNamespaces: true
+        dashboardLabelSelector.matchExpressions[1]: "\\{ key: group, operator: In, values: [ grafana ] \\}"
+      valuesFiles:
+        - "grafana-operator/values.yaml"
 
   # Logging Block (priority: -130)
 
     loki:
-      <<: *disabled
+      <<: *enabled
       description: "Loki: like Prometheus, but for logs."
       group: "logging"
       namespace: "monitoring"

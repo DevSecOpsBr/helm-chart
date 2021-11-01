@@ -1,8 +1,9 @@
-# Default values for grafana.
-
-# Prometheus instance
+# Prometheus Data Source
 prometheus:
   url: http://prometheus-kube-prometheus-prometheus:9090
+  isDefault: false
+  timeInterval: "15s"
 
-# Weave Cloud instance token
-token:
+# Loki Data Source
+loki:
+  url: http://loki:3100

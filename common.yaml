@@ -119,7 +119,7 @@ apps:
       <<: *enabled
       description: "Manager SSL certficates creation, renew and update."
       group: "monitoring"
-      namespace: "monitoring"
+      namespace: "kube-system"
       protected: false
       chart: "metrics-server"
       version: "2.9.0"
@@ -128,7 +128,7 @@ apps:
         - "metrics-server/values.yaml"
 
     grafana-operator-configs:
-      <<: *disabled
+      <<: *enabled
       description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
       group: "monitoring"
       namespace: "monitoring"
