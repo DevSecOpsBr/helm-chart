@@ -1,0 +1,6 @@
+spaces:
+  enabled: true
+  names: []
+
+vclusters:
+  enabled: true

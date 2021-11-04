@@ -222,7 +222,7 @@ apps:
     
     loft:
       <<: *enabled
-      description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
+      description: "Namespace & Virtual Cluster Manager for Kubernetes"
       group: "management"
       namespace: "miscellaneous"
       chart: "loft"
@@ -232,6 +232,21 @@ apps:
         serviceMonitor.enabled: true
         ingress.host: loft.$NGINX_GLAEDR
         ingress.tls.enabled: false
+    
+    loft-spaces-vclusters:
+      <<: *enabled
+      description: "Config, create, managed Spaces/vCluster/Isolations and so on."
+      group: "management"
+      namespace: "miscellaneous"
+      chart: "loft-config"
+      version: "1.0.0"
+      priority: -79
+      set:
+        spaces.enabled: true
+        spaces.names[0]: "saphira"
+        spaces.names[1]: "firnen"
+        spaces.names[2]: "ophelia"
+        vclusters.enabled: false
 
   # Service Mesh Block (priority: -60) On minkube the limits from coreDNS must be removed in order to works!
 

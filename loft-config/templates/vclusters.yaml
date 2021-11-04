@@ -1,0 +1,17 @@
+{{- if .Values.vclusters.enabled }}
+apiVersion: v1
+kind: List
+items:
+{{- range $.Values.spaces.names }}
+- apiVersion: storage.loft.sh/v1
+  kind: VirtualCluster
+  metadata:
+    name: [VCLUSTER_NAME]
+    namespace: [VCLUSTER_NAMESPACE]
+  spec:
+    helmRelease:
+      values: >-
+        virtualCluster:
+          image: rancher/k3s:v1.21.2-k3s1
+{{- end }}
+{{- end }}
