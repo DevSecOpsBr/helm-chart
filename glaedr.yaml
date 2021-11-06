@@ -164,7 +164,7 @@ apps:
       description: "High performance ingress controller for Kubernetes"
       group: "ingress"
       namespace: "ingress"
-      chart: "bitnami/contour"
+      chart: "contour"
       version: "5.5.3"
       priority: -109  # Increased due to minikube ip conflicts
       set:
@@ -175,6 +175,8 @@ apps:
         envoy.serviceAccount.automountServiceAccountToken: true
         envoy.podAnnotations.linkerd\.io/inject: "ingress"
         prometheus.serviceMonitor.enabled: true
+      valuesFiles:
+        - "contour/values.yaml"
 
     nginx:
       <<: *enabled
@@ -187,6 +189,7 @@ apps:
       set:
         controller.metrics.enabled: true
         controller.metrics.serviceMonitor.enabled: true
+        controller.metrics.serviceMonitor.additionalLabels.release: "prometheus" 
         controller.podAnnotations.linkerd\.io/inject: "ingress"
 
     traefik:
@@ -199,7 +202,12 @@ apps:
       priority: -107
       set:
         ports.traefik.expose: true
-        deployment.podAnnotations.linkerd\.io/inject: "ingress"
+        additionalArguments[0]: "--metrics.prometheus=true"
+        additionalArguments[1]: "--ping"
+        additionalArguments[2]: "--log.format=json"
+        additionalArguments[3]: "--accesslog=true"
+        additionalArguments[4]: "--api.dashboard=true"
+        deployment.podLabels.release: "prometheus"
 
   # Observability & Tracing Block (priority: -90)
 

@@ -785,6 +785,8 @@ prometheus:
     interval: ""
     metricRelabelings: []
     relabelings: []
+    labels:
+      release: prometheus
 
 ## @section Other parameters
 
