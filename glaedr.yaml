@@ -1,8 +1,8 @@
 metadata:
-  scope: "glaedr.local"
+  scope: "glaedr"
 
 settings:
-  kubeContext: "glaedr.local"
+  kubeContext: "kind-glaedr.local"
   storageBackend: "secret"
   slackWebhook:  "https://hooks.slack.com/services/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"
   globalMaxHistory: 500
@@ -44,11 +44,13 @@ appsTemplates:
     wait: true
     timeout: 300
     hooks:
+      preInstall: "bash -x linkerd_step.sh main"
+      preUpgrade: "bash -x linkerd_step.sh main"
       postInstall: "linkerd check"
     setFile:
-      identityTrustAnchorsPEM: linkerd2/certs/plane/ca.crt
-      proxyInjector.caBundle: linkerd2/certs/plane/ca.crt
-      profileValidator.caBundle: linkerd2/certs/plane/ca.crt
+      identityTrustAnchorsPEM: linkerd/certs/plane/ca.crt
+      proxyInjector.caBundle: linkerd/certs/plane/ca.crt
+      profileValidator.caBundle: linkerd/certs/plane/ca.crt
     set:
       identity.issuer.scheme: "kubernetes.io/tls"
       identity.externalIssuer: true
@@ -66,21 +68,26 @@ appsTemplates:
     timeout: 300
     hooks:
       deleteOnSuccess: true
+      preInstall: "bash -x linkerd_step.sh secrets_linkerd_viz"
+      preUpgrade: "bash -x linkerd_step.sh secrets_linkerd_viz"
       successCondition: "Complete"
       postInstall: "linkerd check"
     setFile:
-      tap.caBundle: linkerd2/certs/plane/ca.crt
-      tapInjector.caBundle: linkerd2/certs/plane/ca.crt
+      tap.caBundle: linkerd/certs/plane/ca.crt
+      tapInjector.caBundle: linkerd/certs/plane/ca.crt
     set:
       installNamespace: false
       tap.externalSecret: true
       tapInjector.externalSecret: true
-      tap.replicas: 1
+      tap.replicas: 3
       grafana.enabled: true
       # grafanaUrl: $GLAEDR_GRAFANA
       prometheus.enabled: true
       # prometheusUrl: $GLAEDR_PROMETHEUS
       dashboard.enforcedHostRegexp: ".*"
+    valuesFiles:
+      - "linkerd-viz-certificates/templates/webhook-certificate.yaml"
+      - "linkerd-viz-certificates/templates/tap-injector-certificate.yaml"
     helmFlags:
       - "--atomic"
 
@@ -131,12 +138,12 @@ apps:
   # Logging Block (priority: -130)
 
     loki:
-      <<: *enabled
+      <<: *disabled
       description: "Loki: like Prometheus, but for logs."
       group: "logging"
       namespace: "monitoring"
-      chart: "grafana/loki-stack"
-      version: "2.3.0"
+      chart: "loki-stack"
+      version: "2.3.1"
       priority: -129
       valuesFiles: 
         - "loki-stack/values.yaml"
@@ -149,18 +156,21 @@ apps:
   # Ingress Block (priority: -110)
 
     metallb:
-      <<: *enabled
+      <<: *disabled
       description: "Load Balancer management for minikube"
       group: "ingress"
       namespace: "ingress"
-      chart: "bitnami/metallb"
-      version: "2.5.9"
+      chart: "metallb"
+      version: "2.5.11"
       priority: -110  # Increased due to minikube ip conflicts
+      set:
+        prometheusRule.enabled: true
+        controller.nodeSelector.node-role\.kubernetes\.io/master: ""
       valuesFiles:
         - "metallb/values.yaml"
 
     contour:
-      <<: *enabled
+      <<: *disabled
       description: "High performance ingress controller for Kubernetes"
       group: "ingress"
       namespace: "ingress"
@@ -179,21 +189,23 @@ apps:
         - "contour/values.yaml"
 
     nginx:
-      <<: *enabled
+      <<: *disabled
       description: "Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
-      chart: "ingress-nginx/ingress-nginx"
-      version: "4.0.3"
+      chart: "ingress-nginx"
+      version: "3.12.0"
       priority: -108
       set:
         controller.metrics.enabled: true
         controller.metrics.serviceMonitor.enabled: true
         controller.metrics.serviceMonitor.additionalLabels.release: "prometheus" 
         controller.podAnnotations.linkerd\.io/inject: "ingress"
+        controller.nodeSelector.node-role\.kubernetes\.io/master: ""
+        # defaultBackend.nodeSelector.node-role\.kubernetes\.io/master: ""
 
     traefik:
-      <<: *enabled
+      <<: *disabled
       description: "Edge Router that makes publishing your services a fun and easy experience"
       group: "ingress"
       namespace: "ingress"
@@ -208,6 +220,7 @@ apps:
         additionalArguments[3]: "--accesslog=true"
         additionalArguments[4]: "--api.dashboard=true"
         deployment.podLabels.release: "prometheus"
+        # nodeSelector.node-role\.kubernetes\.io/master: ""
 
   # Observability & Tracing Block (priority: -90)
 
@@ -229,7 +242,7 @@ apps:
   # Loft (priority: -80)
     
     loft:
-      <<: *enabled
+      <<: *disabled
       description: "Namespace & Virtual Cluster Manager for Kubernetes"
       group: "management"
       namespace: "miscellaneous"
@@ -242,7 +255,7 @@ apps:
         ingress.tls.enabled: false
     
     loft-spaces-vclusters:
-      <<: *enabled
+      <<: *disabled
       description: "Config, create, managed Spaces/vCluster/Isolations and so on."
       group: "management"
       namespace: "miscellaneous"
@@ -256,39 +269,7 @@ apps:
         spaces.names[2]: "ophelia"
         vclusters.enabled: false
 
-  # Service Mesh Block (priority: -60) On minkube the limits from coreDNS must be removed in order to works!
-
-    linkerd-webhooks-certificates:
-      <<: *enabled
-      description: "Webhook certificates managed by cert-manager"
-      group: "mesh"
-      namespace: "linkerd"
-      chart: "linkerd2_cert-manager"
-      version: "1.0.1"
-      priority: -60
-      hooks:
-        preInstall: "bash -x linkerd_step.sh main"
-        preUpgrade: "bash -x linkerd_step.sh main"
-
-    linkerd2:
-      <<: *mesh1
-      description: "Linkerd service mesh for K8S"
-      group: "mesh"
-      namespace: "linkerd"
-      chart: "linkerd/linkerd2"
-      version: "2.10.2"
-      priority: -59
-
-    linkerd-viz:
-      <<: *mesh2
-      description: "Linkerd Viz"
-      group: "mesh"
-      namespace: "linkerd-viz"
-      chart: "linkerd/linkerd-viz"
-      version: "2.10.2"
-      priority: -58
-
-  # Deployments & Automated Releases (priority: -50)
+  # Deployments & Automated Releases (priority: -60)
 
     flagger:
       <<: *enabled
@@ -297,7 +278,7 @@ apps:
       namespace: "miscellaneous" 
       chart: "flagger" 
       version: "1.12.1"
-      priority: -50
+      priority: -60
       set:
         logLevel: "debug"
         meshProvider: "linkerd"
@@ -315,6 +296,45 @@ apps:
       namespace: "miscellaneous" 
       chart: "flagger-loadtester" 
       version: "0.18.0"
-      priority: -49
+      priority: -59
       set:
         logLevel: "debug"
+
+  # Service Mesh Block (priority: -50) On minkube the limits from coreDNS must be removed in order to works!
+
+    linkerd-certificates:
+      <<: *enabled
+      description: "Webhook certificates managed by cert-manager"
+      group: "mesh"
+      namespace: "linkerd"
+      chart: "linkerd-certificates"
+      version: "1.0.1"
+      priority: -50
+
+    linkerd:
+      <<: *mesh1
+      description: "Linkerd service mesh for K8S"
+      group: "mesh"
+      namespace: "linkerd"
+      chart: "linkerd"
+      version: "2.10.2"
+      priority: -49
+
+    linkerd-viz-certificates:
+      <<: *disabled
+      description: "Webhook certificates managed by cert-manager"
+      group: "mesh"
+      namespace: "linkerd-viz"
+      chart: "linkerd-viz-certificates"
+      version: "1.0.1"
+      priority: -48
+
+    linkerd-viz:
+      <<: *mesh2
+      description: "Linkerd Viz"
+      group: "mesh"
+      namespace: "linkerd-viz"
+      chart: "linkerd-viz"
+      version: "2.10.2"
+      priority: -48
+

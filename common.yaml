@@ -104,6 +104,7 @@ appsTemplates:
     enabled: true
     test: true
     wait: true
+    protected: false
     timeout: 300
     helmFlags:
       - "--atomic"
@@ -119,8 +120,7 @@ apps:
       <<: *enabled
       description: "Manager SSL certficates creation, renew and update."
       group: "monitoring"
-      namespace: "kube-system"
-      protected: false
+      namespace: "monitoring"
       chart: "metrics-server"
       version: "2.9.0"
       priority: -140
@@ -146,7 +146,6 @@ apps:
       chart: "kyverno" 
       version: "1.2.1"
       priority: -120 
-      protected: true
       valuesFiles: 
         - "kyverno/values.yaml"
 

@@ -5,13 +5,14 @@
 
 set -a
 
-STEP="/usr/local/bin/step"
+STEP="step"
 CERTS="certs"
-CHART="linkerd2"
+CHART="linkerd"
 CLUSTER="cluster.local"
 DIRECTORY=$(dirname $0)/$CHART/$CERTS
 FOLDERS=(plane issuer webhook)
-NS="linkerd"
+LINKERD_NS="linkerd"
+LINKERD_VIZ_NS="linkerd-viz"
 KBCTL="kubectl"
 HOURS=87600
 
@@ -58,20 +59,18 @@ function main() {
 function secrets_linkerd() {
 
     echo "Creating secret tls ..."
-    ${KBCTL} -n $NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
+    ${KBCTL} -n $LINKERD_NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
     echo "linkerd-trust-anchor, created ..."
-    ${KBCTL} -n $NS create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
+    ${KBCTL} -n $LINKERD_NS create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
     echo "webhook-issuer-tls, created ..."
-    ${KBCTL} -n $NS create secret tls linkerd-identity-issuer --cert=$DIRECTORY/issuer/issuer.crt --key=$DIRECTORY/issuer/issuer.key || echo "Secret already exist ..."
+    ${KBCTL} -n $LINKERD_NS create secret tls linkerd-identity-issuer --cert=$DIRECTORY/issuer/issuer.crt --key=$DIRECTORY/issuer/issuer.key || echo "Secret already exist ..."
     echo "linkerd-identity-issuer, created ..."
-
-  secrets_linkerd_viz
 
 }
 
 function secrets_linkerd_viz() {
 
-    ${KBCTL} -n $NS-viz create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
+    ${KBCTL} -n $LINKERD_VIZ_NS create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
     echo "viz webhook-issuer-tls, created ..."
 
 }
