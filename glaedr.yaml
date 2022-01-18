@@ -2,7 +2,7 @@ metadata:
   scope: "glaedr"
 
 settings:
-  kubeContext: "kind-glaedr.local"
+  kubeContext: "rancher-desktop"
   storageBackend: "secret"
   slackWebhook:  "https://hooks.slack.com/services/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"
   globalMaxHistory: 500
@@ -138,7 +138,7 @@ apps:
   # Logging Block (priority: -130)
 
     loki:
-      <<: *disabled
+      <<: *enabled
       description: "Loki: like Prometheus, but for logs."
       group: "logging"
       namespace: "monitoring"
@@ -156,7 +156,7 @@ apps:
   # Ingress Block (priority: -110)
 
     metallb:
-      <<: *disabled
+      <<: *enabled
       description: "Load Balancer management for minikube"
       group: "ingress"
       namespace: "ingress"
@@ -165,7 +165,7 @@ apps:
       priority: -110  # Increased due to minikube ip conflicts
       set:
         prometheusRule.enabled: true
-        controller.nodeSelector.node-role\.kubernetes\.io/master: ""
+        # controller.nodeSelector.node-role\.kubernetes\.io/master: ""
       valuesFiles:
         - "metallb/values.yaml"
 
@@ -180,16 +180,16 @@ apps:
       set:
         replicaCount: 1
         configInline.incluster: true
-        envoy.nodeSelector.node-role\.kubernetes\.io/master: ""
+        # envoy.nodeSelector.node-role\.kubernetes\.io/master: ""
         default.backend.enabled: true
         envoy.serviceAccount.automountServiceAccountToken: true
         envoy.podAnnotations.linkerd\.io/inject: "ingress"
         prometheus.serviceMonitor.enabled: true
-      valuesFiles:
-        - "contour/values.yaml"
+      # valuesFiles:
+        # - "contour/values.yaml"
 
     nginx:
-      <<: *disabled
+      <<: *enabled
       description: "Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
@@ -201,7 +201,7 @@ apps:
         controller.metrics.serviceMonitor.enabled: true
         controller.metrics.serviceMonitor.additionalLabels.release: "prometheus" 
         controller.podAnnotations.linkerd\.io/inject: "ingress"
-        controller.nodeSelector.node-role\.kubernetes\.io/master: ""
+        # controller.nodeSelector.node-role\.kubernetes\.io/master: ""
         # defaultBackend.nodeSelector.node-role\.kubernetes\.io/master: ""
 
     traefik:
@@ -242,7 +242,7 @@ apps:
   # Loft (priority: -80)
     
     loft:
-      <<: *disabled
+      <<: *enabled
       description: "Namespace & Virtual Cluster Manager for Kubernetes"
       group: "management"
       namespace: "miscellaneous"

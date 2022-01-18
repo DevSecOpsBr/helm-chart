@@ -117,7 +117,7 @@ apps:
   # Monitoring Block (priority: -140)
 
     metrics-server:
-      <<: *enabled
+      <<: *disabled
       description: "Manager SSL certficates creation, renew and update."
       group: "monitoring"
       namespace: "monitoring"
