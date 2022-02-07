@@ -62,6 +62,8 @@ helmRepos:
   metallb: https://metallb.github.io/metallb
   # Linkerd service mesh
   linkerd: https://helm.linkerd.io/stable
+  # Helm-exporter
+  sstarcher: https://shanestarcher.com/helm-charts/
 
 # define your environments and their k8s namespaces
 namespaces:

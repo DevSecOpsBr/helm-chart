@@ -1,0 +1,13 @@
+apiVersion: v2
+appVersion: 1.2.2
+description: Exporter for helm metrics
+home: https://github.com/sstarcher/helm-exporter
+maintainers:
+- email: shane.starcher@gmail.com
+  name: sstarcher
+  url: https://shanestarcher.com
+name: helm-exporter
+sources:
+- https://github.com/sstarcher/helm-exporter
+type: application
+version: 1.2.2+6766a95
