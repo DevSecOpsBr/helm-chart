@@ -108,11 +108,11 @@ apps:
       set:
         alertmanager.ingress.enabled: true
         alertmanager.ingress.ingressClassName: $INGRESS_CLASS
-        alertmanager.ingress.hosts: "{alertmanager.$CONTOUR_GLAEDR}"
+        alertmanager.ingress.hosts: "{alertmanager.$INGRESS_CLASS.$GLAEDR}"
         grafana.enabled: false
         prometheus.ingress.enabled: true
         prometheus.ingress.ingressClassName: $INGRESS_CLASS
-        prometheus.ingress.hosts: "{prometheus.$CONTOUR_GLAEDR}"
+        prometheus.ingress.hosts: "{prometheus.$INGRESS_CLASS.$GLAEDR}"
         kubeControllerManager.enabled: false
         kubeScheduler.enabled: false
         kubeEtcd.enabled: false
@@ -128,7 +128,7 @@ apps:
       priority: -138
       set:
         grafana.ingress.enabled: true
-        grafana.ingress.hostname: grafana.$NGINX_GLAEDR
+        grafana.ingress.hostname: grafana.$INGRESS_CLASS.$GLAEDR
         grafana.ingress.annotations.kubernetes\.io/ingress\.class: "nginx"
         operator.args.scanAllNamespaces: true
         dashboardLabelSelector.matchExpressions[1]: "\\{ key: group, operator: In, values: [ grafana ] \\}"
@@ -149,7 +149,7 @@ apps:
         - "loki-stack/values.yaml"
       set:
         ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
-        ingress.hosts\.host[0]: "loki.$CONTOUR_GLAEDR"
+        ingress.hosts\.host[0]: "loki.$INGRESS_CLASS.$GLAEDR"
 
   # Security block (priority: -120)
 
@@ -251,7 +251,7 @@ apps:
       priority: -80
       set:
         serviceMonitor.enabled: true
-        ingress.host: loft.$NGINX_GLAEDR
+        ingress.host: loft.$INGRESS_CLASS.$GLAEDR
         ingress.tls.enabled: false
     
     loft-spaces-vclusters:
