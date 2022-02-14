@@ -64,6 +64,8 @@ helmRepos:
   linkerd: https://helm.linkerd.io/stable
   # Helm-exporter
   sstarcher: https://shanestarcher.com/helm-charts/
+  # Netdata monitoring cloud
+  netdata: https://netdata.github.io/helmchart/
 
 # define your environments and their k8s namespaces
 namespaces:

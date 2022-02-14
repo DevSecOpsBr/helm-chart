@@ -4,7 +4,7 @@ metadata:
 settings:
   kubeContext: "rancher-desktop"
   storageBackend: "secret"
-  slackWebhook:  "https://hooks.slack.com/services/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"
+  slackWebhook: $SLACK_HOOK
   globalMaxHistory: 500
   reverseDelete: true
 
@@ -134,6 +134,29 @@ apps:
         dashboardLabelSelector.matchExpressions[1]: "\\{ key: group, operator: In, values: [ grafana ] \\}"
       valuesFiles:
         - "grafana-operator/values.yaml"
+
+    netdata:
+      <<: *enabled
+      description: "Netdata is a monitoring, visualization, and troubleshooting solution for systems, containers, services, and applications."
+      group: "monitoring"
+      namespace: "monitoring"
+      chart: "netdata"
+      version: "3.7.10"
+      priority: -137
+      set:
+        ingress.enabled: true
+        ingress.spec.ingressClassName: $INGRESS_CLASS
+        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+        ingress.annotations.kubernetes\.io/tls-acme: "\"false\""
+        ingress.hosts[0]: netdata.$INGRESS_CLASS.$GLAEDR
+        notifications.slackurl: SLACK_WEBHOOK_URL=$SLACK_HOOK
+        notifications.slackrecipiet: "monitoring"
+        parent.claiming.enabled: true
+        parent.claiming.token: $NETDATA_TOKEN
+        parent.claiming.rooms: $NETDATA_ROOMS
+        parent.claiming.url: https://app.netdata.cloud
+        child.claiming.enabled: true
+        child.claiming.rooms: $NETDATA_ROOMS
 
   # Logging Block (priority: -130)
 
