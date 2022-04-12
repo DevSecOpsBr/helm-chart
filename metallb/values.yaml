@@ -51,10 +51,10 @@ existingConfigMap: ""
 ##
 # configInline: {}
 configInline:
-  - name: kind-ingress
+  - name: lan-ingress-controller
     protocol: layer2
     addresses:
-    - 192.168.2.196-192.168.2.210
+    - 192.168.2.0/24
 
 ## RBAC creation for controller and speaker
 ##

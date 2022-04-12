@@ -66,6 +66,8 @@ helmRepos:
   sstarcher: https://shanestarcher.com/helm-charts/
   # Netdata monitoring cloud
   netdata: https://netdata.github.io/helmchart/
+  #  Keyverno policy engine designed for Kubernetes
+  kyverno: https://kyverno.github.io/kyverno/
 
 # define your environments and their k8s namespaces
 namespaces:
@@ -121,6 +123,7 @@ apps:
   # Monitoring Block (priority: -140)
 
     metrics-server:
+      # Enable if running via lima and/or minikube
       <<: *disabled
       description: "Manager SSL certficates creation, renew and update."
       group: "monitoring"
@@ -138,7 +141,7 @@ apps:
       namespace: "monitoring"
       chart: "grafana-operator-configs"
       version: "1.0.0"
-      priority: -137
+      priority: -136
 
   # Security block (priority: -120)
 
@@ -148,10 +151,12 @@ apps:
       group: "security"
       namespace: "security" 
       chart: "kyverno" 
-      version: "1.2.1"
-      priority: -120 
-      valuesFiles: 
-        - "kyverno/values.yaml"
+      version: "v2.1.10"
+      priority: -120
+      set:
+        serviceMonitor.enabled: true
+        serviceMonitor.additionalLabels.release: "prometheus"
+        createSelfSignedCert: true
 
     cert-manager:
       <<: *enabled

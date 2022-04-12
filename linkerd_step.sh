@@ -5,7 +5,7 @@
 
 set -a
 
-STEP="step"
+STEP="$(which step)"
 CERTS="certs"
 CHART="linkerd"
 CLUSTER="cluster.local"

@@ -136,7 +136,7 @@ apps:
         - "grafana-operator/values.yaml"
 
     netdata:
-      <<: *enabled
+      <<: *disabled
       description: "Netdata is a monitoring, visualization, and troubleshooting solution for systems, containers, services, and applications."
       group: "monitoring"
       namespace: "monitoring"
@@ -204,6 +204,7 @@ apps:
         replicaCount: 1
         configInline.incluster: true
         # envoy.nodeSelector.node-role\.kubernetes\.io/master: ""
+        # envoy.service.externalIPs: "{${GLAEDR_IPADDR_1}}"
         default.backend.enabled: true
         envoy.serviceAccount.automountServiceAccountToken: true
         envoy.podAnnotations.linkerd\.io/inject: "ingress"
@@ -226,6 +227,8 @@ apps:
         controller.podAnnotations.linkerd\.io/inject: "ingress"
         # controller.nodeSelector.node-role\.kubernetes\.io/master: ""
         # defaultBackend.nodeSelector.node-role\.kubernetes\.io/master: ""
+        # controller.service.externalIPs: "{${GLAEDR_IPADDR_2}}"
+        # defaultBackend.service.externalIPs: "{${GLAEDR_IPADDR_2}}"
 
     traefik:
       <<: *disabled
@@ -244,6 +247,7 @@ apps:
         additionalArguments[4]: "--api.dashboard=true"
         deployment.podLabels.release: "prometheus"
         # nodeSelector.node-role\.kubernetes\.io/master: ""
+        # service.externalIPs: "{${GLAEDR_IPADDR_3}}"
 
   # Observability & Tracing Block (priority: -90)
 
@@ -359,7 +363,7 @@ apps:
       namespace: "linkerd-viz"
       chart: "linkerd-viz"
       version: "2.10.2"
-      priority: -48
+      priority: -47
 
   # Helm Export (priority: -40)
 

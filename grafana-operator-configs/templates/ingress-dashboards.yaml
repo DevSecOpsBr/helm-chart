@@ -91,18 +91,3 @@ items:
       id: 9614
       revision: 1
     json: ""
-- apiVersion: integreatly.org/v1alpha1
-  kind: GrafanaDashboard
-  metadata:
-    name: helm-exporter
-    labels:
-      app: grafana
-  spec:
-    datasources:
-      - inputName: "DS_PROMETHEUS"
-        datasourceName: "Prometheus"
-    customFolderName: "General"
-    grafanaCom:
-      id: 9367
-      revision: 1
-    json: ""

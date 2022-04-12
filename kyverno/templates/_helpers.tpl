@@ -30,10 +30,27 @@ If release name contains chart name it will be used as a full name.
 
 {{/* Helm required labels */}}
 {{- define "kyverno.labels" -}}
-app.kubernetes.io/name: {{ template "kyverno.name" . }}
-helm.sh/chart: {{ template "kyverno.chart" . }}
+app.kubernetes.io/component: kyverno
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/name: {{ template "kyverno.name" . }}
+app.kubernetes.io/part-of: {{ template "kyverno.name" . }}
+app.kubernetes.io/version: "{{ .Chart.Version }}"
+helm.sh/chart: {{ template "kyverno.chart" . }}
+{{- if .Values.customLabels }}
+{{ toYaml .Values.customLabels }}
+{{- end }}
+{{- end -}}
+
+{{/* Helm required labels */}}
+{{- define "kyverno.test-labels" -}}
+app.kubernetes.io/component: kyverno
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/name: {{ template "kyverno.name" . }}-test
+app.kubernetes.io/part-of: {{ template "kyverno.name" . }}
+app.kubernetes.io/version: "{{ .Chart.Version }}"
+helm.sh/chart: {{ template "kyverno.chart" . }}
 {{- end -}}
 
 {{/* matchLabels */}}
@@ -45,6 +62,20 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{/* Get the config map name. */}}
 {{- define "kyverno.configMapName" -}}
 {{- printf "%s" (default (include "kyverno.fullname" .) .Values.config.existingConfig) -}}
+{{- end -}}
+
+{{/* Get the metrics config map name. */}}
+{{- define "kyverno.metricsConfigMapName" -}}
+{{- printf "%s" (default (printf "%s-metrics" (include "kyverno.fullname" .)) .Values.config.existingMetricsConfig) -}}
+{{- end -}}
+
+{{/* Get the namespace name. */}}
+{{- define "kyverno.namespace" -}}
+{{- if .Values.namespace -}}
+    {{- .Values.namespace -}}
+{{- else -}}
+    {{- .Release.Namespace -}}
+{{- end -}}
 {{- end -}}
 
 {{/* Create the name of the service to use */}}
@@ -60,3 +91,16 @@ app.kubernetes.io/instance: {{ .Release.Name }}
     {{ default "default" .Values.rbac.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{/* Create the default PodDisruptionBudget to use */}}
+{{- define "podDisruptionBudget.spec" -}}
+{{- if and .Values.podDisruptionBudget.minAvailable .Values.podDisruptionBudget.maxUnavailable }}
+{{- fail "Cannot set both .Values.podDisruptionBudget.minAvailable and .Values.podDisruptionBudget.maxUnavailable" -}}
+{{- end }}
+{{- if not .Values.podDisruptionBudget.maxUnavailable }}
+minAvailable: {{ default 0 .Values.podDisruptionBudget.minAvailable }}
+{{- end }}
+{{- if .Values.podDisruptionBudget.maxUnavailable }}
+maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+{{- end }}
+{{- end }}
