@@ -1,9 +1,11 @@
 # Prometheus Data Source
 prometheus:
   url: http://prometheus-kube-prometheus-prometheus:9090
-  isDefault: false
+  isDefault: true
   timeInterval: "15s"
 
 # Loki Data Source
 loki:
+  enabled: false
   url: http://loki:3100
+

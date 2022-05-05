@@ -26,7 +26,7 @@ helm upgrade -i flagger-loadtester flagger/loadtester
 The command deploys loadtester on the Kubernetes cluster in the default namespace.
 
 > **Tip**: Note that the namespace where you deploy the load tester should
-> have the Istio, App Mesh or Linkerd sidecar injection enabled
+> have the Istio, App Mesh, Linkerd or Open Service Mesh sidecar injection enabled
 
 The [configuration](#configuration) section lists the parameters that can be configured during installation.
 
@@ -59,6 +59,7 @@ Parameter | Description | Default
 `service.type` | Type of service | `ClusterIP`
 `service.port` | ClusterIP port | `80`
 `cmd.timeout` | Command execution timeout | `1h`
+`cmd.namespaceRegexp` | Restrict access to canaries in matching namespaces | ""
 `logLevel` | Log level can be debug, info, warning, error or panic | `info`
 `appmesh.enabled` | Create AWS App Mesh v1beta2 virtual node | `false`
 `appmesh.backends` | AWS App Mesh virtual services | `none`

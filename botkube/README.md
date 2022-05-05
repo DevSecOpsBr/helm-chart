@@ -1,6 +1,6 @@
 # BotKube
 
-![Version: v0.11.0](https://img.shields.io/badge/Version-v0.11.0-informational?style=flat-square) ![AppVersion: v0.11.0](https://img.shields.io/badge/AppVersion-v0.11.0-informational?style=flat-square)
+![Version: v0.12.4](https://img.shields.io/badge/Version-v0.12.4-informational?style=flat-square) ![AppVersion: v0.12.4](https://img.shields.io/badge/AppVersion-v0.12.4-informational?style=flat-square)
 
 Controller for the BotKube Slack app which helps you monitor your Kubernetes cluster, debug deployments and run specific checks on resources in the cluster.
 
@@ -17,11 +17,28 @@ Controller for the BotKube Slack app which helps you monitor your Kubernetes clu
 
 * <https://github.com/infracloudio/botkube>
 
+### Now Supports AWS IRSA on EKS
+
+AWS has introduced IAM Role for Service Accounts in order to provide fine grained access. This is useful if you are looking to run BotKube inside an EKS cluster. For more details visit https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html.
+
+Annotate the BotKube Service Account as shown in the example below and add the necessary Trust Relationship to the corresponding BotKube role to get this working
+
+```
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: "<role_arn_to_assume>"
+```
+
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
+| communications.discord.botid | string | `"DISCORD_BOT_ID"` |  |
+| communications.discord.channel | string | `"DISCORD_CHANNEL_ID"` |  |
+| communications.discord.enabled | bool | `false` |  |
+| communications.discord.notiftype | string | `"short"` |  |
+| communications.discord.token | string | `"DISCORD_TOKEN"` |  |
 | communications.elasticsearch.awsSigning.awsRegion | string | `"us-east-1"` |  |
 | communications.elasticsearch.awsSigning.enabled | bool | `false` |  |
 | communications.elasticsearch.awsSigning.roleArn | string | `""` |  |
@@ -32,7 +49,10 @@ Controller for the BotKube Slack app which helps you monitor your Kubernetes clu
 | communications.elasticsearch.index.type | string | `"botkube-event"` |  |
 | communications.elasticsearch.password | string | `"ELASTICSEARCH_PASSWORD"` |  |
 | communications.elasticsearch.server | string | `"ELASTICSEARCH_ADDRESS"` |  |
+| communications.elasticsearch.skipTLSVerify | bool | `false` |  |
 | communications.elasticsearch.username | string | `"ELASTICSEARCH_USERNAME"` |  |
+| communications.existingSecretName | string | `""` |  |
+| communications.mattermost.botName | string | `"BotKube"` |  |
 | communications.mattermost.channel | string | `"MATTERMOST_CHANNEL"` |  |
 | communications.mattermost.enabled | bool | `false` |  |
 | communications.mattermost.notiftype | string | `"short"` |  |
@@ -50,7 +70,7 @@ Controller for the BotKube Slack app which helps you monitor your Kubernetes clu
 | communications.teams.port | int | `3978` |  |
 | communications.webhook.enabled | bool | `false` |  |
 | communications.webhook.url | string | `"WEBHOOK_URL"` |  |
-| config.recommendations | bool | `true` |  |
+| config.recommendations | bool | `true` |  about the best practices for the created resource |
 | config.resources | list | [] | |
 | config.settings.clustername | string | `"not-configured"` |  |
 | config.settings.configwatcher | bool | `true` |  |
@@ -61,12 +81,16 @@ Controller for the BotKube Slack app which helps you monitor your Kubernetes clu
 | config.settings.kubectl.restrictAccess | bool | `false` |  |
 | config.settings.upgradeNotifier | bool | `true` |  |
 | config.ssl.enabled | bool | `false` |  |
+| containerSecurityContext.allowPrivilegeEscalation | bool | `false` |  |
+| containerSecurityContext.privileged | bool | `false` |  |
+| containerSecurityContext.readOnlyRootFilesystem | bool | `true` |  |
 | extraAnnotations | object | `{}` |  |
 | extraEnv | string | `nil` |  |
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
+| image.registry | string | `"ghcr.io"` |  |
 | image.repository | string | `"infracloudio/botkube"` |  |
-| image.tag | string | `"latest"` |  |
+| image.tag | string | `"v0.12.4"` |  |
 | ingress.annotations."kubernetes.io/ingress.class" | string | `"nginx"` |  |
 | ingress.create | bool | `false` |  |
 | ingress.host | string | `"HOST"` |  |
@@ -82,12 +106,11 @@ Controller for the BotKube Slack app which helps you monitor your Kubernetes clu
 | rbac.rules | list | [] |  |
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
-| securityContext.runAsGroup | int | `101` |  |
-| securityContext.runAsUser | int | `101` |  |
+| securityContext | object | `{"runAsGroup":101,"runAsUser":101}` |  set to run as a Non-Privileged user by default |
 | service.name | string | `"metrics"` |  |
 | service.port | int | `2112` |  |
 | service.targetPort | int | `2112` |  |
-| serviceAccount.annotations | object | `{}` |  |
+| serviceAccount.annotations | object | `{}` |  If not set and create is true, a name is generated using the fullname template annotations for the service account |
 | serviceAccount.create | bool | `true` |  |
 | serviceMonitor.enabled | bool | `false` |  |
 | serviceMonitor.interval | string | `"10s"` |  |

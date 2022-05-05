@@ -9,6 +9,8 @@ settings:
   reverseDelete: true
 
 namespaces:
+  clustering:
+    protected: false
   linkerd:
     protected: false
     annotations:
@@ -101,39 +103,57 @@ apps:
       group: "monitoring"
       namespace: "monitoring"
       chart: "kube-prometheus-stack"
-      version: "19.2.2"
-      valuesFiles: 
-        - "kube-prometheus-stack/values-custom.yaml"
+      version: "34.10.0"
       priority: -139
       set:
         alertmanager.ingress.enabled: true
-        alertmanager.ingress.ingressClassName: $INGRESS_CLASS
-        alertmanager.ingress.hosts: "{alertmanager.$INGRESS_CLASS.$GLAEDR}"
+        alertmanager.ingress.ingressClassName: $GLAEDR_INGRESS
+        alertmanager.ingress.hosts: "{alertmanager.$GLAEDR_INGRESS.$GLAEDR_CLUSTER}"
         grafana.enabled: false
+        grafana.ingress.enabled: true
+        grafana.ingress.hosts: "{grafana.$GLAEDR_INGRESS.$GLAEDR_CLUSTER}"
         prometheus.ingress.enabled: true
-        prometheus.ingress.ingressClassName: $INGRESS_CLASS
-        prometheus.ingress.hosts: "{prometheus.$INGRESS_CLASS.$GLAEDR}"
+        prometheus.ingress.ingressClassName: $GLAEDR_INGRESS
+        prometheus.ingress.hosts: "{prometheus.$GLAEDR_INGRESS.$GLAEDR_CLUSTER}"
         kubeControllerManager.enabled: false
         kubeScheduler.enabled: false
-        kubeEtcd.enabled: false
+        kubeEtcd.enabled: true
         kubeDns.enabled: false
+      valuesFiles: 
+        - "kube-prometheus-stack/values-custom.yaml"
+
+    grafana:
+      <<: *disabled
+      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
+      group: "monitoring"
+      namespace: "monitoring"
+      chart: "grafana"
+      version: "6.26.5"
+      priority: -137
+      set:
+        ingress.enabled: true
+        ingress.annotations.kubernetes\.io/ingress\.class: "nginx"
+        ingress.hosts[0]: grafana.$GLAEDR_INGRESS.$GLAEDR_CLUSTER
+      valuesFiles:
 
     grafana-operator:
-      <<: *enabled
+      <<: *disabled
       description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
       group: "monitoring"
       namespace: "monitoring"
       chart: "grafana-operator"
-      version: "1.1.4"
-      priority: -138
-      set:
-        grafana.ingress.enabled: true
-        grafana.ingress.hostname: grafana.$INGRESS_CLASS.$GLAEDR
-        grafana.ingress.annotations.kubernetes\.io/ingress\.class: "nginx"
-        operator.args.scanAllNamespaces: true
-        dashboardLabelSelector.matchExpressions[1]: "\\{ key: group, operator: In, values: [ grafana ] \\}"
+      version: "4.2.0"
+      priority: -136
       valuesFiles:
-        - "grafana-operator/values.yaml"
+
+    grafana-operator-configs:
+      <<: *disabled
+      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
+      group: "monitoring"
+      namespace: "monitoring"
+      chart: "grafana-operator-configs"
+      version: "1.0.0"
+      priority: -135
 
     netdata:
       <<: *disabled
@@ -142,13 +162,13 @@ apps:
       namespace: "monitoring"
       chart: "netdata"
       version: "3.7.10"
-      priority: -137
+      priority: -134
       set:
         ingress.enabled: true
-        ingress.spec.ingressClassName: $INGRESS_CLASS
-        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+        ingress.spec.ingressClassName: $GLAEDR_INGRESS
+        ingress.annotations.kubernetes\.io/ingress\.class: $GLAEDR_INGRESS
         ingress.annotations.kubernetes\.io/tls-acme: "\"false\""
-        ingress.hosts[0]: netdata.$INGRESS_CLASS.$GLAEDR
+        ingress.hosts[0]: netdata.$GLAEDR_INGRESS.$GLAEDR_CLUSTER
         notifications.slackurl: SLACK_WEBHOOK_URL=$SLACK_HOOK
         notifications.slackrecipiet: "monitoring"
         parent.claiming.enabled: true
@@ -161,7 +181,7 @@ apps:
   # Logging Block (priority: -130)
 
     loki:
-      <<: *enabled
+      <<: *disabled
       description: "Loki: like Prometheus, but for logs."
       group: "logging"
       namespace: "monitoring"
@@ -171,8 +191,8 @@ apps:
       valuesFiles: 
         - "loki-stack/values.yaml"
       set:
-        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
-        ingress.hosts\.host[0]: "loki.$INGRESS_CLASS.$GLAEDR"
+        ingress.annotations.kubernetes\.io/ingress\.class: $GLAEDR_INGRESS
+        ingress.hosts\.host[0]: "loki.$GLAEDR_INGRESS.$GLAEDR_CLUSTER"
 
   # Security block (priority: -120)
 
@@ -184,11 +204,13 @@ apps:
       group: "ingress"
       namespace: "ingress"
       chart: "metallb"
-      version: "2.5.11"
+      version: "0.12.1"
       priority: -110  # Increased due to minikube ip conflicts
       set:
-        prometheusRule.enabled: true
         # controller.nodeSelector.node-role\.kubernetes\.io/master: ""
+        # speaker.nodeSelector.node-role\.kubernetes\.io/master: ""
+        prometheusRule.enabled: true
+        prometheusRUles.additionalLabels.release: "prometheus"
       valuesFiles:
         - "metallb/values.yaml"
 
@@ -198,22 +220,22 @@ apps:
       group: "ingress"
       namespace: "ingress"
       chart: "contour"
-      version: "5.5.3"
+      version: "7.8.0"
       priority: -109  # Increased due to minikube ip conflicts
       set:
         replicaCount: 1
         configInline.incluster: true
+        default.backend.enabled: false
+        envoy.serviceAccount.automountServiceAccountToken: true
+        # envoy.podAnnotations.linkerd\.io/inject: "ingress"
+        prometheus.serviceMonitor.enabled: true
         # envoy.nodeSelector.node-role\.kubernetes\.io/master: ""
         # envoy.service.externalIPs: "{${GLAEDR_IPADDR_1}}"
-        default.backend.enabled: true
-        envoy.serviceAccount.automountServiceAccountToken: true
-        envoy.podAnnotations.linkerd\.io/inject: "ingress"
-        prometheus.serviceMonitor.enabled: true
       # valuesFiles:
         # - "contour/values.yaml"
 
     nginx:
-      <<: *enabled
+      <<: *disabled
       description: "Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
@@ -224,19 +246,21 @@ apps:
         controller.metrics.enabled: true
         controller.metrics.serviceMonitor.enabled: true
         controller.metrics.serviceMonitor.additionalLabels.release: "prometheus" 
-        controller.podAnnotations.linkerd\.io/inject: "ingress"
+        defaultBackend.enabled: false
+        ### Uncomment the line below for mesh support ###
+        # controller.podAnnotations.linkerd\.io/inject: "ingress"
         # controller.nodeSelector.node-role\.kubernetes\.io/master: ""
         # defaultBackend.nodeSelector.node-role\.kubernetes\.io/master: ""
         # controller.service.externalIPs: "{${GLAEDR_IPADDR_2}}"
         # defaultBackend.service.externalIPs: "{${GLAEDR_IPADDR_2}}"
 
     traefik:
-      <<: *disabled
+      <<: *enabled
       description: "Edge Router that makes publishing your services a fun and easy experience"
       group: "ingress"
       namespace: "ingress"
       chart: "traefik"
-      version: "9.18.2"
+      version: "10.19.4"
       priority: -107
       set:
         ports.traefik.expose: true
@@ -246,49 +270,56 @@ apps:
         additionalArguments[3]: "--accesslog=true"
         additionalArguments[4]: "--api.dashboard=true"
         deployment.podLabels.release: "prometheus"
+        ingressClass.enabled: true
         # nodeSelector.node-role\.kubernetes\.io/master: ""
         # service.externalIPs: "{${GLAEDR_IPADDR_3}}"
 
   # Observability & Tracing Block (priority: -90)
-
-    botkube:
-      <<: *enabled
-      description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
-      group: "observers"
-      namespace: "observability"
-      chart: "botkube"
-      version: "v0.12.0"
-      priority: -90
-      set:
-        config.settings.clustername: $GLAEDR
-        config.settings.kubectl.restrictAccess: true
-        serviceMonitor.enabled: true
-        communications.slack.channel: "reports" 
-        communications.slack.token: "$BOTKUBE"
 
   # Loft (priority: -80)
     
     loft:
       <<: *enabled
       description: "Namespace & Virtual Cluster Manager for Kubernetes"
-      group: "management"
-      namespace: "miscellaneous"
+      group: "clustering"
+      namespace: "clustering"
       chart: "loft"
-      version: "1.15.0"
+      version: "2.1.8"
       priority: -80
       set:
         serviceMonitor.enabled: true
-        ingress.host: loft.$INGRESS_CLASS.$GLAEDR
+        ingress.enabled: true
+        ingress.host: loft.$GLAEDR_INGRESS.$GLAEDR_CLUSTER
+        ingress.ingressClass: $GLAEDR_INGRESS
         ingress.tls.enabled: false
+        apiService.enabled: true
+        labels.release: "prometheus"
+
+    loft-agent:
+      <<: *disabled
+      description: "Namespace & Virtual Cluster Manager for Kubernetes"
+      group: "clustering"
+      namespace: "clustering"
+      chart: "loft-agent"
+      version: "2.1.8"
+      priority: -79
+      set:
+        serviceMonitor.enabled: true
+        ingress.enabled: true
+        ingress.host: loft-agent.$GLAEDR_INGRESS.$GLAEDR_CLUSTER
+        ingress.ingressClass: $GLAEDR_INGRESS
+        ingress.tls.enabled: false
+        apiService.enabled: true
+        labels.release: "prometheus"
     
     loft-spaces-vclusters:
       <<: *disabled
       description: "Config, create, managed Spaces/vCluster/Isolations and so on."
-      group: "management"
-      namespace: "miscellaneous"
+      group: "clustering"
+      namespace: "clustering"
       chart: "loft-config"
       version: "1.0.0"
-      priority: -79
+      priority: -78
       set:
         spaces.enabled: true
         spaces.names[0]: "saphira"
@@ -304,7 +335,7 @@ apps:
       group: "releases"
       namespace: "miscellaneous" 
       chart: "flagger" 
-      version: "1.12.1"
+      version: "1.20.0"
       priority: -60
       set:
         logLevel: "debug"
@@ -322,7 +353,7 @@ apps:
       group: "releases"
       namespace: "miscellaneous" 
       chart: "flagger-loadtester" 
-      version: "0.18.0"
+      version: "0.22.0"
       priority: -59
       set:
         logLevel: "debug"
@@ -330,7 +361,7 @@ apps:
   # Service Mesh Block (priority: -50) On minkube the limits from coreDNS must be removed in order to works!
 
     linkerd-certificates:
-      <<: *enabled
+      <<: *disabled
       description: "Webhook certificates managed by cert-manager"
       group: "mesh"
       namespace: "linkerd"
@@ -339,7 +370,7 @@ apps:
       priority: -50
 
     linkerd:
-      <<: *mesh1
+      <<: *disabled
       description: "Linkerd service mesh for K8S"
       group: "mesh"
       namespace: "linkerd"
@@ -357,7 +388,7 @@ apps:
       priority: -48
 
     linkerd-viz:
-      <<: *mesh2
+      <<: *disabled
       description: "Linkerd Viz"
       group: "mesh"
       namespace: "linkerd-viz"
@@ -368,7 +399,7 @@ apps:
   # Helm Export (priority: -40)
 
     helm-exporter:
-      <<: *enabled
+      <<: *disabled
       description: "Exports helm release, chart, and version statistics in the prometheus format."
       group: "miscellaneous"
       namespace: "miscellaneous"
@@ -378,7 +409,7 @@ apps:
       set:
         ingress.enabled: true
         ingress.annotations.kubernetes\.io/ingress\.class: "nginx"
-        ingress.hosts[0].host: "helm-exporter.$INGRESS_CLASS.$GLAEDR"
+        ingress.hosts[0].host: "helm-exporter.$GLAEDR_INGRESS.$GLAEDR_CLUSTER"
         ingress.hosts[0].paths[0]: "/"
         serviceMonitor.create: true
         serviceMonitor.additionalLabels.release: "prometheus"

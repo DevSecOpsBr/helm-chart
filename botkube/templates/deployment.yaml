@@ -9,6 +9,10 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     component: controller
     app: botkube
+  annotations:
+    {{- if .Values.deployment.annotations }}
+{{ toYaml .Values.deployment.annotations | indent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -30,10 +34,20 @@ spec:
       priorityClassName: "{{ .Values.priorityClassName }}"
       {{- end }}
       serviceAccountName: {{ include "botkube.serviceAccountName" . }}
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.image.pullSecrets }}
+        - name: {{ . }}
+      {{- end }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext:
+          {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{ end }}
           volumeMounts:
             - name: config-volume
               mountPath: "/config"
@@ -46,8 +60,6 @@ spec:
               value: "/config/"
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | quote }}
-            - name: BOTKUBE_VERSION
-              value: {{ .Chart.Version }}
             - name: METRICS_PORT
               value: {{ .Values.service.targetPort | quote }}
         {{- if .Values.extraEnv }}
@@ -67,7 +79,7 @@ spec:
             - configMap:
                 name: {{ include "botkube.fullname" . }}-configmap
             - secret:
-                name: {{ include "botkube.fullname" . }}-communication-secret
+                name: {{ include "botkube.CommunicationsSecretName" . }}
       {{- if .Values.config.ssl.enabled }} 
         - name: certs
           secret:

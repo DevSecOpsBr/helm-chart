@@ -91,6 +91,8 @@ namespaces:
     protected: false
     annotations:
       linkerd.io/inject: disabled
+    labels:
+      control-plane: controller-manager
   observability:
     protected: false
     annotations:
@@ -134,14 +136,21 @@ apps:
       valuesFiles:
         - "metrics-server/values.yaml"
 
-    grafana-operator-configs:
+    botkube:
       <<: *enabled
-      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
+      description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
       group: "monitoring"
-      namespace: "monitoring"
-      chart: "grafana-operator-configs"
-      version: "1.0.0"
-      priority: -136
+      namespace: "observability"
+      chart: "botkube"
+      version: "v0.12.4"
+      priority: -138
+      set:
+        config.settings.clustername: "$GLAEDR_CLUSTER"
+        config.settings.kubectl.restrictAccess: true
+        serviceMonitor.enabled: true
+        communications.slack.enabled: true
+        communications.slack.channel: "reports"
+        communications.slack.token: "$BOTKUBE"
 
   # Security block (priority: -120)
 
@@ -154,7 +163,7 @@ apps:
       version: "v2.1.10"
       priority: -120
       set:
-        serviceMonitor.enabled: true
+        serviceMonitor.enabled: false
         serviceMonitor.additionalLabels.release: "prometheus"
         createSelfSignedCert: true
 
@@ -164,10 +173,16 @@ apps:
       group: "security"
       namespace: "cert-manager"
       chart: "cert-manager"
-      version: "v1.4.2"
+      version: "v1.8.0"
       priority: -119
+      set:
+        installCRDs: true
+        prometheus.serviceMonitor.enabled: true
+        # image.repository: quay.io/jetstack/cert-manager-controller-arm64
+        # webhook.image.repository: quay.io/jetstack/cert-manager-webhook-arm64
+        # cainjector.image.repository: quay.io/jetstack/cert-manager-cainjector-arm64
+        # startupapicheck.image.repository: quay.io/jetstack/cert-manager-ctl-arm64
       valuesFiles: 
-        - "cert-manager/values.yaml"
 
   # Ingress Block (priority: -110)
 

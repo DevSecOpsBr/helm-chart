@@ -495,6 +495,40 @@ spec:
                       type: array
                       items:
                         type: string
+                    gatewayRefs:
+                      description: The list of parent Gateways for a HTTPRoute
+                      maxItems: 32
+                      type: array
+                      items:
+                        required:
+                        - name
+                        type: object
+                        properties:
+                          group:
+                            default: gateway.networking.k8s.io
+                            maxLength: 253
+                            pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                            type: string
+                          kind:
+                            default: Gateway
+                            maxLength: 63
+                            minLength: 1
+                            pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                            type: string
+                          name:
+                            maxLength: 253
+                            minLength: 1
+                            type: string
+                          namespace:
+                            maxLength: 63
+                            minLength: 1
+                            pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                            type: string
+                          sectionName:
+                            maxLength: 253
+                            minLength: 1
+                            pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                            type: string
                     corsPolicy:
                       description: Istio Cross-Origin Resource Sharing policy (CORS)
                       type: object
@@ -826,6 +860,12 @@ spec:
                     mirrorWeight:
                       description: Weight of traffic to be mirrored
                       type: number
+                    primaryReadyThreshold:
+                      description: Percentage of pods that need to be available to consider primary as ready
+                      type: number
+                    canaryReadyThreshold:
+                      description: Percentage of pods that need to be available to consider canary as ready
+                      type: number
                     match:
                       description: A/B testing match conditions
                       type: array
@@ -1009,6 +1049,9 @@ spec:
                 lastAppliedSpec:
                   description: LastAppliedSpec of this canary
                   type: string
+                lastPromotedSpec:
+                  description: LastPromotedSpec of this canary
+                  type: string
                 lastTransitionTime:
                   description: LastTransitionTime of this canary
                   format: date-time
@@ -1104,9 +1147,11 @@ spec:
                         - prometheus
                         - influxdb
                         - datadog
+                        - stackdriver
                         - cloudwatch
                         - newrelic
                         - graphite
+                        - dynatrace
                     address:
                       description: API address of this provider
                       type: string
@@ -1191,6 +1236,7 @@ spec:
                     - msteams
                     - discord
                     - rocket
+                    - gchat
                 channel:
                   description: Alert channel for this provider
                   type: string

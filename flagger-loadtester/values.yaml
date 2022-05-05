@@ -2,8 +2,11 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/fluxcd/flagger-loadtester
-  tag: 0.18.0
+  tag: 0.22.0
   pullPolicy: IfNotPresent
+  pullSecret:
+
+podLabels: {}
 
 podAnnotations:
   prometheus.io/scrape: "true"
@@ -14,6 +17,7 @@ podPriorityClassName: ""
 logLevel: info
 cmd:
   timeout: 1h
+  namespaceRegexp: ""
 
 nameOverride: ""
 fullnameOverride: ""
@@ -28,6 +32,9 @@ resources:
   requests:
     cpu: 10m
     memory: 64Mi
+
+volumes: []
+volumeMounts: []
 
 nodeSelector: {}
 
@@ -76,12 +83,12 @@ istio:
 
 # when enabled, it will add a security context for the loadtester pod
 securityContext:
-  enabled: true
+  enabled: false
   context:
     readOnlyRootFilesystem: true
     runAsUser: 100
     runAsGroup: 101
 
 podDisruptionBudget:
-  enabled: true
+  enabled: false
   minAvailable: 1
