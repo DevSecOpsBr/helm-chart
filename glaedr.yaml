@@ -312,8 +312,8 @@ apps:
         apiService.enabled: true
         labels.release: "prometheus"
     
-    loft-spaces-vclusters:
-      <<: *disabled
+    loft-configs:
+      <<: *enabled
       description: "Config, create, managed Spaces/vCluster/Isolations and so on."
       group: "clustering"
       namespace: "clustering"

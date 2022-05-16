@@ -1,6 +1,7 @@
 spaces:
   enabled: true
   names: []
+  annotations: {}
 
 vclusters:
   enabled: true

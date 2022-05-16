@@ -3,7 +3,7 @@ apiVersion: v1
 kind: List
 items:
 {{- range $.Values.spaces.names }}
-- apiVersion: tenancy.kiosk.sh/v1alpha1
+- apiVersion: cluster.loft.sh/v1
   kind: Space
   metadata:
     name: {{ . | quote }}
