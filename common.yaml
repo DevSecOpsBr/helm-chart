@@ -68,6 +68,8 @@ helmRepos:
   netdata: https://netdata.github.io/helmchart/
   #  Keyverno policy engine designed for Kubernetes
   kyverno: https://kyverno.github.io/kyverno/
+  # Loft - Secure Cluster Sharing, Self-Service Namespace Provisioning and Virtual Clusters
+  loft: https://charts.loft.sh
 
 # define your environments and their k8s namespaces
 namespaces:
@@ -80,6 +82,10 @@ namespaces:
     annotations:
       linkerd.io/inject: disabled
   ingress:
+    protected: false
+    annotations:
+      linkerd.io/inject: disabled
+  loft:
     protected: false
     annotations:
       linkerd.io/inject: disabled
@@ -135,22 +141,6 @@ apps:
       priority: -140
       valuesFiles:
         - "metrics-server/values.yaml"
-
-    botkube:
-      <<: *enabled
-      description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
-      group: "monitoring"
-      namespace: "observability"
-      chart: "botkube"
-      version: "v0.12.4"
-      priority: -138
-      set:
-        config.settings.clustername: "$GLAEDR_CLUSTER"
-        config.settings.kubectl.restrictAccess: true
-        serviceMonitor.enabled: true
-        communications.slack.enabled: true
-        communications.slack.channel: "reports"
-        communications.slack.token: "$BOTKUBE"
 
   # Security block (priority: -120)
 

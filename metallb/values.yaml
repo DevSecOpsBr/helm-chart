@@ -24,11 +24,10 @@ existingConfigMap: ""
 # configInline: {}
 configInline:
   address-pools:
-  - name: lima_vm
+  - name: default
     protocol: layer2
     addresses:
-    - 192.168.2.211-192.168.2.230
-
+    - 192.168.2.200-192.168.2.230
 
 rbac:
   # create specifies whether to install and use RBAC rules.

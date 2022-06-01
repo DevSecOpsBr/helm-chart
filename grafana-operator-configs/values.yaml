@@ -6,6 +6,5 @@ prometheus:
 
 # Loki Data Source
 loki:
-  enabled: false
+  enabled: true
   url: http://loki:3100
-
