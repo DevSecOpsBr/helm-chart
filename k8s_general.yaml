@@ -199,18 +199,17 @@ apps:
   # Logging Block (priority: -130)
 
     loki:
-      <<: *disabled
+      <<: *enabled
       description: "Loki: like Prometheus, but for logs."
       group: "logging"
       namespace: "monitoring"
       chart: "loki-stack"
-      version: "2.3.1"
+      version: "2.6.5"
       priority: -129
-      valuesFiles: 
-        - "loki-stack/values.yaml"
       set:
         ingress.annotations.kubernetes\.io/ingress\.class: $K8S_INGRESS
         ingress.hosts\.host[0]: "loki.$K8SCLUSTER.$K8S_CLUSTER"
+      valuesFiles: 
 
   # Security block (priority: -120)
 
@@ -412,7 +411,7 @@ apps:
   # Third-party tools (priority: -40)
 
     loft-configs:
-      <<: *disabled
+      <<: *enabled
       description: "Config, create, managed Spaces/vCluster/Isolations and so on."
       group: "miscellaneous"
       namespace: "loft"
@@ -421,9 +420,8 @@ apps:
       priority: -40
       set:
         spaces.enabled: true
-        spaces.names[0]: "saphira"
-        spaces.names[1]: "firnen"
-        spaces.names[2]: "ophelia"
+        spaces.names[0]: "firnen"
+        spaces.names[1]: "ophelia"
         vclusters.enabled: false
 
     helm-exporter:
