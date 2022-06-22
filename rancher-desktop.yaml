@@ -2,7 +2,7 @@ metadata:
   scope: "glaedr"
 
 settings:
-  kubeContext: "rancher-desktop"
+  kubeContext: $K8SCLUSTER
   storageBackend: "secret"
   slackWebhook: $SLACK_HOOK
   globalMaxHistory: 500
@@ -25,7 +25,7 @@ namespaces:
       linkerd.io/extension: viz
     annotations:
       linkerd.io/inject: enabled
-      viz.linkerd.io/external-prometheus: $RANCHER_PROMETHEUS
+      viz.linkerd.io/external-prometheus: $K8S_PROMETHEUS
 
 appsTemplates:
 
@@ -33,7 +33,7 @@ appsTemplates:
     enabled: true
     test: false
     wait: true
-    timeout: 300
+    timeout: 120
     helmFlags:
       - "--atomic"
 
@@ -44,7 +44,7 @@ appsTemplates:
     enabled: true
     test: false
     wait: true
-    timeout: 300
+    timeout: 120
     hooks:
       preInstall: "bash -x linkerd_step.sh main"
       preUpgrade: "bash -x linkerd_step.sh main"
@@ -67,7 +67,7 @@ appsTemplates:
     enabled: true
     test: false
     wait: false
-    timeout: 300
+    timeout: 120
     hooks:
       deleteOnSuccess: true
       preInstall: "bash -x linkerd_step.sh secrets_linkerd_viz"
@@ -83,9 +83,9 @@ appsTemplates:
       tapInjector.externalSecret: true
       tap.replicas: 3
       grafana.enabled: true
-      # grafanaUrl: $RANCHER_GRAFANA
+      # grafanaUrl: $K8S_GRAFANA
       prometheus.enabled: true
-      # prometheusUrl: $RANCHER_PROMETHEUS
+      # prometheusUrl: $K8S_PROMETHEUS
       dashboard.enforcedHostRegexp: ".*"
     valuesFiles:
       - "linkerd-viz-certificates/templates/webhook-certificate.yaml"
@@ -107,14 +107,14 @@ apps:
       priority: -139
       set:
         alertmanager.ingress.enabled: true
-        alertmanager.ingress.ingressClassName: $RANCHER_INGRESS
-        alertmanager.ingress.hosts: "{alertmanager.$RANCHER_INGRESS.$RANCHER_CLUSTER}"
+        alertmanager.ingress.ingressClassName: $K8S_INGRESS
+        alertmanager.ingress.hosts: "{alertmanager.$K8SCLUSTER.$K8S_CLUSTER}"
         grafana.enabled: false
         grafana.ingress.enabled: true
-        grafana.ingress.hosts: "{grafana.$RANCHER_INGRESS.$RANCHER_CLUSTER}"
+        grafana.ingress.hosts: "{grafana.$K8SCLUSTER.$K8S_CLUSTER}"
         prometheus.ingress.enabled: true
-        prometheus.ingress.ingressClassName: $RANCHER_INGRESS
-        prometheus.ingress.hosts: "{prometheus.$RANCHER_INGRESS.$RANCHER_CLUSTER}"
+        prometheus.ingress.ingressClassName: $K8S_INGRESS
+        prometheus.ingress.hosts: "{prometheus.$K8SCLUSTER.$K8S_CLUSTER}"
         kubeControllerManager.enabled: false
         kubeScheduler.enabled: false
         kubeEtcd.enabled: true
@@ -131,7 +131,7 @@ apps:
       version: "v0.12.4"
       priority: -138
       set:
-        config.settings.clustername: "$RANCHER_CLUSTER"
+        config.settings.clustername: "$K8SCLUSTER"
         config.settings.kubectl.restrictAccess: true
         serviceMonitor.enabled: true
         communications.slack.enabled: true
@@ -148,8 +148,8 @@ apps:
       priority: -137
       set:
         ingress.enabled: true
-        ingress.annotations.kubernetes\.io/ingress\.class: $RANCHER_INGRESS
-        ingress.hosts[0]: grafana.$RANCHER_INGRESS.$RANCHER_CLUSTER
+        ingress.annotations.kubernetes\.io/ingress\.class: $K8S_INGRESS
+        ingress.hosts[0]: grafana.$K8SCLUSTER.$K8S_CLUSTER
       valuesFiles:
 
     grafana-operator:
@@ -183,10 +183,10 @@ apps:
       priority: -134
       set:
         ingress.enabled: true
-        ingress.spec.ingressClassName: $RANCHER_INGRESS
-        ingress.annotations.kubernetes\.io/ingress\.class: $RANCHER_INGRESS
+        ingress.spec.ingressClassName: $K8S_INGRESS
+        ingress.annotations.kubernetes\.io/ingress\.class: $K8S_INGRESS
         ingress.annotations.kubernetes\.io/tls-acme: "\"false\""
-        ingress.hosts[0]: netdata.$RANCHER_INGRESS.$RANCHER_CLUSTER
+        ingress.hosts[0]: netdata.$K8SCLUSTER.$K8S_CLUSTER
         notifications.slackurl: SLACK_WEBHOOK_URL=$SLACK_HOOK
         notifications.slackrecipiet: "monitoring"
         parent.claiming.enabled: true
@@ -199,7 +199,7 @@ apps:
   # Logging Block (priority: -130)
 
     loki:
-      <<: *enabled
+      <<: *disabled
       description: "Loki: like Prometheus, but for logs."
       group: "logging"
       namespace: "monitoring"
@@ -209,8 +209,8 @@ apps:
       valuesFiles: 
         - "loki-stack/values.yaml"
       set:
-        ingress.annotations.kubernetes\.io/ingress\.class: $RANCHER_INGRESS
-        ingress.hosts\.host[0]: "loki.$RANCHER_INGRESS.$RANCHER_CLUSTER"
+        ingress.annotations.kubernetes\.io/ingress\.class: $K8S_INGRESS
+        ingress.hosts\.host[0]: "loki.$K8SCLUSTER.$K8S_CLUSTER"
 
   # Security block (priority: -120)
 
@@ -230,49 +230,34 @@ apps:
         ### Uncomment the line below for mesh support ###
         envoy.podAnnotations.linkerd\.io/inject: "ingress"
         ### Uncomment if runing on multi-cluster ###
-        # controller.nodeSelector.node-role\.kubernetes\.io/master: ""
+        controller.nodeSelector.kubernetes\.io/hostname: "lima-glaedr-manager-1"
+        controller.nodeSelector.ingress: "controller"
+        # speaker.nodeSelector.node-role\.kubernetes\.io\/control\-plane: "true"
       valuesFiles:
         - "metallb/values.yaml"
 
-    contour:
-      <<: *disabled
-      description: "High performance ingress controller for Kubernetes"
-      group: "ingress"
-      namespace: "ingress"
-      chart: "contour"
-      version: "7.8.0"
-      priority: -109  # Increased due to minikube ip conflicts
-      set:
-        replicaCount: 1
-        configInline.incluster: true
-        default.backend.enabled: true
-        envoy.serviceAccount.automountServiceAccountToken: true
-        prometheus.serviceMonitor.enabled: true
-        ### Uncomment the line below for mesh support ###
-        envoy.podAnnotations.linkerd\.io/inject: "ingress"
-        ### Uncomment if runing on multi-cluster ###
-        envoy.nodeSelector.node-role\.kubernetes\.io/master: ""
-
     nginx:
-      <<: *disabled
+      <<: *enabled
       description: "Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
       chart: "ingress-nginx"
-      version: "3.12.0"
-      priority: -108
+      version: "4.1.4"
+      priority: -109
       set:
-        # controller.image.repository: quay.io/kubernetes-ingress-controller/nginx-ingress-controller-arm
-        controller.image.tag: "0.32.0"
         controller.metrics.enabled: true
         controller.metrics.serviceMonitor.enabled: true
         controller.metrics.serviceMonitor.additionalLabels.release: "prometheus" 
-        defaultBackend.enabled: true
+        defaultBackend.enabled: false
         ### Uncomment the line below for mesh support ###
         controller.podAnnotations.linkerd\.io/inject: "ingress"
-        ### Uncomment if runing on multi-cluster ###
-        # controller.nodeSelector.node-role\.kubernetes\.io/master: ""
-        # defaultBackend.nodeSelector.node-role\.kubernetes\.io/master: ""
+        ### Uncomment if runing on multi-node cluster ###
+        controller.service.nodeSelector.kubernetes\.io/hostname: lima-glaedr-manager-1
+        controller.nodeSelector.ingress: "controller"
+        controller.watchIngressWithoutClass: true
+        controller.tolerations[0].key: "ingress"
+        controller.tolerations[0].effect: "NoSchedule"
+        controller.tolerations[0].operator: "Exists"
 
     traefik:
       <<: *enabled
@@ -281,7 +266,7 @@ apps:
       namespace: "ingress"
       chart: "traefik"
       version: "10.19.4"
-      priority: -107
+      priority: -108
       set:
         ports.traefik.expose: true
         additionalArguments[0]: "--metrics.prometheus=true"
@@ -293,8 +278,35 @@ apps:
         ingressClass.enabled: true
         ### Uncomment the line below for mesh support ###
         controller.podAnnotations.linkerd\.io/inject: "ingress"
+        ### Uncomment if runing on multi-node cluster ###
+        nodeSelector.kubernetes\.io/hostname: "lima-glaedr-manager-2"
+        nodeSelector.ingress: "controller"
+        tolerations[0].key: "ingress"
+        tolerations[0].effect: "NoSchedule"
+        tolerations[0].operator: "Exists"
+
+    contour:
+      <<: *disabled
+      description: "High performance ingress controller for Kubernetes"
+      group: "ingress"
+      namespace: "ingress"
+      chart: "contour"
+      version: "7.8.0"
+      priority: -107
+      set:
+        replicaCount: 1
+        configInline.incluster: true
+        default.backend.enabled: true
+        envoy.serviceAccount.aumountServiceAccountToken: true
+        prometheus.serviceMonitor.enabled: true
+        ### Uncomment the line below for mesh support ###
+        envoy.podAnnotations.linkerd\.io/inject: "ingress"
         ### Uncomment if runing on multi-cluster ###
-        # nodeSelector.node-role\.kubernetes\.io/master: ""
+        envoy.nodeSelector.kubernetes\.io\/hostname: "lima-glaedr-manager-3"
+        envoy.nodeSelector.ingress: "controller"
+        envoy.tolerations[0].key: "ingress"
+        envoy.tolerations[0].effect: "NoSchedule"
+        envoy.tolerations[0].operator: "Exists"
 
   # Observability & Tracing Block (priority: -90)
 
@@ -310,38 +322,23 @@ apps:
       priority: -80
       set:
         ingress.enabled: true
-        ingress.host: loft.$RANCHER_INGRESS.$RANCHER_CLUSTER
-        ingress.ingressClass: $RANCHER_INGRESS
+        ingress.host: loft.$K8SCLUSTER.$K8S_CLUSTER
+        ingress.ingressClass: $K8S_INGRESS
         ingress.tls.enabled: false
         apiService.enabled: true
         labels.release: "prometheus"
         serviceMonitor.enabled: true
         serviceMonitor.labels.release: "prometheus"
 
-    vcluster:
+    saphira-vcluster:
       <<: *disabled
       description: "Namespace & Virtual Cluster Manager for Kubernetes"
       group: "clustering"
       namespace: "loft"
       chart: "loft-vcluster"
       version: "0.8.1"
-      priority: -79
-      set:
-
-    loft-configs:
-      <<: *enabled
-      description: "Config, create, managed Spaces/vCluster/Isolations and so on."
-      group: "clustering"
-      namespace: "loft"
-      chart: "loft-config"
-      version: "1.0.0"
       priority: -78
       set:
-        spaces.enabled: true
-        spaces.names[0]: "saphira"
-        spaces.names[1]: "firnen"
-        spaces.names[2]: "ophelia"
-        vclusters.enabled: false
 
   # Deployments & Automated Releases (priority: -60)
 
@@ -356,7 +353,7 @@ apps:
       set:
         logLevel: "debug"
         meshProvider: "linkerd"
-        ingressClass: $RANCHER_INGRESS
+        ingressClass: $K8S_INGRESS
         slack.channel: "deploys"
         slack.url: "$SLACK_HOOK"
         podMonitor.enabled: true
@@ -377,7 +374,7 @@ apps:
   # Service Mesh Block (priority: -50) On minkube the limits from coreDNS must be removed in order to works!
 
     linkerd-certificates:
-      <<: *enabled
+      <<: *disabled
       description: "Webhook certificates managed by cert-manager"
       group: "mesh"
       namespace: "linkerd"
@@ -386,7 +383,7 @@ apps:
       priority: -50
 
     linkerd:
-      <<: *mesh1
+      <<: *disabled
       description: "Linkerd service mesh for K8S"
       group: "mesh"
       namespace: "linkerd"
@@ -404,7 +401,7 @@ apps:
       priority: -48
 
     linkerd-viz:
-      <<: *mesh2
+      <<: *disabled
       description: "Linkerd Viz"
       group: "mesh"
       namespace: "linkerd-viz"
@@ -412,7 +409,22 @@ apps:
       version: "2.10.2"
       priority: -47
 
-  # Helm Export (priority: -40)
+  # Third-party tools (priority: -40)
+
+    loft-configs:
+      <<: *disabled
+      description: "Config, create, managed Spaces/vCluster/Isolations and so on."
+      group: "miscellaneous"
+      namespace: "loft"
+      chart: "loft-config"
+      version: "1.0.0"
+      priority: -40
+      set:
+        spaces.enabled: true
+        spaces.names[0]: "saphira"
+        spaces.names[1]: "firnen"
+        spaces.names[2]: "ophelia"
+        vclusters.enabled: false
 
     helm-exporter:
       <<: *disabled
@@ -421,11 +433,23 @@ apps:
       namespace: "miscellaneous"
       chart: "helm-exporter"
       version: "1.2.2+6766a95"
-      priority: -40
+      priority: -39
       set:
-        ingress.enabled: true
-        ingress.annotations.kubernetes\.io/ingress\.class: "nginx"
-        ingress.hosts[0].host: "helm-exporter.$RANCHER_INGRESS.$RANCHER_CLUSTER"
+        ingress.enabled: false
+        ingress.annotations.kubernetes\.io/ingress\.class: "$K8S_INGRESS"
+        ingress.hosts[0].host: "helm-exporter.$K8SCLUSTER.$K8S_CLUSTER"
         ingress.hosts[0].paths[0]: "/"
         serviceMonitor.create: true
         serviceMonitor.additionalLabels.release: "prometheus"
+
+    teleport-cluster:
+      <<: *disabled
+      description: "Loki: like Prometheus, but for logs."
+      group: "miscellaneous"
+      namespace: "security"
+      chart: "teleport-cluster"
+      version: "9.3.3"
+      priority: -38
+      set:
+        clusterName: "$K8SCLUSTER"
+        kubeClusterName: "$K8SCLUSTER"
