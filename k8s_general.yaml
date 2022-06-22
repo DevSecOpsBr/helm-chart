@@ -373,7 +373,7 @@ apps:
   # Service Mesh Block (priority: -50) On minkube the limits from coreDNS must be removed in order to works!
 
     linkerd-certificates:
-      <<: *disabled
+      <<: *enabled
       description: "Webhook certificates managed by cert-manager"
       group: "mesh"
       namespace: "linkerd"
@@ -382,7 +382,7 @@ apps:
       priority: -50
 
     linkerd:
-      <<: *disabled
+      <<: *mesh1
       description: "Linkerd service mesh for K8S"
       group: "mesh"
       namespace: "linkerd"
@@ -400,7 +400,7 @@ apps:
       priority: -48
 
     linkerd-viz:
-      <<: *disabled
+      <<: *mesh2
       description: "Linkerd Viz"
       group: "mesh"
       namespace: "linkerd-viz"
