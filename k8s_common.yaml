@@ -70,6 +70,8 @@ helmRepos:
   kyverno: https://kyverno.github.io/kyverno/
   # Loft - Secure Cluster Sharing, Self-Service Namespace Provisioning and Virtual Clusters
   loft: https://charts.loft.sh
+  # High-quality, ubiquitous, and portable telemetry to enable effective observability 
+  open-telemetry: https://open-telemetry.github.io/opentelemetry-helm-charts
 
 # define your environments and their k8s namespaces
 namespaces:

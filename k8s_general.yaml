@@ -309,6 +309,17 @@ apps:
 
   # Observability & Tracing Block (priority: -90)
 
+    opentelemetry:
+      <<: *enabled
+      description: "Use it to instrument, generate, collect, and export telemetry data (metrics, logs, and traces)"
+      group: "observability"
+      namespace: "observability"
+      chart: "opentelemetry-operator"
+      version: "0.8.2"
+      priority: -90
+      set:
+        replicaCount: 3
+
   # Loft (priority: -80)
 
     loft:
