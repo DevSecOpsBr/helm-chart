@@ -8,6 +8,69 @@ settings:
   globalMaxHistory: 500
   reverseDelete: true
 
+helmRepos:
+  stable: https://charts.helm.sh/stable
+  # argocd - continous deployment
+  argo: "https://argoproj.github.io/argo-helm"
+  # jfrog tools
+  jfrog: "https://charts.jfrog.io"
+  # kong api-gateway
+  kong: https://charts.konghq.com
+  # kong - kuma mesh
+  kong-mesh: https://kong.github.io/kong-mesh-charts
+  # grafana tools e.g: loki and etc...
+  grafana: https://grafana.github.io/helm-charts
+  # nginx ingress controller
+  ingress-nginx: https://kubernetes.github.io/ingress-nginx
+  # kube-prometheus-stack
+  prometheus-community: https://prometheus-community.github.io/helm-charts
+  # helm automation delivery
+  keel: https://charts.keel.sh
+  # cert-manager
+  jetstack: https://charts.jetstack.io
+  # bunch of charts
+  bitnami: https://charts.bitnami.com/bitnami
+  # ambassador ingress & api-gateway
+  datawire: https://www.getambassador.io
+  # kubernetes event driven application
+  kedacore: https://kedacore.github.io/charts
+  # develop, deploy and manage cloud-native applications without requiring any Kubernetes expertise
+  shipa-charts: https://shipa-charts.storage.googleapis.com
+  # Concourse is an open-source continuous thing-doer.
+  concourse: https://concourse-charts.storage.googleapis.com/
+  # Datadog logging, monitoring and apm system
+  datadog: https://helm.datadoghq.com
+  # BotKube is a messaging bot for monitoring and debugging Kubernetes clusters
+  infracloudio: https://infracloudio.github.io/charts
+  # A progressive delivery tool that automates the release process for applications running on Kubernetes.
+  flagger: https://flagger.app
+  # High Performance, Kubernetes Native Object Storage
+  minio: https://helm.min.io/
+  # Edge Router that makes publishing your services a fun and easy experience
+  traefik: https://helm.traefik.io/traefik
+  # Continuously backup Kubernetes objets as YAML files in git
+  katafygio: https://bpineau.github.io/katafygio
+  # A delivery workflow for kubernetes
+  devtron: https://helm.devtron.ai
+  # A scalable, efficient source of container resource metrics for Kubernetes built-in autoscaling pipelines.
+  metrics-server: https://kubernetes-sigs.github.io/metrics-server
+  # A network load-balancer implementation for Kubernetes using standard routing protocols
+  metallb: https://metallb.github.io/metallb
+  # Linkerd service mesh
+  linkerd: https://helm.linkerd.io/stable
+  # Helm-exporter
+  sstarcher: https://shanestarcher.com/helm-charts/
+  # Netdata monitoring cloud
+  netdata: https://netdata.github.io/helmchart/
+  #  Keyverno policy engine designed for Kubernetes
+  kyverno: https://kyverno.github.io/kyverno/
+  # Loft - Secure Cluster Sharing, Self-Service Namespace Provisioning and Virtual Clusters
+  loft: https://charts.loft.sh
+  # High-quality, ubiquitous, and portable telemetry to enable effective observability 
+  open-telemetry: https://open-telemetry.github.io/opentelemetry-helm-charts
+  # The easiest, most secure way to access infrastructure.
+  teleport: https://charts.releases.teleport.dev
+
 namespaces:
   clustering:
     protected: false
@@ -44,11 +107,11 @@ appsTemplates:
     enabled: true
     test: false
     wait: true
-    timeout: 120
+    timeout: 300
     hooks:
       preInstall: "bash -x linkerd_step.sh main"
       preUpgrade: "bash -x linkerd_step.sh main"
-      postInstall: "linkerd check"
+      # postInstall: "linkerd check"
     setFile:
       identityTrustAnchorsPEM: linkerd/certs/plane/ca.crt
       proxyInjector.caBundle: linkerd/certs/plane/ca.crt
@@ -62,18 +125,19 @@ appsTemplates:
       installNamespace: "false"
     helmFlags:
       - "--atomic"
+      - "--recreate-pods"
 
   linkerd_viz: &mesh2
     enabled: true
     test: false
     wait: false
-    timeout: 120
+    timeout: 300
     hooks:
       deleteOnSuccess: true
       preInstall: "bash -x linkerd_step.sh secrets_linkerd_viz"
       preUpgrade: "bash -x linkerd_step.sh secrets_linkerd_viz"
       successCondition: "Complete"
-      postInstall: "linkerd check"
+      postInstall: "linkerd check && bash -x linkerd_step.sh cleanUp"
     setFile:
       tap.caBundle: linkerd/certs/plane/ca.crt
       tapInjector.caBundle: linkerd/certs/plane/ca.crt
@@ -88,10 +152,11 @@ appsTemplates:
       # prometheusUrl: $K8S_PROMETHEUS
       dashboard.enforcedHostRegexp: ".*"
     valuesFiles:
-      - "linkerd-viz-certificates/templates/webhook-certificate.yaml"
-      - "linkerd-viz-certificates/templates/tap-injector-certificate.yaml"
+      - "charts/linkerd-viz-certificates/templates/webhook-certificate.yaml"
+      - "charts/linkerd-viz-certificates/templates/tap-injector-certificate.yaml"
     helmFlags:
       - "--atomic"
+      - "--recreate-pods"
 
 apps:
 
@@ -102,7 +167,7 @@ apps:
       description: "Prometheus clusters atop Kubernetes"
       group: "monitoring"
       namespace: "monitoring"
-      chart: "kube-prometheus-stack"
+      chart: "prometheus-community/kube-prometheus-stack"
       version: "34.10.0"
       priority: -139
       set:
@@ -119,15 +184,15 @@ apps:
         kubeScheduler.enabled: false
         kubeEtcd.enabled: true
         kubeDns.enabled: false
-      valuesFiles: 
-        - "kube-prometheus-stack/values-custom.yaml"
+      valuesFiles:
+       - charts/kube-prometheus-stack/values-custom.yaml
 
     botkube:
       <<: *enabled
       description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
       group: "monitoring"
       namespace: "observability"
-      chart: "botkube"
+      chart: "infracloudio/botkube"
       version: "v0.12.4"
       priority: -138
       set:
@@ -137,13 +202,14 @@ apps:
         communications.slack.enabled: true
         communications.slack.channel: "reports"
         communications.slack.token: "$BOTKUBE"
+      valuesFiles:
 
     grafana:
       <<: *enabled
       description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
       group: "monitoring"
       namespace: "monitoring"
-      chart: "grafana"
+      chart: "grafana/grafana"
       version: "6.26.5"
       priority: -137
       set:
@@ -157,9 +223,13 @@ apps:
       description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
       group: "monitoring"
       namespace: "monitoring"
-      chart: "grafana-operator"
+      chart: "charts/grafana-operator"
       version: "4.2.0"
       priority: -136
+      hooks:
+        preInstall: "bash charts/grafana-operator/ns.sh"
+        preUpgrade: "bash charts/grafana-operator/ns.sh"
+      set:
       valuesFiles:
 
     grafana-operator-configs:
@@ -167,18 +237,19 @@ apps:
       description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
       group: "monitoring"
       namespace: "monitoring"
-      chart: "grafana-operator-configs"
+      chart: "charts/grafana-operator-configs"
       version: "1.0.0"
       priority: -135
+      set:
       valuesFiles:
-        - "grafana-operator-configs/values.yaml"
+        - "charts/grafana-operator-configs/values.yaml"
 
     netdata:
       <<: *disabled
       description: "Netdata is a monitoring, visualization, and troubleshooting solution for systems, containers, services, and applications."
       group: "monitoring"
       namespace: "monitoring"
-      chart: "netdata"
+      chart: "netdata/netdata"
       version: "3.7.10"
       priority: -134
       set:
@@ -195,21 +266,22 @@ apps:
         parent.claiming.url: https://app.netdata.cloud
         child.claiming.enabled: true
         child.claiming.rooms: $NETDATA_ROOMS
+      valuesFiles:
 
-  # Logging Block (priority: -130)
+  # # Logging Block (priority: -130)
 
     loki:
       <<: *enabled
       description: "Loki: like Prometheus, but for logs."
       group: "logging"
       namespace: "monitoring"
-      chart: "loki-stack"
+      chart: "grafana/loki-stack"
       version: "2.6.5"
       priority: -129
       set:
         ingress.annotations.kubernetes\.io/ingress\.class: $K8S_INGRESS
         ingress.hosts\.host[0]: "loki.$K8SCLUSTER.$K8S_CLUSTER"
-      valuesFiles: 
+      valuesFiles:
 
   # Security block (priority: -120)
 
@@ -220,7 +292,7 @@ apps:
       description: "Load Balancer management for minikube"
       group: "ingress"
       namespace: "ingress"
-      chart: "metallb"
+      chart: "charts/metallb"
       version: "0.12.1"
       priority: -110  # Increased due to minikube ip conflicts
       set:
@@ -233,14 +305,14 @@ apps:
         controller.nodeSelector.ingress: "controller"
         # speaker.nodeSelector.node-role\.kubernetes\.io\/control\-plane: "true"
       valuesFiles:
-        - "metallb/values.yaml"
+        - "charts/metallb/values.yaml"
 
     nginx:
       <<: *enabled
       description: "Nginx-Ingress Controller for K8S"
       group: "ingress"
       namespace: "ingress"
-      chart: "ingress-nginx"
+      chart: "ingress-nginx/ingress-nginx"
       version: "4.1.4"
       priority: -109
       set:
@@ -257,13 +329,14 @@ apps:
         controller.tolerations[0].key: "ingress"
         controller.tolerations[0].effect: "NoSchedule"
         controller.tolerations[0].operator: "Exists"
+      valuesFiles:
 
     traefik:
       <<: *enabled
       description: "Edge Router that makes publishing your services a fun and easy experience"
       group: "ingress"
       namespace: "ingress"
-      chart: "traefik"
+      chart: "traefik/traefik"
       version: "10.19.4"
       priority: -108
       set:
@@ -283,13 +356,14 @@ apps:
         tolerations[0].key: "ingress"
         tolerations[0].effect: "NoSchedule"
         tolerations[0].operator: "Exists"
+      valuesFiles:
 
     contour:
       <<: *disabled
       description: "High performance ingress controller for Kubernetes"
       group: "ingress"
       namespace: "ingress"
-      chart: "contour"
+      chart: "bitnami/contour"
       version: "7.8.0"
       priority: -107
       set:
@@ -306,28 +380,30 @@ apps:
         envoy.tolerations[0].key: "ingress"
         envoy.tolerations[0].effect: "NoSchedule"
         envoy.tolerations[0].operator: "Exists"
+      valuesFiles:
 
-  # Observability & Tracing Block (priority: -90)
+  # # Observability & Tracing Block (priority: -90)
 
     opentelemetry:
       <<: *enabled
       description: "Use it to instrument, generate, collect, and export telemetry data (metrics, logs, and traces)"
       group: "observability"
       namespace: "observability"
-      chart: "opentelemetry-operator"
+      chart: "open-telemetry/opentelemetry-operator"
       version: "0.8.2"
       priority: -90
       set:
-        replicaCount: 3
+        replicaCount: 1
+      valuesFiles:
 
-  # Loft (priority: -80)
+  # # Loft (priority: -80)
 
     loft:
       <<: *enabled
       description: "Namespace & Virtual Cluster Manager for Kubernetes"
       group: "clustering"
       namespace: "loft"
-      chart: "loft"
+      chart: "loft/loft"
       version: "2.1.8"
       priority: -80
       set:
@@ -339,25 +415,25 @@ apps:
         labels.release: "prometheus"
         serviceMonitor.enabled: true
         serviceMonitor.labels.release: "prometheus"
+      valuesFiles:
 
     saphira-vcluster:
       <<: *disabled
       description: "Namespace & Virtual Cluster Manager for Kubernetes"
       group: "clustering"
       namespace: "loft"
-      chart: "loft-vcluster"
+      chart: "charts/loft-vcluster"
       version: "0.8.1"
       priority: -78
-      set:
 
-  # Deployments & Automated Releases (priority: -60)
+  # # Deployments & Automated Releases (priority: -60)
 
     flagger:
       <<: *enabled
       description: "A progressive delivery tool that automates the release process for applications running on Kubernetes."
       group: "releases"
       namespace: "miscellaneous" 
-      chart: "flagger" 
+      chart: "flagger/flagger" 
       version: "1.20.0"
       priority: -60
       set:
@@ -369,17 +445,19 @@ apps:
         podMonitor.enabled: true
         prometheus.install: false
         crd.create: false
+      valuesFiles:
 
     flagger-loadtester:
       <<: *enabled
       description: "Load testing services generates traffic during canary analysis when configured as a webhook."
       group: "releases"
       namespace: "miscellaneous" 
-      chart: "flagger-loadtester" 
+      chart: "flagger/loadtester" 
       version: "0.22.0"
       priority: -59
       set:
         logLevel: "debug"
+      valuesFiles:
 
   # Service Mesh Block (priority: -50) On minkube the limits from coreDNS must be removed in order to works!
 
@@ -388,7 +466,7 @@ apps:
       description: "Webhook certificates managed by cert-manager"
       group: "mesh"
       namespace: "linkerd"
-      chart: "linkerd-certificates"
+      chart: "charts/linkerd-certificates"
       version: "1.0.1"
       priority: -50
 
@@ -397,16 +475,16 @@ apps:
       description: "Linkerd service mesh for K8S"
       group: "mesh"
       namespace: "linkerd"
-      chart: "linkerd"
+      chart: "linkerd/linkerd2"
       version: "2.10.2"
       priority: -49
 
     linkerd-viz-certificates:
-      <<: *disabled
+      <<: *enabled
       description: "Webhook certificates managed by cert-manager"
       group: "mesh"
       namespace: "linkerd-viz"
-      chart: "linkerd-viz-certificates"
+      chart: "charts/linkerd-viz-certificates"
       version: "1.0.1"
       priority: -48
 
@@ -415,7 +493,7 @@ apps:
       description: "Linkerd Viz"
       group: "mesh"
       namespace: "linkerd-viz"
-      chart: "linkerd-viz"
+      chart: "linkerd/linkerd-viz"
       version: "2.10.2"
       priority: -47
 
@@ -426,7 +504,7 @@ apps:
       description: "Config, create, managed Spaces/vCluster/Isolations and so on."
       group: "miscellaneous"
       namespace: "loft"
-      chart: "loft-config"
+      chart: "charts/loft-config"
       version: "1.0.0"
       priority: -40
       set:
@@ -440,7 +518,7 @@ apps:
       description: "Exports helm release, chart, and version statistics in the prometheus format."
       group: "miscellaneous"
       namespace: "miscellaneous"
-      chart: "helm-exporter"
+      chart: "sstarcher/helm-exporter"
       version: "1.2.2+6766a95"
       priority: -39
       set:
@@ -452,11 +530,11 @@ apps:
         serviceMonitor.additionalLabels.release: "prometheus"
 
     teleport-cluster:
-      <<: *disabled
+      <<: *enabled
       description: "Loki: like Prometheus, but for logs."
       group: "miscellaneous"
       namespace: "security"
-      chart: "teleport-cluster"
+      chart: "teleport/teleport-cluster"
       version: "9.3.3"
       priority: -38
       set:

@@ -138,11 +138,11 @@ apps:
       description: "Manager SSL certficates creation, renew and update."
       group: "monitoring"
       namespace: "monitoring"
-      chart: "metrics-server"
+      chart: "charts/metrics-server"
       version: "2.9.0"
       priority: -140
       valuesFiles:
-        - "metrics-server/values.yaml"
+        - "charts/metrics-server/values.yaml"
 
   # Security block (priority: -120)
 
@@ -151,30 +151,27 @@ apps:
       description: "Kubernetes Native Policy Management"
       group: "security"
       namespace: "security" 
-      chart: "kyverno" 
+      chart: "kyverno/kyverno" 
       version: "v2.1.10"
       priority: -120
       set:
         serviceMonitor.enabled: false
         serviceMonitor.additionalLabels.release: "prometheus"
         createSelfSignedCert: true
+      valuesFiles:
 
     cert-manager:
       <<: *enabled
       description: "Manager SSL certficates creation, renew and update."
       group: "security"
       namespace: "cert-manager"
-      chart: "cert-manager"
+      chart: "jetstack/cert-manager"
       version: "v1.8.0"
       priority: -119
       set:
         installCRDs: true
         prometheus.serviceMonitor.enabled: true
-        # image.repository: quay.io/jetstack/cert-manager-controller-arm64
-        # webhook.image.repository: quay.io/jetstack/cert-manager-webhook-arm64
-        # cainjector.image.repository: quay.io/jetstack/cert-manager-cainjector-arm64
-        # startupapicheck.image.repository: quay.io/jetstack/cert-manager-ctl-arm64
-      valuesFiles: 
+      valuesFiles:
 
   # Ingress Block (priority: -110)
 
@@ -183,8 +180,8 @@ apps:
       description: "IngressClass for ingress controllers"
       group: "ingress"
       namespace: "ingress"
-      chart: "ingress-classes"
+      chart: "charts/ingress-classes"
       version: "1.0.0"
       priority: -107
       valuesFiles:
-        - "ingress-classes/values.yaml"
+        - "charts/ingress-classes/values.yaml"

@@ -13,7 +13,7 @@ DIRECTORY=$(dirname $0)/$CHART/$CERTS
 FOLDERS=(plane issuer webhook)
 LINKERD_NS="linkerd"
 LINKERD_VIZ_NS="linkerd-viz"
-KBCTL="kubectl"
+KBCTL="$(which kubectl)"
 HOURS=87600
 
 function main() {
@@ -58,29 +58,29 @@ function main() {
 
 function secrets_linkerd() {
 
-    echo "Creating secret tls ..."
-    ${KBCTL} -n $LINKERD_NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
-    echo "linkerd-trust-anchor, created ..."
-    ${KBCTL} -n $LINKERD_NS create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
-    echo "webhook-issuer-tls, created ..."
-    ${KBCTL} -n $LINKERD_NS create secret tls linkerd-identity-issuer --cert=$DIRECTORY/issuer/issuer.crt --key=$DIRECTORY/issuer/issuer.key || echo "Secret already exist ..."
-    echo "linkerd-identity-issuer, created ..."
+  echo "Creating secret tls ..."
+  ${KBCTL} -n $LINKERD_NS create secret tls linkerd-trust-anchor --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
+  echo "linkerd-trust-anchor, created ..."
+  ${KBCTL} -n $LINKERD_NS create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
+  echo "webhook-issuer-tls, created ..."
+  ${KBCTL} -n $LINKERD_NS create secret tls linkerd-identity-issuer --cert=$DIRECTORY/issuer/issuer.crt --key=$DIRECTORY/issuer/issuer.key || echo "Secret already exist ..."
+  echo "linkerd-identity-issuer, created ..."
 
 }
 
 function secrets_linkerd_viz() {
 
-    ${KBCTL} -n $LINKERD_VIZ_NS create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
-    echo "viz webhook-issuer-tls, created ..."
+  ${KBCTL} -n $LINKERD_VIZ_NS create secret tls webhook-issuer-tls --cert=$DIRECTORY/plane/ca.crt --key=$DIRECTORY/plane/ca.key || echo "Secret already exist ..."
+  echo "viz webhook-issuer-tls, created ..."
 
 }
 
 function cleanUp() {
 
-    if [[ -d $DIRECTORY ]]; then
-      echo "Removing certificates ..."
-      rm -rf $DIRECTORY
-    fi
+  if [[ -d $DIRECTORY ]]; then
+    echo "Removing certificates ..."
+    rm -rf ${CHART}
+  fi
 
 }
 
