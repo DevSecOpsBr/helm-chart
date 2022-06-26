@@ -72,6 +72,8 @@ helmRepos:
   loft: https://charts.loft.sh
   # High-quality, ubiquitous, and portable telemetry to enable effective observability 
   open-telemetry: https://open-telemetry.github.io/opentelemetry-helm-charts
+  # Kubecost is a comprehensive cost monitoring & optimization solution for teams running Kubernetes.
+  kubecost: https://kubecost.github.io/cost-analyzer/
 
 # define your environments and their k8s namespaces
 namespaces:
@@ -113,6 +115,8 @@ namespaces:
     protected: false
     annotations:
       linkerd.io/inject: disabled
+  kubecost:
+    protected: false
 
 appsTemplates:
 
@@ -130,7 +134,7 @@ appsTemplates:
 
 apps:
 
-  # Monitoring Block (priority: -140)
+  # Monitoring Block (priority: -160)
 
     metrics-server:
       # Enable if running via lima and/or minikube
@@ -140,9 +144,30 @@ apps:
       namespace: "monitoring"
       chart: "charts/metrics-server"
       version: "2.9.0"
-      priority: -140
+      priority: -160
       valuesFiles:
         - "charts/metrics-server/values.yaml"
+
+    kubecost:
+      # Enable if running via lima and/or minikube
+      <<: *enabled
+      description: "A comprehensive cost monitoring & optimization solution for teams running Kubernetes."
+      group: "cost"
+      namespace: "kubecost"
+      chart: "kubecost/cost-analyzer"
+      version: " 1.94.3"
+      priority: -160
+      set:
+        global.prometheus.enabled: false
+        global.prometheus.fqdn: "http://prometheus.$K8SCLUSTER.$K8S_DOMAIN.monitoring.svc"
+        global.prometheus.insecureSkipVerify: true 
+        global.grafana.enabled: false
+        global.grafana.domainName: grafana.$K8SCLUSTER.$K8S_DOMAIN.monitoring.svc
+        ingress.enabled: true
+        ingress.className: $INGRESS_CLASS
+        ingress.hosts[0]: kubecost.$K8SCLUSTER.$K8S_DOMAIN
+        kubecostToken: $KUBECOST
+      valuesFiles:
 
   # Security block (priority: -120)
 

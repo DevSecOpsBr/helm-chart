@@ -172,14 +172,14 @@ apps:
       priority: -139
       set:
         alertmanager.ingress.enabled: true
-        alertmanager.ingress.ingressClassName: $K8S_INGRESS
-        alertmanager.ingress.hosts: "{alertmanager.$K8SCLUSTER.$K8S_CLUSTER}"
+        alertmanager.ingress.ingressClassName: $INGRESS_CLASS
+        alertmanager.ingress.hosts: "{alertmanager.$K8SCLUSTER.$K8S_DOMAIN}"
         grafana.enabled: false
         grafana.ingress.enabled: true
-        grafana.ingress.hosts: "{grafana.$K8SCLUSTER.$K8S_CLUSTER}"
+        grafana.ingress.hosts: "{grafana.$K8SCLUSTER.$K8S_DOMAIN}"
         prometheus.ingress.enabled: true
-        prometheus.ingress.ingressClassName: $K8S_INGRESS
-        prometheus.ingress.hosts: "{prometheus.$K8SCLUSTER.$K8S_CLUSTER}"
+        prometheus.ingress.ingressClassName: $INGRESS_CLASS
+        prometheus.ingress.hosts: "{prometheus.$K8SCLUSTER.$K8S_DOMAIN}"
         kubeControllerManager.enabled: false
         kubeScheduler.enabled: false
         kubeEtcd.enabled: true
@@ -214,8 +214,8 @@ apps:
       priority: -137
       set:
         ingress.enabled: true
-        ingress.annotations.kubernetes\.io/ingress\.class: $K8S_INGRESS
-        ingress.hosts[0]: grafana.$K8SCLUSTER.$K8S_CLUSTER
+        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+        ingress.hosts[0]: grafana.$K8SCLUSTER.$K8S_DOMAIN
       valuesFiles:
 
     grafana-operator:
@@ -254,10 +254,10 @@ apps:
       priority: -134
       set:
         ingress.enabled: true
-        ingress.spec.ingressClassName: $K8S_INGRESS
-        ingress.annotations.kubernetes\.io/ingress\.class: $K8S_INGRESS
+        ingress.spec.ingressClassName: $INGRESS_CLASS
+        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
         ingress.annotations.kubernetes\.io/tls-acme: "\"false\""
-        ingress.hosts[0]: netdata.$K8SCLUSTER.$K8S_CLUSTER
+        ingress.hosts[0]: netdata.$K8SCLUSTER.$K8S_DOMAIN
         notifications.slackurl: SLACK_WEBHOOK_URL=$SLACK_HOOK
         notifications.slackrecipiet: "monitoring"
         parent.claiming.enabled: true
@@ -279,8 +279,8 @@ apps:
       version: "2.6.5"
       priority: -129
       set:
-        ingress.annotations.kubernetes\.io/ingress\.class: $K8S_INGRESS
-        ingress.hosts\.host[0]: "loki.$K8SCLUSTER.$K8S_CLUSTER"
+        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+        ingress.hosts\.host[0]: "loki.$K8SCLUSTER.$K8S_DOMAIN"
       valuesFiles:
 
   # Security block (priority: -120)
@@ -408,8 +408,8 @@ apps:
       priority: -80
       set:
         ingress.enabled: true
-        ingress.host: loft.$K8SCLUSTER.$K8S_CLUSTER
-        ingress.ingressClass: $K8S_INGRESS
+        ingress.host: loft.$K8SCLUSTER.$K8S_DOMAIN
+        ingress.ingressClass: $INGRESS_CLASS
         ingress.tls.enabled: false
         apiService.enabled: true
         labels.release: "prometheus"
@@ -439,7 +439,7 @@ apps:
       set:
         logLevel: "debug"
         meshProvider: "linkerd"
-        ingressClass: $K8S_INGRESS
+        ingressClass: $INGRESS_CLASS
         slack.channel: "deploys"
         slack.url: "$SLACK_HOOK"
         podMonitor.enabled: true
@@ -523,8 +523,8 @@ apps:
       priority: -39
       set:
         ingress.enabled: false
-        ingress.annotations.kubernetes\.io/ingress\.class: "$K8S_INGRESS"
-        ingress.hosts[0].host: "helm-exporter.$K8SCLUSTER.$K8S_CLUSTER"
+        ingress.annotations.kubernetes\.io/ingress\.class: "$INGRESS_CLASS"
+        ingress.hosts[0].host: "helm-exporter.$K8SCLUSTER.$K8S_DOMAIN"
         ingress.hosts[0].paths[0]: "/"
         serviceMonitor.create: true
         serviceMonitor.additionalLabels.release: "prometheus"
