@@ -74,6 +74,10 @@ helmRepos:
   open-telemetry: https://open-telemetry.github.io/opentelemetry-helm-charts
   # Kubecost is a comprehensive cost monitoring & optimization solution for teams running Kubernetes.
   kubecost: https://kubecost.github.io/cost-analyzer/
+  # extended component suite for Kubernetes, which mainly focuses on 
+  # application automations, such as deployment, upgrade, ops and availability protection.
+  openkruise: https://openkruise.github.io/charts/
+
 
 # define your environments and their k8s namespaces
 namespaces:
