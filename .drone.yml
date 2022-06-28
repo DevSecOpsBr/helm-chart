@@ -1,20 +1,63 @@
 kind: pipeline
-type: exec
-name: kind_k8s
+type: docker
+name: helmsman
 
 platform:
-  os: darwin
-  arch: amd64
+  os: linux
+  arch: arm64
+
+workspace:
+  path: /drone/src/drone/helmsman
 
 steps:
-- name: listing_clusters
-  commands:
-  - echo Hello, world
+  - name: dry_run
+    image: praqma/helmsman:v3.0.0-beta5
+    pull: if-not-exists
+    privileged: false
+    detach: false
+    failure: ignore
+    commands:
+    - echo "Cloning repository ..."
+    - ls -l
+    - time helmsman -e helmsman.env -f k8s_common.yaml -f k8s_general.yaml -dry-run -debug
+
+  - name: slack
+    image: plugins/slack
+    settings:
+      webhook:
+        from_secret: slack_webhook
+      channel: deploys
+      icon_url: https://www.pngkit.com/png/full/92-920674_drone-logo-png-transparent-drone-ci-logo.png
+      template: >
+        {{#success build.status}}
+            build {{build.number}} status: *{{build.status}}*
+          build link: {{build.link}}
+          build author: {{build.author}}
+          build ref: {{build.ref}}
+          build event: {{build.event}}
+          build commit: {{build.commit}}
+          build branch: {{build.branch}}
+          build deploy: {{build.deployTo}}
+        {{else}}
+          build {{build.number}} failed. Fix me please.
+        {{/success}}
+    when:
+      branch:
+      - master
+      status:
+      - success
+    depends_on:
+      - "dry_run"
+
 trigger:
   branch:
     include:
       - "CU-*"
-      - master
   event:
+  - cron
+  - custom
   - push
   - pull_request
+  - tag
+  - promote
+  - rollback
