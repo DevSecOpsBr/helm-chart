@@ -19,7 +19,7 @@ steps:
     privileged: false
     detach: false
     commands:
-      - terrascan scan -i helm -d .
+      - terrascan scan -i helm -d charts
     when:
       status:
         - "success"
