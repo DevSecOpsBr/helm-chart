@@ -5,11 +5,9 @@ settings:
   kubeContext: $K8SCLUSTER
   storageBackend: "secret"
   slackWebhook: $SLACK_HOOK
-  globalMaxHistory: 500
   reverseDelete: true
 
 helmRepos:
-  stable: https://charts.helm.sh/stable
   # argocd - continous deployment
   argo: "https://argoproj.github.io/argo-helm"
   # jfrog tools
@@ -111,7 +109,6 @@ appsTemplates:
     hooks:
       preInstall: "bash -x linkerd_step.sh main"
       preUpgrade: "bash -x linkerd_step.sh main"
-      # postInstall: "linkerd check"
     setFile:
       identityTrustAnchorsPEM: linkerd/certs/plane/ca.crt
       proxyInjector.caBundle: linkerd/certs/plane/ca.crt
@@ -136,8 +133,7 @@ appsTemplates:
       deleteOnSuccess: true
       preInstall: "bash -x linkerd_step.sh secrets_linkerd_viz"
       preUpgrade: "bash -x linkerd_step.sh secrets_linkerd_viz"
-      successCondition: "Complete"
-      postInstall: "linkerd check && bash -x linkerd_step.sh cleanUp"
+      postInstall: "bash -x linkerd_step.sh cleanUp"
     setFile:
       tap.caBundle: linkerd/certs/plane/ca.crt
       tapInjector.caBundle: linkerd/certs/plane/ca.crt
@@ -530,7 +526,7 @@ apps:
         serviceMonitor.additionalLabels.release: "prometheus"
 
     teleport-cluster:
-      <<: *enabled
+      <<: *disabled
       description: "Loki: like Prometheus, but for logs."
       group: "miscellaneous"
       namespace: "security"

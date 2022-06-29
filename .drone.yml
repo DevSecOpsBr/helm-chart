@@ -6,22 +6,44 @@ platform:
   os: linux
   arch: arm64
 
-workspace:
-  path: /drone/src/drone/helmsman
+environment:
+  CONFIG: kubeconfigs/glaedr.yaml
+  K8SCLUSTER: glaedr
+  EXP: 2032-06-25T17:31:23Z
 
 steps:
-  - name: dry_run
-    image: praqma/helmsman:v3.0.0-beta5
+
+  - name: helm_lint
+    image: praqma/helmsman
     pull: if-not-exists
     privileged: false
     detach: false
-    failure: ignore
     commands:
-    - echo "Cloning repository ..."
-    - ls -l
-    - time helmsman -e helmsman.env -f k8s_common.yaml -f k8s_general.yaml -dry-run -debug
+      - export KUBECONFIG=$$CONFIG
+      - kubectl get nodes
+      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -dry-run
+    when:
+      status:
+        - "success"
 
-  - name: slack
+  - name: helm_deploy
+    image: praqma/helmsman
+    pull: if-not-exists
+    privileged: false
+    detach: false
+    commands:
+      - export KUBECONFIG=$$CONFIG
+      - apk add step-cli curl openssl
+      - curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
+      - kubectl get nodes
+      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -apply
+    depends_on:
+      - "helm_lint"
+    when:
+      status:
+        - "success"
+
+  - name: notify_slack
     image: plugins/slack
     settings:
       webhook:
@@ -30,7 +52,7 @@ steps:
       icon_url: https://www.pngkit.com/png/full/92-920674_drone-logo-png-transparent-drone-ci-logo.png
       template: >
         {{#success build.status}}
-            build {{build.number}} status: *{{build.status}}*
+          build {{build.number}} status: *{{build.status}}*
           build link: {{build.link}}
           build author: {{build.author}}
           build ref: {{build.ref}}
@@ -42,12 +64,11 @@ steps:
           build {{build.number}} failed. Fix me please.
         {{/success}}
     when:
-      branch:
-      - master
       status:
       - success
     depends_on:
-      - "dry_run"
+      - "helm_lint"
+      - "helm_deploy"
 
 trigger:
   branch:

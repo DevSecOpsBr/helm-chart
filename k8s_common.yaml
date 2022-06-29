@@ -4,75 +4,21 @@ metadata:
   description: "Kubernetes clusters"
 
 settings:
-  kubeContext: ""
+  kubeContext: $K8SCLUSTER
   storageBackend: "secret"
-  slackWebhook:  "https://hooks.slack.com/services/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"
-  globalHooks:
-    successCondition: "Complete"
-    deleteOnSuccess: true
+  slackWebhook: $SLACK_HOOK
 
 # define your helm repositories
 helmRepos:
-  stable: https://charts.helm.sh/stable
-  # argocd - continous deployment
-  argo: "https://argoproj.github.io/argo-helm"
-  # jfrog tools
-  jfrog: "https://charts.jfrog.io"
-  # kong api-gateway
-  kong: https://charts.konghq.com
-  # kong - kuma mesh
-  kong-mesh: https://kong.github.io/kong-mesh-charts
-  # grafana tools e.g: loki and etc...
-  grafana: https://grafana.github.io/helm-charts
-  # nginx ingress controller
-  ingress-nginx: https://kubernetes.github.io/ingress-nginx
-  # kube-prometheus-stack
-  prometheus-community: https://prometheus-community.github.io/helm-charts
-  # helm automation delivery
-  keel: https://charts.keel.sh
   # cert-manager
   jetstack: https://charts.jetstack.io
-  # bunch of charts
-  bitnami: https://charts.bitnami.com/bitnami
-  # ambassador ingress & api-gateway
-  datawire: https://www.getambassador.io
-  # kubernetes event driven application
-  kedacore: https://kedacore.github.io/charts
-  # develop, deploy and manage cloud-native applications without requiring any Kubernetes expertise
-  shipa-charts: https://shipa-charts.storage.googleapis.com
-  # Concourse is an open-source continuous thing-doer.
-  concourse: https://concourse-charts.storage.googleapis.com/
-  # Datadog logging, monitoring and apm system
-  datadog: https://helm.datadoghq.com
   # BotKube is a messaging bot for monitoring and debugging Kubernetes clusters
   infracloudio: https://infracloudio.github.io/charts
-  # A progressive delivery tool that automates the release process for applications running on Kubernetes.
-  flagger: https://flagger.app
-  # High Performance, Kubernetes Native Object Storage
-  minio: https://helm.min.io/
-  # Edge Router that makes publishing your services a fun and easy experience
-  traefik: https://helm.traefik.io/traefik
-  # Continuously backup Kubernetes objets as YAML files in git
-  katafygio: https://bpineau.github.io/katafygio
-  # A delivery workflow for kubernetes
-  devtron: https://helm.devtron.ai
   # A scalable, efficient source of container resource metrics for Kubernetes built-in autoscaling pipelines.
   metrics-server: https://kubernetes-sigs.github.io/metrics-server
-  # A network load-balancer implementation for Kubernetes using standard routing protocols
-  metallb: https://metallb.github.io/metallb
-  # Linkerd service mesh
-  linkerd: https://helm.linkerd.io/stable
-  # Helm-exporter
-  sstarcher: https://shanestarcher.com/helm-charts/
-  # Netdata monitoring cloud
-  netdata: https://netdata.github.io/helmchart/
-  #  Keyverno policy engine designed for Kubernetes
+  # Keyverno policy engine designed for Kubernetes
   kyverno: https://kyverno.github.io/kyverno/
-  # Loft - Secure Cluster Sharing, Self-Service Namespace Provisioning and Virtual Clusters
-  loft: https://charts.loft.sh
-  # High-quality, ubiquitous, and portable telemetry to enable effective observability 
-  open-telemetry: https://open-telemetry.github.io/opentelemetry-helm-charts
-  # Kubecost is a comprehensive cost monitoring & optimization solution for teams running Kubernetes.
+  # Kubecost helps you monitor and manage cost and capacity in Kubernetes environments.
   kubecost: https://kubecost.github.io/cost-analyzer/
   # extended component suite for Kubernetes, which mainly focuses on 
   # application automations, such as deployment, upgrade, ops and availability protection.
@@ -160,7 +106,7 @@ apps:
       namespace: "kubecost"
       chart: "kubecost/cost-analyzer"
       version: " 1.94.3"
-      priority: -160
+      priority: -159
       set:
         global.prometheus.enabled: false
         global.prometheus.fqdn: "http://prometheus.$K8SCLUSTER.$K8S_DOMAIN.monitoring.svc"

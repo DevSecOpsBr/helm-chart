@@ -329,7 +329,7 @@ apps:
         identity.externalIssuer: true
         proxyInjector.externalSecret: true
         profileValidator.externalSecret: true
-        identity.issuer.crtExpiry: $EXP
+        identity.issuer.crtExpiry: 
         installNamespace: "false"
       helmFlags:
         - "--atomic"
