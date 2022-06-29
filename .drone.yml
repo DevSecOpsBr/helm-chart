@@ -13,6 +13,17 @@ environment:
 
 steps:
 
+  - name: security_scanning
+    image: tenable/terrascan
+    pull: if-not-exists
+    privileged: false
+    detach: false
+    commands:
+      - terrascan scan -i helm -d .
+    when:
+      status:
+        - "success"
+
   - name: helm_lint
     image: praqma/helmsman
     pull: if-not-exists
@@ -75,6 +86,7 @@ trigger:
   branch:
     include:
       - "master"
+      - "CU-*"
   event:
   - cron
   - custom
@@ -83,6 +95,3 @@ trigger:
   - tag
   - promote
   - rollback
-  repo:
-    include:
-      - rdgacarvalho/helm
