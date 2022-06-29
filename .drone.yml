@@ -18,11 +18,15 @@ steps:
     pull: if-not-exists
     privileged: false
     detach: false
+    failure: ignore
     commands:
       - terrascan scan -i helm -d charts
     when:
       status:
         - "success"
+      trigger:
+        branch:
+          - "CU-*"
 
   - name: helm_lint
     image: praqma/helmsman
@@ -32,10 +36,13 @@ steps:
     commands:
       - export KUBECONFIG=$$CONFIG
       - kubectl get nodes
-      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose
+      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -skip-validation
     when:
       status:
         - "success"
+      trigger:
+        branch:
+          - "CU-*"
 
   - name: helm_deploy
     image: praqma/helmsman
@@ -53,6 +60,9 @@ steps:
     when:
       status:
         - "success"
+      trigger:
+        branch:
+          - "master"
 
   - name: notify_slack
     image: plugins/slack
@@ -83,10 +93,6 @@ steps:
       - "helm_deploy"
 
 trigger:
-  branch:
-    include:
-      - "master"
-      - "CU-*"
   event:
   - cron
   - custom
