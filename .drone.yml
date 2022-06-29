@@ -21,7 +21,7 @@ steps:
     commands:
       - export KUBECONFIG=$$CONFIG
       - kubectl get nodes
-      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -dry-run
+      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose
     when:
       status:
         - "success"
@@ -65,6 +65,7 @@ steps:
         {{/success}}
     when:
       status:
+      - failure
       - success
     depends_on:
       - "helm_lint"
@@ -73,7 +74,7 @@ steps:
 trigger:
   branch:
     include:
-      - "CU-*"
+      - "master"
   event:
   - cron
   - custom
@@ -82,3 +83,6 @@ trigger:
   - tag
   - promote
   - rollback
+  repo:
+    include:
+      - rdgacarvalho/helm
