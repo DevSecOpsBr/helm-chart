@@ -23,6 +23,8 @@ helmRepos:
   # extended component suite for Kubernetes, which mainly focuses on 
   # application automations, such as deployment, upgrade, ops and availability protection.
   openkruise: https://openkruise.github.io/charts/
+  # A control panel that dynamically discovers and provides a launchpad to access applications deployed on Kubernetes
+  stakater: https://stakater.github.io/stakater-charts
 
 
 # define your environments and their k8s namespaces
@@ -148,15 +150,15 @@ apps:
         prometheus.serviceMonitor.enabled: true
       valuesFiles:
 
-  # Ingress Block (priority: -110)
+    reloader:
+      <<: *enabled
+      description: ""
+      group: "miscellaneous"
+      namespace: "miscellaneous"
+      chart: "stakater/reloader"
+      version: "v0.0.117"
+      priority: -118
+      set:
+        reloader.podMonitor.enabled: true
 
-    ingress-classes:
-      <<: *disabled
-      description: "IngressClass for ingress controllers"
-      group: "ingress"
-      namespace: "ingress"
-      chart: "charts/ingress-classes"
-      version: "1.0.0"
-      priority: -107
-      valuesFiles:
-        - "charts/ingress-classes/values.yaml"
+
