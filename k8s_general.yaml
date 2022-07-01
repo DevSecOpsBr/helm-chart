@@ -196,7 +196,7 @@ apps:
         config.settings.kubectl.restrictAccess: true
         serviceMonitor.enabled: true
         communications.slack.enabled: true
-        communications.slack.channel: "reports"
+        communications.slack.channel: "kubernetes-reports"
         communications.slack.token: "$BOTKUBE"
       valuesFiles:
 
