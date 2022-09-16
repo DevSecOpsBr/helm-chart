@@ -241,18 +241,16 @@ apps:
         - "charts/grafana-operator-configs/values.yaml"
 
     netdata:
-      <<: *disabled
+      <<: *enabled
       description: "Netdata is a monitoring, visualization, and troubleshooting solution for systems, containers, services, and applications."
       group: "monitoring"
       namespace: "monitoring"
       chart: "netdata/netdata"
-      version: "3.7.10"
+      version: "3.7.30"
       priority: -134
       set:
         ingress.enabled: true
-        ingress.spec.ingressClassName: $INGRESS_CLASS
-        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
-        ingress.annotations.kubernetes\.io/tls-acme: "\"false\""
+        # ingress.spec.ingressClassName: $INGRESS_CLASS
         ingress.hosts[0]: netdata.$K8SCLUSTER.$K8S_DOMAIN
         notifications.slackurl: SLACK_WEBHOOK_URL=$SLACK_HOOK
         notifications.slackrecipiet: "monitoring"
