@@ -1,5 +1,0 @@
-apiVersion: v2
-description: vcluster - Virtual Kubernetes Clusters
-name: vcluster
-type: application
-version: 0.8.1

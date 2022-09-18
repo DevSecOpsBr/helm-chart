@@ -1,7 +1,10 @@
 spaces:
-  enabled: true
+  enabled: false
   names: []
   annotations: {}
 
+sleepmode:
+  enabled: false
+
 vclusters:
-  enabled: true
+  enabled: false

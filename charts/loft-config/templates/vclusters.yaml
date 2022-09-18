@@ -6,12 +6,10 @@ items:
 - apiVersion: storage.loft.sh/v1
   kind: VirtualCluster
   metadata:
-    name: [VCLUSTER_NAME]
-    namespace: [VCLUSTER_NAMESPACE]
+    name: {{ . | quote }}
+    namespace: {{ . | quote }}
   spec:
     helmRelease:
       values: >-
-        virtualCluster:
-          image: rancher/k3s:v1.21.2-k3s1
 {{- end }}
 {{- end }}

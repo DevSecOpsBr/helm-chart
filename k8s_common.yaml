@@ -102,7 +102,7 @@ apps:
 
     kubecost:
       # Enable if running via lima and/or minikube
-      <<: *enabled
+      <<: *disabled
       description: "A comprehensive cost monitoring & optimization solution for teams running Kubernetes."
       group: "cost"
       namespace: "kubecost"
@@ -126,7 +126,7 @@ apps:
     kyverno:
       <<: *enabled
       description: "Kubernetes Native Policy Management"
-      group: "security"
+      group: "commons"
       namespace: "security" 
       chart: "kyverno/kyverno" 
       version: "v2.1.10"
@@ -140,7 +140,7 @@ apps:
     cert-manager:
       <<: *enabled
       description: "Manager SSL certficates creation, renew and update."
-      group: "security"
+      group: "commons"
       namespace: "cert-manager"
       chart: "jetstack/cert-manager"
       version: "v1.8.0"
@@ -153,7 +153,7 @@ apps:
     reloader:
       <<: *enabled
       description: ""
-      group: "miscellaneous"
+      group: "commons"
       namespace: "miscellaneous"
       chart: "stakater/reloader"
       version: "v0.0.117"

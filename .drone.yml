@@ -7,8 +7,8 @@ platform:
   arch: arm64
 
 environment:
-  CONFIG: kubeconfigs/glaedr.yaml
   K8SCLUSTER: glaedr
+  CONFIG: kubeconfigs
   EXP: 2032-06-25T17:31:23Z
 
 steps:
@@ -20,7 +20,7 @@ steps:
     detach: false
     failure: ignore
     commands:
-      - terrascan scan -i helm -d charts
+      - terrascan scan -v -i helm -d charts
     when:
       status:
         - "success"
@@ -34,7 +34,8 @@ steps:
     privileged: false
     detach: false
     commands:
-      - export KUBECONFIG=$$CONFIG
+      - export KUBECONFIG=$$CONFIG/$$K8SCLUSTER.yaml
+      - chmod 600 $KUBECONFIG
       - kubectl get nodes
       - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -skip-validation
     when:
@@ -43,6 +44,8 @@ steps:
       trigger:
         branch:
           - "CU-*"
+    depends_on:
+      - "security_scanning"
 
   - name: helm_deploy
     image: praqma/helmsman
@@ -50,19 +53,20 @@ steps:
     privileged: false
     detach: false
     commands:
-      - export KUBECONFIG=$$CONFIG
       - apk add step-cli curl openssl
       - curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
+      - export KUBECONFIG=$$CONFIG/$$K8SCLUSTER.yaml 
+      - chmod 600 $KUBECONFIG
       - kubectl get nodes
       - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -apply
-    depends_on:
-      - "helm_lint"
     when:
       status:
         - "success"
       trigger:
         branch:
           - "master"
+    depends_on:
+      - "helm_lint"
 
   - name: notify_slack
     image: plugins/slack

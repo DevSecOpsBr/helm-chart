@@ -8,4 +8,10 @@ items:
   metadata:
     name: {{ . | quote }}
 {{- end }}
+    {{- if .Values.sleepmode.enabled }}
+    annotations:
+      sleepmode.loft.sh/sleep-schedule: "0 19 * * *"
+      sleepmode.loft.sh/timezone: "Europe/Berlin"
+      sleepmode.loft.sh/wakeup-schedule: "0 10 * * 1-5"
+    {{- end }}
 {{- end }}

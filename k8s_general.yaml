@@ -107,12 +107,12 @@ appsTemplates:
     wait: true
     timeout: 300
     hooks:
-      preInstall: "bash -x linkerd_step.sh main"
-      preUpgrade: "bash -x linkerd_step.sh main"
+      preInstall: "bash -x scripts/linkerd_step.sh main"
+      preUpgrade: "bash -x scripts/linkerd_step.sh main"
     setFile:
-      identityTrustAnchorsPEM: linkerd/certs/plane/ca.crt
-      proxyInjector.caBundle: linkerd/certs/plane/ca.crt
-      profileValidator.caBundle: linkerd/certs/plane/ca.crt
+      identityTrustAnchorsPEM: scripts/linkerd/certs/plane/ca.crt
+      proxyInjector.caBundle: scripts/linkerd/certs/plane/ca.crt
+      profileValidator.caBundle: scripts/linkerd/certs/plane/ca.crt
     set:
       identity.issuer.scheme: "kubernetes.io/tls"
       identity.externalIssuer: true
@@ -122,7 +122,6 @@ appsTemplates:
       installNamespace: "false"
     helmFlags:
       - "--atomic"
-      - "--recreate-pods"
 
   linkerd_viz: &mesh2
     enabled: true
@@ -131,12 +130,12 @@ appsTemplates:
     timeout: 300
     hooks:
       deleteOnSuccess: true
-      preInstall: "bash -x linkerd_step.sh secrets_linkerd_viz"
-      preUpgrade: "bash -x linkerd_step.sh secrets_linkerd_viz"
-      postInstall: "bash -x linkerd_step.sh cleanUp"
+      preInstall: "bash -x scripts/linkerd_step.sh secrets_linkerd_viz"
+      preUpgrade: "bash -x scripts/linkerd_step.sh secrets_linkerd_viz"
+      postInstall: "bash -x scripts/linkerd_step.sh cleanUp"
     setFile:
-      tap.caBundle: linkerd/certs/plane/ca.crt
-      tapInjector.caBundle: linkerd/certs/plane/ca.crt
+      tap.caBundle: scripts/linkerd/certs/plane/ca.crt
+      tapInjector.caBundle: scripts/linkerd/certs/plane/ca.crt
     set:
       installNamespace: false
       tap.externalSecret: true
@@ -152,7 +151,6 @@ appsTemplates:
       - "charts/linkerd-viz-certificates/templates/tap-injector-certificate.yaml"
     helmFlags:
       - "--atomic"
-      - "--recreate-pods"
 
 apps:
 
@@ -161,7 +159,7 @@ apps:
     prometheus:
       <<: *enabled
       description: "Prometheus clusters atop Kubernetes"
-      group: "monitoring"
+      group: "commons"
       namespace: "monitoring"
       chart: "prometheus-community/kube-prometheus-stack"
       version: "34.10.0"
@@ -186,7 +184,7 @@ apps:
     botkube:
       <<: *enabled
       description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
-      group: "monitoring"
+      group: "commons"
       namespace: "observability"
       chart: "infracloudio/botkube"
       version: "v0.12.4"
@@ -286,7 +284,7 @@ apps:
       description: "Load Balancer management for minikube"
       group: "ingress"
       namespace: "ingress"
-      chart: "charts/metallb"
+      chart: "metallb/metallb"
       version: "0.12.1"
       priority: -110  # Increased due to minikube ip conflicts
       set:
@@ -298,8 +296,11 @@ apps:
         controller.nodeSelector.kubernetes\.io/hostname: "lima-glaedr-manager-1"
         controller.nodeSelector.ingress: "controller"
         # speaker.nodeSelector.node-role\.kubernetes\.io\/control\-plane: "true"
+        configInline.address-pools[0].name: default
+        configInline.address-pools[0].protocol: layer2
+        configInline.address-pools[0].address[0]: 192.168.105.10-192.168.105.20
       valuesFiles:
-        - "charts/metallb/values.yaml"
+        # - "charts/metallb/values.yaml"
 
     nginx:
       <<: *enabled
@@ -398,7 +399,7 @@ apps:
       group: "clustering"
       namespace: "loft"
       chart: "loft/loft"
-      version: "2.1.8"
+      version: "2.2.2"
       priority: -80
       set:
         ingress.enabled: true
@@ -416,7 +417,7 @@ apps:
       description: "Namespace & Virtual Cluster Manager for Kubernetes"
       group: "clustering"
       namespace: "loft"
-      chart: "charts/loft-vcluster"
+      chart: "loft/vcluster"
       version: "0.8.1"
       priority: -78
 
@@ -495,7 +496,7 @@ apps:
 
     loft-configs:
       <<: *enabled
-      description: "Config, create, managed Spaces/vCluster/Isolations and so on."
+      description: "Create, manage Loft Spaces/vCluster/Isolations and so on."
       group: "miscellaneous"
       namespace: "loft"
       chart: "charts/loft-config"
@@ -505,7 +506,10 @@ apps:
         spaces.enabled: true
         spaces.names[0]: "firnen"
         spaces.names[1]: "ophelia"
-        vclusters.enabled: false
+        sleepmode.enabled: true
+        vclusters.enabled: true
+        serviceMonitor.enabled: true
+        serviceMonitor.namespace: loft
 
     helm-exporter:
       <<: *disabled
