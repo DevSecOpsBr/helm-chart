@@ -7,7 +7,7 @@ platform:
   arch: arm64
 
 environment:
-  K8SCLUSTER: glaedr
+  K8SCLUSTER: oromis
   CONFIG: kubeconfigs
   EXP: 2032-06-25T17:31:23Z
 

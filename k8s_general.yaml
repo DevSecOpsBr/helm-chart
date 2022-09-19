@@ -120,6 +120,7 @@ appsTemplates:
       profileValidator.externalSecret: true
       identity.issuer.crtExpiry: $EXP
       installNamespace: "false"
+      spec.template.spec.nodeSelector: "kubernetes.io/os"
     helmFlags:
       - "--atomic"
 
@@ -263,7 +264,7 @@ apps:
   # # Logging Block (priority: -130)
 
     loki:
-      <<: *disabled
+      <<: *enabled
       description: "Loki: like Prometheus, but for logs."
       group: "logging"
       namespace: "monitoring"
@@ -293,14 +294,14 @@ apps:
         ### Uncomment the line below for mesh support ###
         envoy.podAnnotations.linkerd\.io/inject: "ingress"
         ### Uncomment if runing on multi-cluster ###
-        controller.nodeSelector.kubernetes\.io/hostname: "lima-glaedr-manager-1"
+        controller.nodeSelector.kubernetes\.io/hostname: lima\-$K8SCLUSTER\-manager\-1
         controller.nodeSelector.ingress: "controller"
         # speaker.nodeSelector.node-role\.kubernetes\.io\/control\-plane: "true"
+        # Need to be proper address (is not working yet)
         configInline.address-pools[0].name: default
         configInline.address-pools[0].protocol: layer2
-        configInline.address-pools[0].address[0]: 192.168.105.10-192.168.105.20
+        configInline.address-pools[0].addresses: "{192.168.105.10-192.168.105.20}"
       valuesFiles:
-        # - "charts/metallb/values.yaml"
 
     nginx:
       <<: *enabled
@@ -318,7 +319,7 @@ apps:
         ### Uncomment the line below for mesh support ###
         controller.podAnnotations.linkerd\.io/inject: "ingress"
         ### Uncomment if runing on multi-node cluster ###
-        controller.service.nodeSelector.kubernetes\.io/hostname: lima-glaedr-manager-1
+        controller.service.nodeSelector.kubernetes\.io/hostname: lima\-$K8SCLUSTER\-manager\-1
         controller.nodeSelector.ingress: "controller"
         controller.watchIngressWithoutClass: true
         controller.tolerations[0].key: "ingress"
@@ -346,7 +347,7 @@ apps:
         ### Uncomment the line below for mesh support ###
         controller.podAnnotations.linkerd\.io/inject: "ingress"
         ### Uncomment if runing on multi-node cluster ###
-        nodeSelector.kubernetes\.io/hostname: "lima-glaedr-manager-2"
+        nodeSelector.kubernetes\.io/hostname: lima\-$K8SCLUSTER\-manager\-2
         nodeSelector.ingress: "controller"
         tolerations[0].key: "ingress"
         tolerations[0].effect: "NoSchedule"
@@ -370,7 +371,7 @@ apps:
         ### Uncomment the line below for mesh support ###
         envoy.podAnnotations.linkerd\.io/inject: "ingress"
         ### Uncomment if runing on multi-cluster ###
-        envoy.nodeSelector.kubernetes\.io\/hostname: "lima-glaedr-manager-3"
+        envoy.nodeSelector.kubernetes\.io\/hostname: lima\-$K8SCLUSTER\-manager\-3
         envoy.nodeSelector.ingress: "controller"
         envoy.tolerations[0].key: "ingress"
         envoy.tolerations[0].effect: "NoSchedule"
