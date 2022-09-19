@@ -2,16 +2,14 @@
 apiVersion: v1
 kind: List
 items:
-{{- range $.Values.spaces.names }}
+{{- range .Values.spaces.names }}
 - apiVersion: cluster.loft.sh/v1
   kind: Space
   metadata:
     name: {{ . | quote }}
 {{- end }}
-    {{- if .Values.sleepmode.enabled }}
     annotations:
-      sleepmode.loft.sh/sleep-schedule: "0 19 * * *"
-      sleepmode.loft.sh/timezone: "Europe/Berlin"
-      sleepmode.loft.sh/wakeup-schedule: "0 10 * * 1-5"
+    {{- range $key, $values := .Values.spaces.annotations }}
+      {{ $key }}: {{ $values | quote }}
     {{- end }}
 {{- end }}

@@ -505,9 +505,11 @@ apps:
       priority: -40
       set:
         spaces.enabled: true
-        spaces.names[0]: "firnen"
-        spaces.names[1]: "ophelia"
-        sleepmode.enabled: true
+        spaces.names[0]: "glaedr"
+        spaces.sleepmode.enabled: true
+        spaces.annotations.sleepmode\.loft\.sh/sleep-schedule: "0 19 * * *"
+        spaces.annotations.sleepmode\.loft\.sh/timezone: "Europe/Berlin"
+        spaces.annotations.sleepmode\.loft\.sh/wakeup-schedule: "0 10 * * 1-5"
         vclusters.enabled: true
         serviceMonitor.enabled: true
         serviceMonitor.namespace: loft
