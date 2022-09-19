@@ -68,6 +68,8 @@ helmRepos:
   open-telemetry: https://open-telemetry.github.io/opentelemetry-helm-charts
   # The easiest, most secure way to access infrastructure.
   teleport: https://charts.releases.teleport.dev
+  # Publishing and securing your containers has never been easier.
+  traefik-hub: https://helm.traefik.io/hub
 
 namespaces:
   clustering:
@@ -354,6 +356,19 @@ apps:
         tolerations[0].operator: "Exists"
       valuesFiles:
 
+    traefik-hub:
+      <<: *enabled
+      description: "Publishing and securing your containers has never been easier."
+      group: "ingress"
+      namespace: "ingress"
+      chart: "traefik-hub/hub-agent"
+      version: "0.23.0"
+      priority: -107
+      set:
+        image.tag: experimental
+        token: $TRAEFIK_HUB_TOKEN
+      valuesFiles:
+
     contour:
       <<: *disabled
       description: "High performance ingress controller for Kubernetes"
@@ -361,7 +376,7 @@ apps:
       namespace: "ingress"
       chart: "bitnami/contour"
       version: "7.8.0"
-      priority: -107
+      priority: -106
       set:
         replicaCount: 1
         configInline.incluster: true
