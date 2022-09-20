@@ -1,9 +1,10 @@
+default_stages: [commit, push]
 repos:
-    - repo: https://github.com/tenable/terrascan
+  - repo: https://github.com/tenable/terrascan
+    rev: v1.15.2
+    hooks:
+    - id: terraform-pre-commit
+      args: [ '-i helm']
       name: terrascan-vulnerabilities
-      description: 'Scanning for vulnerabilities up front'
-      rev: v1.15.2
+      description: 'Scanning for Helm vulnerabilities up front'
       verbose: true
-      hooks:
-      - id: terraform-pre-commit
-        args: [ '-i helm']
