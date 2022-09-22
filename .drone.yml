@@ -105,3 +105,8 @@ trigger:
   - tag
   - promote
   - rollback
+
+---
+kind: secret
+name: slack_webhook
+data: 9RmbO5tShhG8/7s9kjFULGVJv82YQjcrsnT5VEyEzse43SM+m9dKVGuaBFskSF57

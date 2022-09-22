@@ -1,0 +1,4 @@
+creation_rules:
+  - path_regex: '.*/.(env|sec|secrets)'
+    encrypted_regex: '*.(json|yaml)$'
+    age: age1xsvs4urzvdvg4sqlduvpp5mv7hl032pfptctsws8s9589tx5w37s82ex0v
