@@ -101,10 +101,8 @@ steps:
         - "success"
       branch: 
         - "master"
-      trigger:
-        branch:
-          - "master"
       event:
+        - push
         - promote
       target:
         - production
