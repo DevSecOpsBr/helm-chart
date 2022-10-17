@@ -115,7 +115,7 @@ apps:
       priority: -159
       set:
         global.prometheus.enabled: false
-        global.prometheus.fqdn: "http://prometheus.$K8SCLUSTER.$K8S_DOMAIN.monitoring.svc"
+        global.prometheus.fqdn: http://prometheus.$K8SCLUSTER.$$K8S_DOMAIN.monitoring.svc
         global.prometheus.insecureSkipVerify: true 
         global.grafana.enabled: false
         global.grafana.domainName: grafana.$K8SCLUSTER.$K8S_DOMAIN.monitoring.svc

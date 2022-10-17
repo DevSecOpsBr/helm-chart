@@ -7,11 +7,36 @@ platform:
   arch: arm64
 
 environment:
-  K8SCLUSTER: oromis
-  CONFIG: kubeconfigs
   EXP: 2032-06-25T17:31:23Z
 
 steps:
+
+  - name: notify_slack
+    image: plugins/slack
+    settings:
+      webhook: https://hooks.slack.com/services/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
+      channel: deploys
+      icon_url: https://www.pngkit.com/png/full/92-920674_drone-logo-png-transparent-drone-ci-logo.png
+      template: >
+        {{#success build.status}}
+          build {{build.number}} status: *{{build.status}}*
+          build link: {{build.link}}
+          build author: {{build.author}}
+          build ref: {{build.ref}}
+          build event: {{build.event}}
+          build commit: {{build.commit}}
+          build branch: {{build.branch}}
+          build deploy: {{build.deployTo}}
+        {{else}}
+          build {{build.number}} failed. Fix me please.
+        {{/success}}
+    environment:
+      SLACK_HOOK:
+        from_secret: slackhook_token
+    when:
+      status:
+      - failure
+      - success
 
   - name: security_scanning
     image: tenable/terrascan
@@ -27,6 +52,8 @@ steps:
       trigger:
         branch:
           - "CU-*"
+    depends_on:
+      - "notify_slack"
 
   - name: helm_lint
     image: praqma/helmsman
@@ -34,10 +61,15 @@ steps:
     privileged: false
     detach: false
     commands:
-      - export KUBECONFIG=$$CONFIG/$$K8SCLUSTER.yaml
-      - chmod 600 $KUBECONFIG
-      - kubectl get nodes
-      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -skip-validation
+      - echo $KUBECONFIG | base64 -d > config
+      - chmod 600 config
+      - export KUBECONFIG=config
+      - export CONTEXT=$(kubectl config current-context)
+      - export K8SCLUSTER=$CONTEXT
+      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -skip-validation -no-banner
+    environment:
+      KUBECONFIG:
+        from_secret: kubeconfig
     when:
       status:
         - "success"
@@ -55,46 +87,29 @@ steps:
     commands:
       - apk add step-cli curl openssl
       - curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
-      - export KUBECONFIG=$$CONFIG/$$K8SCLUSTER.yaml 
-      - chmod 600 $KUBECONFIG
-      - kubectl get nodes
-      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -apply
+      - echo $KUBECONFIG | base64 -d > config
+      - chmod 600 config
+      - export KUBECONFIG=config
+      - export CONTEXT=$(kubectl config current-context)
+      - export K8SCLUSTER=$CONTEXT
+      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -apply -no-banner
+    environment:
+      KUBECONFIG:
+        from_secret: kubeconfig
     when:
       status:
         - "success"
+      branch: 
+        - "master"
       trigger:
         branch:
           - "master"
+      event:
+        - promote
+      target:
+        - production
     depends_on:
       - "helm_lint"
-
-  - name: notify_slack
-    image: plugins/slack
-    settings:
-      webhook:
-        from_secret: slack_webhook
-      channel: deploys
-      icon_url: https://www.pngkit.com/png/full/92-920674_drone-logo-png-transparent-drone-ci-logo.png
-      template: >
-        {{#success build.status}}
-          build {{build.number}} status: *{{build.status}}*
-          build link: {{build.link}}
-          build author: {{build.author}}
-          build ref: {{build.ref}}
-          build event: {{build.event}}
-          build commit: {{build.commit}}
-          build branch: {{build.branch}}
-          build deploy: {{build.deployTo}}
-        {{else}}
-          build {{build.number}} failed. Fix me please.
-        {{/success}}
-    when:
-      status:
-      - failure
-      - success
-    depends_on:
-      - "helm_lint"
-      - "helm_deploy"
 
 trigger:
   event:
@@ -105,8 +120,3 @@ trigger:
   - tag
   - promote
   - rollback
-
----
-kind: secret
-name: slack_webhook
-data: 9RmbO5tShhG8/7s9kjFULGVJv82YQjcrsnT5VEyEzse43SM+m9dKVGuaBFskSF57

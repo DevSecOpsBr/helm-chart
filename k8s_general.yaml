@@ -96,7 +96,7 @@ appsTemplates:
     enabled: true
     test: false
     wait: true
-    timeout: 120
+    timeout: 600
     helmFlags:
       - "--atomic"
 
@@ -107,7 +107,7 @@ appsTemplates:
     enabled: true
     test: false
     wait: true
-    timeout: 300
+    timeout: 600
     hooks:
       preInstall: "bash -x scripts/linkerd_step.sh main"
       preUpgrade: "bash -x scripts/linkerd_step.sh main"
@@ -130,7 +130,7 @@ appsTemplates:
     enabled: true
     test: false
     wait: false
-    timeout: 300
+    timeout: 600
     hooks:
       deleteOnSuccess: true
       preInstall: "bash -x scripts/linkerd_step.sh secrets_linkerd_viz"
