@@ -66,6 +66,7 @@ steps:
       - export KUBECONFIG=config
       - export CONTEXT=$(kubectl config current-context)
       - export K8SCLUSTER=$CONTEXT
+      - kubectl get nodes -owide
       - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -skip-validation -no-banner
     environment:
       KUBECONFIG:
@@ -92,6 +93,7 @@ steps:
       - export KUBECONFIG=config
       - export CONTEXT=$(kubectl config current-context)
       - export K8SCLUSTER=$CONTEXT
+      - kubectl get nodes -owide
       - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -apply -no-banner
     environment:
       KUBECONFIG:
