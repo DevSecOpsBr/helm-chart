@@ -53,8 +53,7 @@ steps:
       branch:
         - "CU-*"
       event:
-        include:
-          - "push"
+        - push
     depends_on:
       - "notify_slack"
 
@@ -114,6 +113,36 @@ steps:
     depends_on:
       - notify_slack
       - helm_lint
+
+  - name: helm_destroy
+    image: praqma/helmsman
+    pull: if-not-exists
+    privileged: false
+    detach: false
+    commands:
+      - apk add step-cli curl openssl
+      - curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
+      - echo $KUBECONFIG | base64 -d > config
+      - chmod 600 config
+      - export KUBECONFIG=config
+      - export CONTEXT=$(kubectl config current-context)
+      - export K8SCLUSTER=$CONTEXT
+      - echo $
+      - export -p
+      - kubectl get nodes -owide
+      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -destroy -no-banner
+    environment:
+      KUBECONFIG:
+        from_secret: ${DRONE_DEPLOY_TO}
+    when:
+      status:
+        - "success"
+      event:
+        - rollback
+      target: 
+        - destroy
+    depends_on:
+      - notify_slack
 
 trigger:
   repo:
