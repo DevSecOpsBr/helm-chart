@@ -139,8 +139,6 @@ steps:
         - "success"
       event:
         - rollback
-      target: 
-        - destroy
     depends_on:
       - notify_slack
 
