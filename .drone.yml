@@ -35,8 +35,8 @@ steps:
         from_secret: slackhook_token
     when:
       status:
-      - failure
-      - success
+        - failure
+        - success
 
   - name: security_scanning
     image: tenable/terrascan
@@ -48,10 +48,13 @@ steps:
       - terrascan scan -v -i helm -d charts
     when:
       status:
-        - "success"
-      trigger:
-        branch:
-          - "CU-*"
+        - failure
+        - success
+      branch:
+        - "CU-*"
+      event:
+        include:
+          - "push"
     depends_on:
       - "notify_slack"
 
@@ -61,6 +64,8 @@ steps:
     privileged: false
     detach: false
     commands:
+      - export -p
+      - echo $KUBECONFIG
       - echo $KUBECONFIG | base64 -d > config
       - chmod 600 config
       - export KUBECONFIG=config
@@ -70,15 +75,14 @@ steps:
       - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -skip-validation -no-banner
     environment:
       KUBECONFIG:
-        from_secret: kubeconfig
+        from_secret: ${DRONE_DEPLOY_TO}
     when:
       status:
         - "success"
-      trigger:
-        branch:
-          - "CU-*"
+      event:
+        - promote
     depends_on:
-      - "security_scanning"
+      - "notify_slack"
 
   - name: helm_deploy
     image: praqma/helmsman
@@ -93,30 +97,24 @@ steps:
       - export KUBECONFIG=config
       - export CONTEXT=$(kubectl config current-context)
       - export K8SCLUSTER=$CONTEXT
+      - echo $
+      - export -p
       - kubectl get nodes -owide
       - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -apply -no-banner
     environment:
       KUBECONFIG:
-        from_secret: kubeconfig
+        from_secret: ${DRONE_DEPLOY_TO}
     when:
       status:
         - "success"
       branch: 
         - "master"
       event:
-        - push
         - promote
-      target:
-        - production
     depends_on:
-      - "helm_lint"
+      - notify_slack
+      - helm_lint
 
 trigger:
-  event:
-  - cron
-  - custom
-  - push
-  - pull_request
-  - tag
-  - promote
-  - rollback
+  repo:
+    - rdgacarvalho/helm
