@@ -357,7 +357,7 @@ apps:
       valuesFiles:
 
     traefik-hub:
-      <<: *enabled
+      <<: *disabled
       description: "Publishing and securing your containers has never been easier."
       group: "ingress"
       namespace: "ingress"
