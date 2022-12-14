@@ -8,6 +8,7 @@ platform:
 
 environment:
   EXP: 2032-06-25T17:31:23Z
+  K8SCLUSTER: ''
 
 steps:
 
@@ -18,6 +19,7 @@ steps:
     detach: false
     failure: ignore
     commands:
+      - env && export -p
       - terrascan scan -v -i helm -d charts
     when:
       status:
@@ -35,8 +37,8 @@ steps:
     detach: false
     commands:
       - export -p
-      - echo $KUBECONFIG
-      - echo $KUBECONFIG | base64 -d > config
+      - echo $K8SCLUSTER
+      - echo $K8SCLUSTER | base64 -d > config
       - chmod 600 config
       - export KUBECONFIG=config
       - export CONTEXT=$(kubectl config current-context)
@@ -61,7 +63,7 @@ steps:
     commands:
       - apk add step-cli curl openssl
       - curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
-      - echo $KUBECONFIG | base64 -d > config
+      - echo $K8SCLUSTER | base64 -d > config
       - chmod 600 config
       - export KUBECONFIG=config
       - export CONTEXT=$(kubectl config current-context)
@@ -84,7 +86,7 @@ steps:
     privileged: false
     detach: false
     commands:
-      - echo $KUBECONFIG | base64 -d > config
+      - echo $K8SCLUSTER | base64 -d > config
       - chmod 600 config
       - export KUBECONFIG=config
       - export CONTEXT=$(kubectl config current-context)
@@ -94,6 +96,8 @@ steps:
     when:
       status:
         - "success"
+      branch:
+        - "master"
       event:
         - rollback
 
