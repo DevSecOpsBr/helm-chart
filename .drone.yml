@@ -25,16 +25,11 @@ steps:
       status:
         - failure
         - success
-<<<<<<< HEAD
-      event:
-        - push
-        - pull_request
-=======
       branch:
         - "CU-*"
       event:
         - push
->>>>>>> remotes/origin/master
+        - pull_request
 
   - name: helm_lint
     image: praqma/helmsman
