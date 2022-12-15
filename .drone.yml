@@ -25,10 +25,16 @@ steps:
       status:
         - failure
         - success
+<<<<<<< HEAD
+      event:
+        - push
+        - pull_request
+=======
       branch:
         - "CU-*"
       event:
         - push
+>>>>>>> remotes/origin/master
 
   - name: helm_lint
     image: praqma/helmsman
@@ -45,11 +51,12 @@ steps:
       - export K8SCLUSTER=$CONTEXT
       - kubectl get nodes -owide
       - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -skip-validation -no-banner
+    environment:
+      K8SCLUSTER:
+        from_secret: ${DRONE_DEPLOY_TO}
     when:
       status:
         - "success"
-      branch:
-        - "CU-*"
       event:
         - promote
     depends_on:
@@ -70,6 +77,9 @@ steps:
       - export K8SCLUSTER=$CONTEXT
       - kubectl get nodes -owide
       - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -apply -no-banner
+    environment:
+      K8SCLUSTER:
+        from_secret: ${DRONE_DEPLOY_TO}
     when:
       status:
         - "success"
@@ -93,6 +103,9 @@ steps:
       - export K8SCLUSTER=$CONTEXT
       - helm list --all-namespaces 
       - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -destroy -no-banner
+    environment:
+      K8SCLUSTER:
+        from_secret: ${DRONE_DEPLOY_TO}
     when:
       status:
         - "success"
