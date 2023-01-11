@@ -31,7 +31,7 @@ steps:
         - push
         - pull_request
 
-  - name: helm_lint
+  - name: helm_lint_and_dry_run
     image: praqma/helmsman
     pull: if-not-exists
     privileged: false
@@ -83,7 +83,7 @@ steps:
       event:
         - promote
     depends_on:
-      - helm_lint
+      - helm_lint_and_dry_run
 
   - name: helm_destroy
     image: praqma/helmsman
