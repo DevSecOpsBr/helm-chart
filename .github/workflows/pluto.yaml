@@ -34,5 +34,5 @@ jobs:
 
       - name: Comment on the PR
         run: |
-          npm install -g @infracost/compost
+          npm install -g infracost/compost
           compost github update $GITHUB_REPOSITORY pr ${{github.event.pull_request.number}} --github-token=${{github.token}} --body-file=$RESULT_FILE
