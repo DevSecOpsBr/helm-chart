@@ -5,6 +5,7 @@ on:
 
 env:
   CHART_ROOT: charts
+  RESULT_FILE: /tmp/pluto.md
 
 jobs:
 
@@ -29,4 +30,11 @@ jobs:
 
       - name: Use pluto
         run: |
-          pluto detect-files -d $CHART_ROOT
+          pluto detect-files -d $CHART_ROOT -o markdown --columns NAMESPACE,NAME,DEPRECATED IN,DEPRECATED,REPLACEMENT,VERSION,KIND,COMPONENT,FILEPATH > $RESULT_FILE
+
+      - name: Comment on the PR
+        run: |
+          npm i @infracost/compost
+          hash || rehash
+          compost github update $GITHUB_REPOSITORY pr ${{github.event.pull_request.number}} --github-token=${{github.token}} --body-file=$RESULT_FILE
+        continue-on-error: true
