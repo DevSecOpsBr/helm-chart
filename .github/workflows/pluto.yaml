@@ -19,18 +19,6 @@ jobs:
 
     steps:
 
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Setting path
-        id: charts_path
-        run: |
-          git fetch --tags
-          git submodule update --init
-          echo "CHART_ROOT=$(git describe --tags --always --abbrev=0)" >> $GITHUB_ENV
-
       - name: Download Pluto
         uses: FairwindsOps/pluto/github-action@master
 
