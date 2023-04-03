@@ -1,0 +1,39 @@
+name: pluto
+
+on: 
+  pull_request:
+
+env:
+  CHART_ROOT: charts
+
+jobs:
+
+  scan:
+
+    name: Searching deprecated apiVersions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read 
+      security-events: write 
+      actions: read
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setting path
+        id: charts_path
+        run: |
+          git fetch --tags
+          git submodule update --init
+          echo "CHART_ROOT=$(git describe --tags --always --abbrev=0)" >> $GITHUB_ENV
+
+      - name: Download Pluto
+        uses: FairwindsOps/pluto/github-action@master
+
+      - name: Use pluto
+        run: |
+          pluto detect-files -d $CHART_ROOT

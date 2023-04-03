@@ -1,0 +1,20 @@
+# apiVersion: integreatly.org/v1alpha1
+# kind: GrafanaDashboard
+# metadata:
+#   name: kube-apiserver
+#   labels:
+#     app: grafana
+# spec:
+#   grafanaCom:
+#     id: 12006
+#     revision: 1
+#   customFolderName: "Kubernetes"
+#   plugins:
+#     - name: grafana-piechart-panel
+#     - name: michaeldmoore-annunciator-panel
+#     - name: grafana-kubernetes-app
+#     - name: grafana-worldmap-panel
+#     - name: jdbranham-diagram-panel
+#     - name: devopsprodigy-kubegraf-app
+#     - name: camptocamp-prometheus-alertmanager-datasource
+#     - name: btplc-status-dot-panel

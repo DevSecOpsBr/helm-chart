@@ -1,0 +1,22 @@
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDataSource
+metadata:
+  name: datasources
+spec:
+  name: datasources.yaml
+  datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: {{ .Values.prometheus.url }}
+      isDefault: {{ .Values.prometheus.isDefault }}
+      version: 1
+      editable: true
+      jsonData:
+        tlsSkipVerify: true
+        timeInterval: {{ .Values.prometheus.timeInterval }}
+    - name: Loki
+      type: loki
+      access: proxy
+      url: {{ .Values.loki.url }}
+      version: 1
