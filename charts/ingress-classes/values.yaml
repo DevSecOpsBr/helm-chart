@@ -1,0 +1,5 @@
+ingressClass:
+  traefik:
+    name: "traefik-class"
+    enabled: true
+    isDefaultClass: false

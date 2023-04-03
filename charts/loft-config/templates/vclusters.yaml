@@ -1,0 +1,15 @@
+{{- if .Values.vclusters.enabled }}
+apiVersion: v1
+kind: List
+items:
+{{- range $.Values.spaces.names }}
+- apiVersion: storage.loft.sh/v1
+  kind: VirtualCluster
+  metadata:
+    name: {{ . | quote }}
+    namespace: {{ . | quote }}
+  spec:
+    helmRelease:
+      values: >-
+{{- end }}
+{{- end }}

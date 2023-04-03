@@ -1,0 +1,15 @@
+{{- if .Values.spaces.enabled }}
+apiVersion: v1
+kind: List
+items:
+{{- range .Values.spaces.names }}
+- apiVersion: cluster.loft.sh/v1
+  kind: Space
+  metadata:
+    name: {{ . | quote }}
+{{- end }}
+    annotations:
+    {{- range $key, $values := .Values.spaces.annotations }}
+      {{ $key }}: {{ $values | quote }}
+    {{- end }}
+{{- end }}
