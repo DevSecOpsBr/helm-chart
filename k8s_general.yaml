@@ -370,12 +370,12 @@ apps:
       valuesFiles:
 
     contour:
-      <<: *disabled
+      <<: *enabled
       description: "High performance ingress controller for Kubernetes"
       group: "ingress"
       namespace: "ingress"
       chart: "bitnami/contour"
-      version: "10.1.3"
+      version: "11.3.0"
       priority: -106
       set:
         replicaCount: 1
