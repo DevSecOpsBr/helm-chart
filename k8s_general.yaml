@@ -247,7 +247,7 @@ apps:
       group: "monitoring"
       namespace: "monitoring"
       chart: "netdata/netdata"
-      version: "3.7.30"
+      version: "3.7.39"
       priority: -134
       set:
         ingress.enabled: true
