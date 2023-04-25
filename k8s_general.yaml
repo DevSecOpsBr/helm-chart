@@ -242,7 +242,7 @@ apps:
         - "charts/grafana-operator-configs/values.yaml"
 
     netdata:
-      <<: *enabled
+      <<: *disabled
       description: "Netdata is a monitoring, visualization, and troubleshooting solution for systems, containers, services, and applications."
       group: "monitoring"
       namespace: "monitoring"
