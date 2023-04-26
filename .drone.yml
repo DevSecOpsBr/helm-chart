@@ -111,7 +111,6 @@ steps:
       event:
         - promote
     depends_on:
-      - helm_lint
       - k8s_deprecated_api
 
   - name: helm_destroy
