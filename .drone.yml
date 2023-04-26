@@ -19,7 +19,6 @@ steps:
     detach: false
     failure: ignore
     commands:
-      - env && export -p
       - terrascan scan -v -i helm -d charts
     when:
       status:
@@ -31,7 +30,7 @@ steps:
         - push
         - pull_request
 
-  - name: helm_lint_and_dry_run
+  - name: helm_lint
     image: praqma/helmsman
     pull: if-not-exists
     privileged: false
@@ -56,6 +55,34 @@ steps:
         - promote
     depends_on:
       - security_scanning
+
+  - name: k8s_deprecated_api
+    image: alpine
+    pull: if-not-exists
+    privileged: false
+    detach: false
+    commands:
+      - export -p
+      - echo $K8SCLUSTER
+      - echo $K8SCLUSTER | base64 -d > config
+      - chmod 600 config
+      - export KUBECONFIG=config
+      - export CONTEXT=$(kubectl config current-context)
+      - export K8SCLUSTER=$CONTEXT
+      - apk update && apk add git curl bash
+      - wget -q https://github.com/FairwindsOps/pluto/releases/download/v5.16.1/pluto_5.16.1_linux_arm64.tar.gz -O - | tar xz -C $PLUTO pluto
+      - pluto detect-api-resources -owide
+    environment:
+      K8SCLUSTER:
+        from_secret: ${DRONE_DEPLOY_TO}
+      PLUTO: "/usr/local/bin"
+    when:
+      status:
+        - "success"
+      event:
+        - promote
+    depends_on:
+      - helm_lint
 
   - name: helm_deploy
     image: praqma/helmsman
@@ -83,7 +110,8 @@ steps:
       event:
         - promote
     depends_on:
-      - helm_lint_and_dry_run
+      - helm_lint
+      - k8s_deprecated_api
 
   - name: helm_destroy
     image: praqma/helmsman
