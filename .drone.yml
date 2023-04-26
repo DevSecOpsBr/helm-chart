@@ -7,8 +7,8 @@ platform:
   arch: arm64
 
 environment:
-  EXP: 2032-06-25T17:31:23Z
-  K8SCLUSTER: ''
+  HELM_CHARTS: "charts"
+  PLUTO: "/usr/local/bin"
 
 steps:
 
@@ -19,7 +19,7 @@ steps:
     detach: false
     failure: ignore
     commands:
-      - terrascan scan -v -i helm -d charts
+      - terrascan scan -v -i helm -d $HELM_CHARTS
     when:
       status:
         - failure
@@ -42,7 +42,7 @@ steps:
       - export CONTEXT=$(kubectl config current-context)
       - export K8SCLUSTER=$CONTEXT
       - kubectl get nodes -owide
-      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -skip-validation -no-banner
+      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -skip-validation -no-banner -dry-run
     environment:
       K8SCLUSTER:
         from_secret: ${DRONE_DEPLOY_TO}
@@ -51,7 +51,7 @@ steps:
         - failure
         - success
       event:
-        - push
+        - promote
     depends_on:
       - security_scanning
 
@@ -70,10 +70,10 @@ steps:
       - apk update && apk add git curl bash
       - wget -q https://github.com/FairwindsOps/pluto/releases/download/v5.16.1/pluto_5.16.1_linux_arm64.tar.gz -O - | tar xz -C $PLUTO pluto
       - pluto detect-api-resources -owide
+      - pluto detect-files -d $HELM_CHARTS
     environment:
       K8SCLUSTER:
         from_secret: ${DRONE_DEPLOY_TO}
-      PLUTO: "/usr/local/bin"
     when:
       status:
         - failure
