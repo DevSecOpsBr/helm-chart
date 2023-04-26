@@ -28,7 +28,6 @@ steps:
         - "CU-*"
       event:
         - push
-        - pull_request
 
   - name: helm_lint
     image: praqma/helmsman
@@ -36,7 +35,6 @@ steps:
     privileged: false
     detach: false
     commands:
-      - export -p
       - echo $K8SCLUSTER
       - echo $K8SCLUSTER | base64 -d > config
       - chmod 600 config
@@ -50,9 +48,10 @@ steps:
         from_secret: ${DRONE_DEPLOY_TO}
     when:
       status:
-        - "success"
+        - failure
+        - success
       event:
-        - promote
+        - push
     depends_on:
       - security_scanning
 
@@ -62,7 +61,6 @@ steps:
     privileged: false
     detach: false
     commands:
-      - export -p
       - echo $K8SCLUSTER
       - echo $K8SCLUSTER | base64 -d > config
       - chmod 600 config
@@ -78,9 +76,12 @@ steps:
       PLUTO: "/usr/local/bin"
     when:
       status:
-        - "success"
+        - failure
+        - success
       event:
         - promote
+      branch: 
+        - "master"
     depends_on:
       - helm_lint
 
