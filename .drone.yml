@@ -9,7 +9,7 @@ platform:
 environment:
   EXP: 2033-04-23T21:18:53Z
   HELM_CHARTS: "charts"
-  PLUTO: "/usr/local/bin"
+  EXTERNAL_BINS: "/usr/local/bin"
 
 steps:
 
@@ -72,7 +72,7 @@ steps:
       - export CONTEXT=$(kubectl config current-context)
       - export K8SCLUSTER=$CONTEXT
       - apk update && apk add git curl bash
-      - wget -q https://github.com/FairwindsOps/pluto/releases/download/v5.16.1/pluto_5.16.1_linux_arm64.tar.gz -O - | tar xz -C $PLUTO pluto
+      - wget -q "https://github.com/FairwindsOps/pluto/releases/download/v5.16.1/pluto_5.16.1_linux_arm64.tar.gz" -O - | tar xz -C $EXTERNAL_BINS pluto
       - pluto detect-api-resources -owide
       - pluto detect-files -d $HELM_CHARTS
     environment:
@@ -84,6 +84,7 @@ steps:
         - success
       branch:
         - "CU-*"
+        - "master"
       event:
         - promote
     depends_on:
@@ -116,6 +117,36 @@ steps:
         - master
     depends_on:
       - k8s_deprecated_api
+
+  - name: k8s_deprecated_helm
+    image: alpine
+    pull: if-not-exists
+    privileged: false
+    detach: false
+    commands:
+      - echo $K8SCLUSTER
+      - echo $K8SCLUSTER | base64 -d > config
+      - chmod 600 config
+      - export KUBECONFIG=config
+      - export CONTEXT=$(kubectl config current-context)
+      - export K8SCLUSTER=$CONTEXT
+      - apk update && apk add git curl bash
+      - wget -q https://github.com/FairwindsOps/nova/releases/download/3.6.2/nova_3.6.2_linux_amd64.tar.gz -O - | tar xz -C $EXTERNAL_BINS nova
+      - nova find --helm --containers --format table
+    environment:
+      K8SCLUSTER:
+        from_secret: ${DRONE_DEPLOY_TO}
+    when:
+      status:
+        - failure
+        - success
+      branch:
+        - "CU-*"
+        - "master"
+      event:
+        - promote
+    depends_on:
+      - helm_deploy
 
   - name: helm_destroy
     image: praqma/helmsman
