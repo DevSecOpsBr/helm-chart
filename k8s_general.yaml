@@ -221,13 +221,11 @@ apps:
       group: "monitoring"
       namespace: "monitoring"
       chart: "charts/grafana-operator"
-      version: "4.2.0"
+      version: "v5.0.0-rc0"
       priority: -136
-      hooks:
-        preInstall: "bash charts/grafana-operator/ns.sh"
-        preUpgrade: "bash charts/grafana-operator/ns.sh"
       set:
       valuesFiles:
+        - "charts/grafana-operator/values.yaml"
 
     grafana-operator-configs:
       <<: *enabled

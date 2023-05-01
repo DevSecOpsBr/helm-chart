@@ -1,16 +1,15 @@
----
 apiVersion: v1
 kind: Service
 metadata:
+  name: {{ include "grafana-operator.fullname" . }}-metrics-service
   labels:
-    control-plane: controller-manager
-  name: grafana-operator-controller-manager-metrics-service
-  namespace: monitoring
+    {{- include "grafana-operator.labels" . | nindent 4 }}
 spec:
+  type: {{ .Values.kubeRbacProxy.service.type }}
   ports:
-  - name: https
-    port: 8443
-    protocol: TCP
-    targetPort: https
+    - port: {{ .Values.kubeRbacProxy.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
   selector:
-    control-plane: controller-manager
+    {{- include "grafana-operator.selectorLabels" . | nindent 4 }}

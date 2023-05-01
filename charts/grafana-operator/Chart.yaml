@@ -1,13 +1,6 @@
-annotations:
-  category: Analytics
 apiVersion: v2
-appVersion: 4.2.0
-description: Kubernetes Operator based on the Operator SDK for creating and managing
-  Grafana instances and dashboards.
-home: https://github.com/integr8ly/grafana-operator
-keywords:
-- grafana
-- operator
-- monitoring
+appVersion: v5.0.0-rc0
+description: A Helm chart for Kubernetes
 name: grafana-operator
-version: 4.2.0
+type: application
+version: v5.0.0-rc0

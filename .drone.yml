@@ -28,6 +28,7 @@ steps:
       branch:
         - "CU-*"
       event:
+        - push
         - promote
 
   - name: helm_dry_run
@@ -55,6 +56,7 @@ steps:
       branch:
         - "CU-*"
       event:
+        - push
         - promote
     depends_on:
       - security_scanning
@@ -86,6 +88,7 @@ steps:
         - "CU-*"
         - "master"
       event:
+        - push
         - promote
     depends_on:
       - helm_dry_run
@@ -111,10 +114,10 @@ steps:
     when:
       status:
         - success
-      event:
-        - promote
       branch: 
         - master
+      event:
+        - promote
     depends_on:
       - k8s_deprecated_api
 
