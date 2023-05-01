@@ -228,7 +228,7 @@ apps:
         - "charts/grafana-operator/values.yaml"
 
     grafana-operator-configs:
-      <<: *enabled
+      <<: *disabled
       description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
       group: "monitoring"
       namespace: "monitoring"
