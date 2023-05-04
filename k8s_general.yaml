@@ -171,7 +171,7 @@ apps:
         alertmanager.ingress.enabled: true
         alertmanager.ingress.ingressClassName: $INGRESS_CLASS
         alertmanager.ingress.hosts: "{alertmanager.$K8SCLUSTER.$K8S_DOMAIN}"
-        grafana.enabled: true
+        grafana.enabled: false
         grafana.ingress.enabled: true
         grafana.ingress.hosts: "{grafana.$K8SCLUSTER.$K8S_DOMAIN}"
         prometheus.ingress.enabled: true
@@ -202,7 +202,7 @@ apps:
       valuesFiles:
 
     grafana:
-      <<: *disabled
+      <<: *enabled
       description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
       group: "monitoring"
       namespace: "monitoring"
