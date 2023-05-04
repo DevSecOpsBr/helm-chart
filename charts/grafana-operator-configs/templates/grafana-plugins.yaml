@@ -1,0 +1,32 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: grafana-plugins
+  namespace: monitoring
+spec:
+  datasource:
+    access: proxy
+    type: prometheus
+    jsonData:
+      timeInterval: "15s"
+      tlsSkipVerify: true
+    name: Prometheus
+    url: http://prometheus-kube-prometheus-prometheus:9090
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  plugins:
+    - name: grafana-piechart-panel
+      version: 1.6.2
+    - name: michaeldmoore-annunciator-panel
+      version: 1.1.0
+    - name: grafana-worldmap-panel
+      version: 1.0.3
+    - name: jdbranham-diagram-panel
+      version: 1.7.3
+    - name: devopsprodigy-kubegraf-app
+      version: 1.5.2
+    - name: camptocamp-prometheus-alertmanager-datasource
+      version: 5.0.0
+    - name: timomyl-breadcrumb-panel
+      version: 1.2.0

@@ -1,14 +1,14 @@
-apiVersion: integreatly.org/v1alpha1
+apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
   name: loki-app
   labels:
     app: grafana
 spec:
-  customFolderName: "Logs"
-  datasources:
-    - inputName: "DS_LOKI"
-      datasourceName: "Loki"
+  folder: "Logs"
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
   json: >
     {
       "__inputs": [

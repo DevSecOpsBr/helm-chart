@@ -7,4 +7,5 @@ prometheus:
 # Loki Data Source
 loki:
   enabled: true
+  isDefault: false
   url: http://loki:3100

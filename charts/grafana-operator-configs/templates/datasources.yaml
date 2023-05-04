@@ -1,22 +1,40 @@
-apiVersion: integreatly.org/v1alpha1
-kind: GrafanaDataSource
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
 metadata:
-  name: datasources
+  name: prometheus-datasource
+  namespace: monitoring
 spec:
-  name: datasources.yaml
-  datasources:
-    - name: Prometheus
-      type: prometheus
-      access: proxy
-      url: {{ .Values.prometheus.url }}
-      isDefault: {{ .Values.prometheus.isDefault }}
-      version: 1
-      editable: true
-      jsonData:
-        tlsSkipVerify: true
-        timeInterval: {{ .Values.prometheus.timeInterval }}
-    - name: Loki
-      type: loki
-      access: proxy
-      url: {{ .Values.loki.url }}
-      version: 1
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  datasource:
+    name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus-kube-prometheus-prometheus:9090
+    isDefault: false
+    jsonData:
+      'tlsSkipVerify': true
+      'timeInterval': "5s"
+    editable: false
+
+---
+
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: loki-datasource
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  datasource:
+    name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    isDefault: true
+    editable: false

@@ -111,7 +111,6 @@ grafana:
 
   # Use the section below to install plugins
   plugins:
-    - grafana-piechart-panel
     - michaeldmoore-annunciator-panel
     - grafana-kubernetes-app
     - grafana-worldmap-panel

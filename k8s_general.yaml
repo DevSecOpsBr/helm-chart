@@ -171,7 +171,7 @@ apps:
         alertmanager.ingress.enabled: true
         alertmanager.ingress.ingressClassName: $INGRESS_CLASS
         alertmanager.ingress.hosts: "{alertmanager.$K8SCLUSTER.$K8S_DOMAIN}"
-        grafana.enabled: false
+        grafana.enabled: true
         grafana.ingress.enabled: true
         grafana.ingress.hosts: "{grafana.$K8SCLUSTER.$K8S_DOMAIN}"
         prometheus.ingress.enabled: true
@@ -202,7 +202,7 @@ apps:
       valuesFiles:
 
     grafana:
-      <<: *enabled
+      <<: *disabled
       description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
       group: "monitoring"
       namespace: "monitoring"
@@ -472,7 +472,7 @@ apps:
   # Service Mesh Block (priority: -50) On minkube the limits from coreDNS must be removed in order to works!
 
     linkerd-certificates:
-      <<: *enabled
+      <<: *disabled
       description: "Webhook certificates managed by cert-manager"
       group: "mesh"
       namespace: "linkerd"
@@ -499,7 +499,7 @@ apps:
       priority: -48
 
     linkerd-viz:
-      <<: *mesh2
+      <<: *disabled
       description: "Linkerd Viz"
       group: "mesh"
       namespace: "linkerd-viz"
@@ -510,7 +510,7 @@ apps:
   # Third-party tools (priority: -40)
 
     loft-configs:
-      <<: *enabled
+      <<: *disabled
       description: "Create, manage Loft Spaces/vCluster/Isolations and so on."
       group: "miscellaneous"
       namespace: "loft"
