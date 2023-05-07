@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devwebapp
+  namespace: default
+  labels:
+    app: devwebapp
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: devwebapp
+  template:
+    metadata:
+      labels:
+        app: devwebapp
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8000"
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/role: 'devweb-app'
+        vault.hashicorp.com/agent-inject-secret-credentials.txt: 'secret/data/devwebapp/config'
+    spec:
+      serviceAccountName: internal-app
+      containers:
+        - name: app
+          # image: burtlo/devwebapp-ruby:k8s
+          image: nginx
+          env:
+          - name: VAULT_ADDR
+            value: "https://rival-leech-nxcoz8.g62hmc1h.traefikhub.io"
+          - name: VAULT_TOKEN
+            value: gsKJE55WbS80kMAr5OJM9Cgo
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: devwebapp
+  namespace: default
+  labels:
+    app: devwebapp
+  annotations:
+    prometheus.io/scrape: "true"
+
+spec:
+  type: ClusterIP
+  selector:
+    app: devwebapp
+  ports:
+    - protocol: TCP
+      name: nginx-port
+      port: 80
+      targetPort: nginx
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-token-h2kdw
+  namespace: default
+  annotations:
+    kubernetes.io/service-account.name: vault
+type: kubernetes.io/service-account-token
+

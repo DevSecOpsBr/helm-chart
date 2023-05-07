@@ -70,6 +70,8 @@ helmRepos:
   teleport: https://charts.releases.teleport.dev
   # Publishing and securing your containers has never been easier.
   traefik-hub: https://helm.traefik.io/hub
+  # The official HashiCorp Helm chart for installing and configuring Vault on Kubernetes
+  hashicorp: https://helm.releases.hashicorp.com
 
 namespaces:
   clustering:
@@ -157,7 +159,7 @@ appsTemplates:
 
 apps:
 
-  # Monitoring & SRE Block (priority: -140)
+  # Monitoring & Observability (priority: -140)
 
     prometheus:
       <<: *enabled
@@ -262,7 +264,7 @@ apps:
         child.claiming.rooms: $NETDATA_ROOMS
       valuesFiles:
 
-  # # Logging Block (priority: -130)
+  # Logging Block (priority: -130)
 
     loki:
       <<: *enabled
@@ -278,6 +280,30 @@ apps:
       valuesFiles:
 
   # Security block (priority: -120)
+
+    vault:
+      <<: *enabled
+      description: "The Open Infrastructure Access Platform"
+      group: "security"
+      namespace: "security"
+      chart: "hashicorp/vault"
+      version: "0.24.1"
+      priority: -30
+      set:
+        global.externalVaultAddr: "https://rival-leech-nxcoz8.g62hmc1h.traefikhub.io/"
+        injector.metrics.enabled: true
+
+    teleport-cluster:
+      <<: *disabled
+      description: "The Open Infrastructure Access Platform"
+      group: "miscellaneous"
+      namespace: "security"
+      chart: "teleport/teleport-cluster"
+      version: "9.3.3"
+      priority: -29
+      set:
+        clusterName: "$K8SCLUSTER"
+        kubeClusterName: "$K8SCLUSTER"
 
   # Ingress Block (priority: -110)
 
@@ -436,7 +462,7 @@ apps:
       version: "0.8.1"
       priority: -78
 
-  # # Deployments & Automated Releases (priority: -60)
+    # Deployments & Automated Releases (priority: -60)
 
     flagger:
       <<: *enabled
@@ -469,6 +495,7 @@ apps:
         logLevel: "debug"
       valuesFiles:
 
+  
   # Service Mesh Block (priority: -50) On minkube the limits from coreDNS must be removed in order to works!
 
     linkerd-certificates:
@@ -543,15 +570,3 @@ apps:
         ingress.hosts[0].paths[0]: "/"
         serviceMonitor.create: true
         serviceMonitor.additionalLabels.release: "prometheus"
-
-    teleport-cluster:
-      <<: *disabled
-      description: "Loki: like Prometheus, but for logs."
-      group: "miscellaneous"
-      namespace: "security"
-      chart: "teleport/teleport-cluster"
-      version: "9.3.3"
-      priority: -38
-      set:
-        clusterName: "$K8SCLUSTER"
-        kubeClusterName: "$K8SCLUSTER"
