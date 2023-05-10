@@ -426,34 +426,6 @@ apps:
         serviceMonitor.enabled: true
         serviceMonitor.labels.release: "prometheus"
 
-    loft-configs:
-      <<: *enabled
-      description: "Create, manage Loft Spaces/vCluster/Isolations and so on."
-      group: "clustering"
-      namespace: "loft"
-      chart: "charts/loft-config"
-      version: "1.0.0"
-      priority: -79
-      set:
-        spaces.enabled: true
-        spaces.names[0]: "glaedr"
-        spaces.sleepmode.enabled: true
-        spaces.annotations.sleepmode\.loft\.sh/sleep-schedule: "0 19 * * *"
-        spaces.annotations.sleepmode\.loft\.sh/timezone: "Europe/Berlin"
-        spaces.annotations.sleepmode\.loft\.sh/wakeup-schedule: "0 10 * * 1-5"
-        vclusters.enabled: true
-        serviceMonitor.enabled: true
-        serviceMonitor.namespace: loft
-
-    saphira-vcluster:
-      <<: *disabled
-      description: "Namespace & Virtual Cluster Manager for Kubernetes"
-      group: "clustering"
-      namespace: "loft"
-      chart: "loft/vcluster"
-      version: "0.8.1"
-      priority: -78
-
   # Deployments & Automated Releases (priority: -60)
 
     flagger:
@@ -487,22 +459,6 @@ apps:
         logLevel: "debug"
 
   # Third-party tools (priority: -40)
-
-    helm-exporter:
-      <<: *disabled
-      description: "Exports helm release, chart, and version statistics in the prometheus format."
-      group: "miscellaneous"
-      namespace: "miscellaneous"
-      chart: "sstarcher/helm-exporter"
-      version: "1.2.2+6766a95"
-      priority: -39
-      set:
-        ingress.enabled: false
-        ingress.annotations.kubernetes\.io/ingress\.class: "$INGRESS_CLASS"
-        ingress.hosts[0].host: "helm-exporter.$K8SCLUSTER.$K8S_DOMAIN"
-        ingress.hosts[0].paths[0]: "/"
-        serviceMonitor.create: true
-        serviceMonitor.additionalLabels.release: "prometheus"
 
     reloader:
       <<: *enabled
