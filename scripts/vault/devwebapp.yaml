@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devwebapp-with-annotations
+  namespace: default
+  labels:
+    app: app
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+      annotations:
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/role: 'devweb-app'
+        vault.hashicorp.com/agent-inject-secret-credentials.txt: 'secret/devwebapp/config'
+    spec:
+      serviceAccountName: devwebapp-app
+      containers:
+      - name: app
+        image: nginx
+        ports:
+        - name: app
+          containerPort: 80
+        resources:
+          requests:
+            memory: 50Mi
+            cpu: 100m
+          limits:
+            memory: 150Mi
+            cpu: 300m

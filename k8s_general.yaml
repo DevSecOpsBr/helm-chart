@@ -288,7 +288,7 @@ apps:
       namespace: "security"
       chart: "hashicorp/vault"
       version: "0.24.1"
-      priority: -30
+      priority: -120
       set:
         global.externalVaultAddr: "https://rival-leech-nxcoz8.g62hmc1h.traefikhub.io/"
         injector.metrics.enabled: true
@@ -300,7 +300,7 @@ apps:
       namespace: "security"
       chart: "teleport/teleport-cluster"
       version: "9.3.3"
-      priority: -29
+      priority: -119
       set:
         clusterName: "$K8SCLUSTER"
         kubeClusterName: "$K8SCLUSTER"
@@ -508,7 +508,7 @@ apps:
       priority: -50
 
     linkerd:
-      <<: *mesh1
+      <<: *disabled
       description: "Linkerd service mesh for K8S"
       group: "mesh"
       namespace: "linkerd"
@@ -517,7 +517,7 @@ apps:
       priority: -49
 
     linkerd-viz-certificates:
-      <<: *enabled
+      <<: *disabled
       description: "Webhook certificates managed by cert-manager"
       group: "mesh"
       namespace: "linkerd-viz"
