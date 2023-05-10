@@ -25,12 +25,7 @@ steps:
       status:
         - failure
         - success
-      branch:
-        - "CU-*"
-        - "master"
-      event:
-        - push
-        - promote
+
 
   - name: helm_dry_run
     image: praqma/helmsman
@@ -49,7 +44,7 @@ steps:
       - time helmsman -e variables.env -f k8s_common.yaml $MANIFESTS -verbose -skip-validation -no-banner -no-update
     environment:
       K8SCLUSTER:
-        from_secret: ${DRONE_DEPLOY_TO}
+        from_secret: ${K8SCLUSTER}
     when:
       status:
         - failure
@@ -58,7 +53,6 @@ steps:
         - "CU-*"
         - "master"
       event:
-        - push
         - promote
     depends_on:
       - security_scanning
@@ -81,7 +75,7 @@ steps:
       - pluto detect-files -d $HELM_CHARTS
     environment:
       K8SCLUSTER:
-        from_secret: ${DRONE_DEPLOY_TO}
+        from_secret: ${K8SCLUSTER}
     when:
       status:
         - failure
@@ -90,7 +84,6 @@ steps:
         - "CU-*"
         - "master"
       event:
-        - push
         - promote
     depends_on:
       - helm_dry_run
@@ -112,7 +105,7 @@ steps:
       - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -apply -no-banner
     environment:
       K8SCLUSTER:
-        from_secret: ${DRONE_DEPLOY_TO}
+        from_secret: ${K8SCLUSTER}
     when:
       status:
         - success
@@ -140,7 +133,7 @@ steps:
       - nova find --helm --containers --format table
     environment:
       K8SCLUSTER:
-        from_secret: ${DRONE_DEPLOY_TO}
+        from_secret: ${K8SCLUSTER}
     when:
       status:
         - failure
@@ -168,7 +161,7 @@ steps:
       - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -destroy -no-banner
     environment:
       K8SCLUSTER:
-        from_secret: ${DRONE_DEPLOY_TO}
+        from_secret: ${K8SCLUSTER}
     when:
       status:
         - "success"

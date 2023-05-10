@@ -102,7 +102,7 @@ appsTemplates:
 
 apps:
 
-  # Monitoring & Observability (priority: -140)
+  # Monitoring & Log (priority: -140)
 
     metrics-server:
       # Enable if running via lima and/or minikube
@@ -140,23 +140,6 @@ apps:
         kubeDns.enabled: false
       valuesFiles:
        - charts/kube-prometheus-stack/values-custom.yaml
-
-    botkube:
-      <<: *enabled
-      description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
-      group: "commons"
-      namespace: "observability"
-      chart: "infracloudio/botkube"
-      version: "v0.12.4"
-      priority: -138
-      set:
-        config.settings.clustername: "$K8SCLUSTER"
-        config.settings.kubectl.restrictAccess: true
-        serviceMonitor.enabled: true
-        communications.slack.enabled: true
-        communications.slack.channel: "kubernetes-reports"
-        communications.slack.token: "$BOTKUBE"
-      valuesFiles:
 
     grafana:
       <<: *enabled
@@ -230,18 +213,7 @@ apps:
         ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
         ingress.hosts\.host[0]: "loki.$K8SCLUSTER.$K8S_DOMAIN"
 
-    opentelemetry:
-      <<: *enabled
-      description: "Use it to instrument, generate, collect, and export telemetry data (metrics, logs, and traces)"
-      group: "observability"
-      namespace: "observability"
-      chart: "open-telemetry/opentelemetry-operator"
-      version: "0.8.2"
-      priority: -132
-      set:
-        replicaCount: 1
-
-  # Security & Complience (priority: -120)
+  # Security & Complience (priority: -130)
 
     kyverno:
       <<: *enabled
@@ -250,7 +222,7 @@ apps:
       namespace: "security" 
       chart: "kyverno/kyverno" 
       version: "v2.1.10"
-      priority: -120
+      priority: -130
       set:
         serviceMonitor.enabled: true
         serviceMonitor.additionalLabels.release: "prometheus"
@@ -264,7 +236,7 @@ apps:
       namespace: "cert-manager"
       chart: "jetstack/cert-manager"
       version: "v1.8.0"
-      priority: -119
+      priority: -139
       set:
         installCRDs: true
         prometheus.serviceMonitor.enabled: true
@@ -276,7 +248,7 @@ apps:
       namespace: "security"
       chart: "hashicorp/vault"
       version: "0.24.1"
-      priority: -118
+      priority: -128
       set:
         global.externalVaultAddr: "https://rival-leech-nxcoz8.g62hmc1h.traefikhub.io/"
         injector.metrics.enabled: true
@@ -288,10 +260,39 @@ apps:
       namespace: "security"
       chart: "teleport/teleport-cluster"
       version: "9.3.3"
-      priority: -117
+      priority: -127
       set:
         clusterName: "$K8SCLUSTER"
         kubeClusterName: "$K8SCLUSTER"
+
+ # Observability (priority: - 120)
+
+    botkube:
+      <<: *enabled
+      description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
+      group: "commons"
+      namespace: "observability"
+      chart: "infracloudio/botkube"
+      version: "v0.12.4"
+      priority: -120
+      set:
+        config.settings.clustername: "$K8SCLUSTER"
+        config.settings.kubectl.restrictAccess: true
+        serviceMonitor.enabled: true
+        communications.slack.enabled: true
+        communications.slack.channel: "kubernetes-reports"
+        communications.slack.token: "$BOTKUBE"
+
+    opentelemetry:
+      <<: *enabled
+      description: "Use it to instrument, generate, collect, and export telemetry data (metrics, logs, and traces)"
+      group: "observability"
+      namespace: "observability"
+      chart: "open-telemetry/opentelemetry-operator"
+      version: "0.8.2"
+      priority: -121
+      set:
+        replicaCount: 1
 
   # Ingress Block (priority: -110)
 
