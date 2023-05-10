@@ -27,6 +27,7 @@ steps:
         - success
       branch:
         - "CU-*"
+        - "master"
       event:
         - push
         - promote
@@ -45,7 +46,7 @@ steps:
       - export CONTEXT=$(kubectl config current-context)
       - export K8SCLUSTER=$CONTEXT
       - kubectl get nodes -owide
-      - time helmsman -e variables.env -f k8s_common.yaml -f k8s_general.yaml -verbose -skip-validation -no-banner -no-update
+      - time helmsman -e variables.env -f k8s_common.yaml $MANIFESTS -verbose -skip-validation -no-banner -no-update
     environment:
       K8SCLUSTER:
         from_secret: ${DRONE_DEPLOY_TO}
@@ -55,6 +56,7 @@ steps:
         - success
       branch:
         - "CU-*"
+        - "master"
       event:
         - push
         - promote

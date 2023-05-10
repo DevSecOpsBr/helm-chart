@@ -1,39 +1,56 @@
 metadata:
-  org: "DevOps"
-  maintainer: "devops team (devops@ellesmera.io)"
-  description: "Kubernetes clusters"
+  scope: "kubernetes"
 
 settings:
   kubeContext: $K8SCLUSTER
   storageBackend: "secret"
   slackWebhook: $SLACK_HOOK
+  reverseDelete: true
 
-# define your helm repositories
 helmRepos:
-  # cert-manager
-  jetstack: https://charts.jetstack.io
-  # BotKube is a messaging bot for monitoring and debugging Kubernetes clusters
-  infracloudio: https://infracloudio.github.io/charts
   # A scalable, efficient source of container resource metrics for Kubernetes built-in autoscaling pipelines.
   metrics-server: https://kubernetes-sigs.github.io/metrics-server
+  # kube-prometheus-stack
+  prometheus-community: https://prometheus-community.github.io/helm-charts
+  # BotKube is a messaging bot for monitoring and debugging Kubernetes clusters
+  infracloudio: https://infracloudio.github.io/charts
+  # grafana tools e.g: loki and etc...
+  grafana: https://grafana.github.io/helm-charts
+  # Netdata monitoring cloud
+  netdata: https://netdata.github.io/helmchart/
+  # High-quality, ubiquitous, and portable telemetry to enable effective observability 
+  open-telemetry: https://open-telemetry.github.io/opentelemetry-helm-charts
   # Keyverno policy engine designed for Kubernetes
   kyverno: https://kyverno.github.io/kyverno/
-  # Kubecost helps you monitor and manage cost and capacity in Kubernetes environments.
-  kubecost: https://kubecost.github.io/cost-analyzer/
-  # extended component suite for Kubernetes, which mainly focuses on 
-  # application automations, such as deployment, upgrade, ops and availability protection.
-  openkruise: https://openkruise.github.io/charts/
+  # Cert-manager Kubernetes addon to automate the management and issuance of TLS certificates
+  jetstack: https://charts.jetstack.io
+  # The easiest, most secure way to access infrastructure.
+  teleport: https://charts.releases.teleport.dev
+  # A network load-balancer implementation for Kubernetes using standard routing protocols
+  metallb: https://metallb.github.io/metallb
+  # nginx ingress controller
+  ingress-nginx: https://kubernetes.github.io/ingress-nginx
+  # bunch of charts
+  bitnami: https://charts.bitnami.com/bitnami
+  # Edge Router that makes publishing your services a fun and easy experience
+  traefik: https://helm.traefik.io/traefik
+  # Publishing and securing your containers has never been easier.
+  traefik-hub: https://helm.traefik.io/hub
+  # A progressive delivery tool that automates the release process for applications running on Kubernetes.
+  flagger: https://flagger.app
+  # helm automation delivery
+  keel: https://charts.keel.sh
+  # Helm-exporter
+  sstarcher: https://shanestarcher.com/helm-charts/
+  # Loft - Secure Cluster Sharing, Self-Service Namespace Provisioning and Virtual Clusters
+  loft: https://charts.loft.sh
   # A control panel that dynamically discovers and provides a launchpad to access applications deployed on Kubernetes
   stakater: https://stakater.github.io/stakater-charts
+  # The official HashiCorp Helm chart for installing and configuring Vault on Kubernetes
+  hashicorp: https://helm.releases.hashicorp.com
 
-
-# define your environments and their k8s namespaces
 namespaces:
   cert-manager:
-    protected: false
-    annotations:
-      linkerd.io/inject: disabled
-  chaos:
     protected: false
     annotations:
       linkerd.io/inject: disabled
@@ -45,6 +62,8 @@ namespaces:
         pod-security.kubernetes.io/enforce: privileged
         pod-security.kubernetes.io/audit: privileged
         pod-security.kubernetes.io/warn: privileged
+  clustering:
+    protected: false
   loft:
     protected: false
     annotations:
@@ -67,30 +86,23 @@ namespaces:
     protected: false
     annotations:
       linkerd.io/inject: disabled
-  velero:
-    protected: false
-    annotations:
-      linkerd.io/inject: disabled
-  kubecost:
-    protected: false
 
 appsTemplates:
 
-  is_in_use: &enabled
+  enabled: &enabled
     enabled: true
-    test: true
+    test: false
     wait: true
-    protected: false
-    timeout: 300
+    timeout: 600
     helmFlags:
       - "--atomic"
 
-  not_in_use: &disabled
+  disabled: &disabled
     enabled: false
 
 apps:
 
-  # Monitoring Block (priority: -160)
+  # Monitoring & Observability (priority: -140)
 
     metrics-server:
       # Enable if running via lima and/or minikube
@@ -100,32 +112,136 @@ apps:
       namespace: "monitoring"
       chart: "charts/metrics-server"
       version: "2.9.0"
-      priority: -160
+      priority: -140
       valuesFiles:
         - "charts/metrics-server/values.yaml"
 
-    kubecost:
-      # Enable if running via lima and/or minikube
-      <<: *disabled
-      description: "A comprehensive cost monitoring & optimization solution for teams running Kubernetes."
-      group: "cost"
-      namespace: "kubecost"
-      chart: "kubecost/cost-analyzer"
-      version: " 1.94.3"
-      priority: -159
+    prometheus:
+      <<: *enabled
+      description: "Prometheus clusters atop Kubernetes"
+      group: "commons"
+      namespace: "monitoring"
+      chart: "prometheus-community/kube-prometheus-stack"
+      version: "34.10.0"
+      priority: -139
       set:
-        global.prometheus.enabled: false
-        global.prometheus.fqdn: http://prometheus.$K8SCLUSTER.$$K8S_DOMAIN.monitoring.svc
-        global.prometheus.insecureSkipVerify: true 
-        global.grafana.enabled: false
-        global.grafana.domainName: grafana.$K8SCLUSTER.$K8S_DOMAIN.monitoring.svc
-        ingress.enabled: true
-        ingress.className: $INGRESS_CLASS
-        ingress.hosts[0]: kubecost.$K8SCLUSTER.$K8S_DOMAIN
-        kubecostToken: $KUBECOST
+        alertmanager.ingress.enabled: true
+        alertmanager.ingress.ingressClassName: $INGRESS_CLASS
+        alertmanager.ingress.hosts: "{alertmanager.$K8SCLUSTER.$K8S_DOMAIN}"
+        grafana.enabled: false
+        grafana.ingress.enabled: true
+        grafana.ingress.hosts: "{grafana.$K8SCLUSTER.$K8S_DOMAIN}"
+        prometheus.ingress.enabled: true
+        prometheus.ingress.ingressClassName: $INGRESS_CLASS
+        prometheus.ingress.hosts: "{prometheus.$K8SCLUSTER.$K8S_DOMAIN}"
+        kubeControllerManager.enabled: false
+        kubeScheduler.enabled: false
+        kubeEtcd.enabled: true
+        kubeDns.enabled: false
+      valuesFiles:
+       - charts/kube-prometheus-stack/values-custom.yaml
+
+    botkube:
+      <<: *enabled
+      description: "Botkube is a messaging bot for monitoring and debugging Kubernetes clusters"
+      group: "commons"
+      namespace: "observability"
+      chart: "infracloudio/botkube"
+      version: "v0.12.4"
+      priority: -138
+      set:
+        config.settings.clustername: "$K8SCLUSTER"
+        config.settings.kubectl.restrictAccess: true
+        serviceMonitor.enabled: true
+        communications.slack.enabled: true
+        communications.slack.channel: "kubernetes-reports"
+        communications.slack.token: "$BOTKUBE"
       valuesFiles:
 
-  # Security block (priority: -120)
+    grafana:
+      <<: *enabled
+      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
+      group: "monitoring"
+      namespace: "monitoring"
+      chart: "grafana/grafana"
+      version: "6.26.5"
+      priority: -137
+      set:
+        ingress.enabled: true
+        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+        ingress.hosts[0]: grafana.$K8SCLUSTER.$K8S_DOMAIN
+      valuesFiles:
+
+    grafana-operator:
+      <<: *enabled
+      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
+      group: "monitoring"
+      namespace: "monitoring"
+      chart: "charts/grafana-operator"
+      version: "v5.0.0-rc0"
+      priority: -136
+      set:
+      valuesFiles:
+        - "charts/grafana-operator/values.yaml"
+
+    grafana-operator-configs:
+      <<: *disabled
+      description: "Kubernetes Operator based on the Operator SDK for creating and managing Grafana instances and dashboards."
+      group: "monitoring"
+      namespace: "monitoring"
+      chart: "charts/grafana-operator-configs"
+      version: "1.0.0"
+      priority: -135
+      set:
+      valuesFiles:
+        - "charts/grafana-operator-configs/values.yaml"
+
+    netdata:
+      <<: *enabled
+      description: "Netdata is a monitoring, visualization, and troubleshooting solution for systems, containers, services, and applications."
+      group: "monitoring"
+      namespace: "monitoring"
+      chart: "netdata/netdata"
+      version: "3.7.51"
+      priority: -134
+      set:
+        image.tag: stable
+        ingress.enabled: true
+        # ingress.spec.ingressClassName: $INGRESS_CLASS
+        ingress.hosts[0]: netdata.$K8SCLUSTER.$K8S_DOMAIN
+        notifications.slackurl: SLACK_WEBHOOK_URL=$SLACK_HOOK
+        notifications.slackrecipiet: "monitoring"
+        parent.claiming.enabled: true
+        parent.claiming.token: $NETDATA_TOKEN
+        parent.claiming.rooms: $NETDATA_ROOMS
+        parent.claiming.url: https://app.netdata.cloud
+        child.claiming.enabled: true
+        child.claiming.rooms: $NETDATA_ROOMS
+
+    loki:
+      <<: *enabled
+      description: "Loki: like Prometheus, but for logs."
+      group: "logging"
+      namespace: "monitoring"
+      chart: "grafana/loki-stack"
+      version: "2.8.2"
+      priority: -133
+      set:
+        ingress.annotations.kubernetes\.io/ingress\.class: $INGRESS_CLASS
+        ingress.hosts\.host[0]: "loki.$K8SCLUSTER.$K8S_DOMAIN"
+
+    opentelemetry:
+      <<: *enabled
+      description: "Use it to instrument, generate, collect, and export telemetry data (metrics, logs, and traces)"
+      group: "observability"
+      namespace: "observability"
+      chart: "open-telemetry/opentelemetry-operator"
+      version: "0.8.2"
+      priority: -132
+      set:
+        replicaCount: 1
+
+  # Security & Complience (priority: -120)
 
     kyverno:
       <<: *enabled
@@ -136,7 +252,7 @@ apps:
       version: "v2.1.10"
       priority: -120
       set:
-        serviceMonitor.enabled: false
+        serviceMonitor.enabled: true
         serviceMonitor.additionalLabels.release: "prometheus"
         createSelfSignedCert: true
       valuesFiles:
@@ -152,7 +268,240 @@ apps:
       set:
         installCRDs: true
         prometheus.serviceMonitor.enabled: true
+
+    vault:
+      <<: *enabled
+      description: "The Open Infrastructure Access Platform"
+      group: "security"
+      namespace: "security"
+      chart: "hashicorp/vault"
+      version: "0.24.1"
+      priority: -118
+      set:
+        global.externalVaultAddr: "https://rival-leech-nxcoz8.g62hmc1h.traefikhub.io/"
+        injector.metrics.enabled: true
+
+    teleport-cluster:
+      <<: *disabled
+      description: "The Open Infrastructure Access Platform"
+      group: "miscellaneous"
+      namespace: "security"
+      chart: "teleport/teleport-cluster"
+      version: "9.3.3"
+      priority: -117
+      set:
+        clusterName: "$K8SCLUSTER"
+        kubeClusterName: "$K8SCLUSTER"
+
+  # Ingress Block (priority: -110)
+
+    metallb:
+      <<: *enabled
+      description: "Load Balancer management for minikube"
+      group: "ingress"
+      namespace: "ingress"
+      chart: "metallb/metallb"
+      version: "0.12.1"
+      priority: -110  # Increased due to minikube ip conflicts
+      set:
+        prometheusRule.enabled: true
+        prometheusRUles.additionalLabels.release: "prometheus"
+        ### Uncomment the line below for mesh support ###
+        envoy.podAnnotations.linkerd\.io/inject: "ingress"
+        ### Uncomment if runing on multi-cluster ###
+        controller.nodeSelector.kubernetes\.io/hostname: lima\-$K8SCLUSTER\-manager\-1
+        controller.nodeSelector.ingress: "controller"
+        # speaker.nodeSelector.node-role\.kubernetes\.io\/control\-plane: "true"
+        # Need to be proper address (is not working yet)
+        configInline.address-pools[0].name: default
+        configInline.address-pools[0].protocol: layer2
+        configInline.address-pools[0].addresses: "{192.168.105.10-192.168.105.20}"
       valuesFiles:
+
+    nginx:
+      <<: *enabled
+      description: "Nginx-Ingress Controller for K8S"
+      group: "ingress"
+      namespace: "ingress"
+      chart: "ingress-nginx/ingress-nginx"
+      version: "4.1.4"
+      priority: -109
+      set:
+        controller.metrics.enabled: true
+        controller.metrics.serviceMonitor.enabled: true
+        controller.metrics.serviceMonitor.additionalLabels.release: "prometheus" 
+        defaultBackend.enabled: false
+        ### Uncomment the line below for mesh support ###
+        controller.podAnnotations.linkerd\.io/inject: "ingress"
+        ### Uncomment if runing on multi-node cluster ###
+        controller.service.nodeSelector.kubernetes\.io/hostname: lima\-$K8SCLUSTER\-manager\-1
+        controller.nodeSelector.ingress: "controller"
+        controller.watchIngressWithoutClass: true
+        controller.tolerations[0].key: "ingress"
+        controller.tolerations[0].effect: "NoSchedule"
+        controller.tolerations[0].operator: "Exists"
+      valuesFiles:
+
+    traefik:
+      <<: *enabled
+      description: "Edge Router that makes publishing your services a fun and easy experience"
+      group: "ingress"
+      namespace: "ingress"
+      chart: "traefik/traefik"
+      version: "10.19.4"
+      priority: -108
+      set:
+        ports.traefik.expose: true
+        additionalArguments[0]: "--metrics.prometheus=true"
+        additionalArguments[1]: "--ping"
+        additionalArguments[2]: "--log.format=json"
+        additionalArguments[3]: "--accesslog=true"
+        additionalArguments[4]: "--api.dashboard=true"
+        deployment.podLabels.release: "prometheus"
+        ingressClass.enabled: true
+        ### Uncomment the line below for mesh support ###
+        controller.podAnnotations.linkerd\.io/inject: "ingress"
+        ### Uncomment if runing on multi-node cluster ###
+        nodeSelector.kubernetes\.io/hostname: lima\-$K8SCLUSTER\-manager\-2
+        nodeSelector.ingress: "controller"
+        tolerations[0].key: "ingress"
+        tolerations[0].effect: "NoSchedule"
+        tolerations[0].operator: "Exists"
+      valuesFiles:
+
+    traefik-hub:
+      <<: *disabled
+      description: "Publishing and securing your containers has never been easier."
+      group: "ingress"
+      namespace: "ingress"
+      chart: "traefik-hub/hub-agent"
+      version: "0.23.0"
+      priority: -107
+      set:
+        image.tag: experimental
+        token: $TRAEFIK_HUB_TOKEN
+      valuesFiles:
+
+    contour:
+      <<: *enabled
+      description: "High performance ingress controller for Kubernetes"
+      group: "ingress"
+      namespace: "ingress"
+      chart: "bitnami/contour"
+      version: "11.3.0"
+      priority: -106
+      set:
+        replicaCount: 1
+        configInline.incluster: true
+        default.backend.enabled: true
+        envoy.serviceAccount.aumountServiceAccountToken: true
+        prometheus.serviceMonitor.enabled: true
+        ### Uncomment the line below for mesh support ###
+        envoy.podAnnotations.linkerd\.io/inject: "ingress"
+        ### Uncomment if runing on multi-cluster ###
+        envoy.nodeSelector.kubernetes\.io\/hostname: lima\-$K8SCLUSTER\-manager\-3
+        envoy.nodeSelector.ingress: "controller"
+        envoy.tolerations[0].key: "ingress"
+        envoy.tolerations[0].effect: "NoSchedule"
+        envoy.tolerations[0].operator: "Exists"
+
+  # Virtual clusters (priority: -80)
+
+    loft:
+      <<: *enabled
+      description: "Namespace & Virtual Cluster Manager for Kubernetes"
+      group: "clustering"
+      namespace: "loft"
+      chart: "loft/loft"
+      version: "2.3.1"
+      priority: -80
+      set:
+        ingress.enabled: true
+        ingress.host: loft.$K8SCLUSTER.$K8S_DOMAIN
+        ingress.ingressClass: $INGRESS_CLASS
+        ingress.tls.enabled: false
+        apiService.enabled: true
+        labels.release: "prometheus"
+        serviceMonitor.enabled: true
+        serviceMonitor.labels.release: "prometheus"
+
+    loft-configs:
+      <<: *enabled
+      description: "Create, manage Loft Spaces/vCluster/Isolations and so on."
+      group: "clustering"
+      namespace: "loft"
+      chart: "charts/loft-config"
+      version: "1.0.0"
+      priority: -79
+      set:
+        spaces.enabled: true
+        spaces.names[0]: "glaedr"
+        spaces.sleepmode.enabled: true
+        spaces.annotations.sleepmode\.loft\.sh/sleep-schedule: "0 19 * * *"
+        spaces.annotations.sleepmode\.loft\.sh/timezone: "Europe/Berlin"
+        spaces.annotations.sleepmode\.loft\.sh/wakeup-schedule: "0 10 * * 1-5"
+        vclusters.enabled: true
+        serviceMonitor.enabled: true
+        serviceMonitor.namespace: loft
+
+    saphira-vcluster:
+      <<: *disabled
+      description: "Namespace & Virtual Cluster Manager for Kubernetes"
+      group: "clustering"
+      namespace: "loft"
+      chart: "loft/vcluster"
+      version: "0.8.1"
+      priority: -78
+
+  # Deployments & Automated Releases (priority: -60)
+
+    flagger:
+      <<: *enabled
+      description: "A progressive delivery tool that automates the release process for applications running on Kubernetes."
+      group: "releases"
+      namespace: "miscellaneous" 
+      chart: "flagger/flagger" 
+      version: "1.20.0"
+      priority: -60
+      set:
+        logLevel: "debug"
+        meshProvider: "linkerd"
+        ingressClass: $INGRESS_CLASS
+        slack.channel: "deploys"
+        slack.url: "$SLACK_HOOK"
+        podMonitor.enabled: true
+        prometheus.install: false
+        crd.create: false
+      valuesFiles:
+
+    flagger-loadtester:
+      <<: *enabled
+      description: "Load testing services generates traffic during canary analysis when configured as a webhook."
+      group: "releases"
+      namespace: "miscellaneous" 
+      chart: "flagger/loadtester" 
+      version: "0.22.0"
+      priority: -59
+      set:
+        logLevel: "debug"
+
+  # Third-party tools (priority: -40)
+
+    helm-exporter:
+      <<: *disabled
+      description: "Exports helm release, chart, and version statistics in the prometheus format."
+      group: "miscellaneous"
+      namespace: "miscellaneous"
+      chart: "sstarcher/helm-exporter"
+      version: "1.2.2+6766a95"
+      priority: -39
+      set:
+        ingress.enabled: false
+        ingress.annotations.kubernetes\.io/ingress\.class: "$INGRESS_CLASS"
+        ingress.hosts[0].host: "helm-exporter.$K8SCLUSTER.$K8S_DOMAIN"
+        ingress.hosts[0].paths[0]: "/"
+        serviceMonitor.create: true
+        serviceMonitor.additionalLabels.release: "prometheus"
 
     reloader:
       <<: *enabled
@@ -161,8 +510,6 @@ apps:
       namespace: "miscellaneous"
       chart: "stakater/reloader"
       version: "v0.0.117"
-      priority: -118
+      priority: -38
       set:
         reloader.podMonitor.enabled: true
-
-
