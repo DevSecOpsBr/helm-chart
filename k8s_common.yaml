@@ -301,7 +301,7 @@ apps:
       description: "The Only Unified, Dev-First Kubernetes Platform. Effortlessly Operate, Troubleshoot, Control & Optimize K8s Applications"
       group: "observability"
       namespace: "observability"
-      chart: "open-telemetry/opentelemetry-operator"
+      chart: "komodorio/k8s-watcher"
       version: "1.14.10"
       priority: -120
       set:
