@@ -48,6 +48,8 @@ helmRepos:
   stakater: https://stakater.github.io/stakater-charts
   # The official HashiCorp Helm chart for installing and configuring Vault on Kubernetes
   hashicorp: https://helm.releases.hashicorp.com
+  # The Only Unified, Dev-First Kubernetes Platform. Effortlessly Operate, Troubleshoot, Control & Optimize K8s Applications
+  komodorio: https://helm-charts.komodor.io
 
 namespaces:
   cert-manager:
@@ -293,6 +295,22 @@ apps:
       priority: -121
       set:
         replicaCount: 1
+
+    komodor:
+      <<: *enabled
+      description: "The Only Unified, Dev-First Kubernetes Platform. Effortlessly Operate, Troubleshoot, Control & Optimize K8s Applications"
+      group: "observability"
+      namespace: "observability"
+      chart: "open-telemetry/opentelemetry-operator"
+      version: "1.14.10"
+      priority: -120
+      set:
+        watcher.actions.basic: true 
+        watcher.actions.advanced: true 
+        watcher.actions.podExec: true 
+        metrics.enabled: true 
+        apiKey: ${KOMODOR_APIKEY}
+        watcher.clusterName: ${K8SCLUSTER}
 
   # Ingress Block (priority: -110)
 
