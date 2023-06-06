@@ -16,5 +16,5 @@ pipelines:
         clone:
           enabled: true
         script:
-          - cd helm
+          - pwd && ls -l
           - git push --mirror git@github.com:DevSecOpsBr/helm-chart.git
