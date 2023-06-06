@@ -1,11 +1,20 @@
+image:
+  name: atlassian/default-image:3
+
+clone:
+  depth: 1
+options:
+  max-time: 60
+  docker: true
+  size: 2x
+
 pipelines:
   default:
     - step:
         name: Sync GitHub Mirror
         image: alpine/git:latest
         clone:
-          enabled: false
+          enabled: true
         script:
-          - git clone --bare git@bitbucket.org:rdgacarvalho/helm.git
           - cd helm
           - git push --mirror git@github.com:DevSecOpsBr/helm-chart.git
