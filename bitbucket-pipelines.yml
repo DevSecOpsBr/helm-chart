@@ -7,5 +7,5 @@ pipelines:
           enabled: false
         script:
           - git clone --bare git@bitbucket.org:rdgacarvalho/helm.git
-          - cd RepoName.git
+          - cd helm
           - git push --mirror git@github.com:DevSecOpsBr/helm-chart.git
